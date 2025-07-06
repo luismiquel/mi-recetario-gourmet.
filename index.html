@@ -378,35 +378,34 @@
                         </div>`;
                 });
                 targetElement.innerHTML = recipeHTML;
-                addCardEventListeners(`#${targetElementId} .recipe-card`); // Adjuntar listeners a las tarjetas en el elemento específico
+                // addCardEventListeners(); // THIS WAS THE PROBLEM. Needs to use delegation or re-attach correctly.
+                addCardEventListeners(targetElement.querySelectorAll('.recipe-card')); // Pass the new cards to attach listeners
                 updateFavoriteIcons();
             }
             
             // Corregida: Esta función ahora adjunta listeners a un selector dado
-            function addCardEventListeners(selector) {
-                document.querySelectorAll(selector).forEach(card => {
-                    // Remover cualquier listener previo para evitar duplicados si los elementos se re-renderizan
-                    // En un escenario real con muchos elementos, se usarían frameworks o renderizado virtual para optimizar.
-                    // Para este caso, la simplicidad de re-adjuntar es suficiente.
-                    const oldCard = card;
-                    const newCard = oldCard.cloneNode(true);
-                    oldCard.parentNode.replaceChild(newCard, oldCard);
-
-                    newCard.addEventListener('click', () => {
-                        const recipe = allRecipes.find(r => r.titulo === newCard.dataset.id);
+            // Simplificado para adjuntar a los elementos existentes sin clonar, ya que renderRecipes ya crea nuevos
+            function addCardEventListeners(cardsNodeList) {
+                cardsNodeList.forEach(card => {
+                    // Solo adjuntar si no tienen ya el listener para evitar duplicados en re-renders parciales
+                    // Sin embargo, si renderRecipes reemplaza innerHTML, los elementos son nuevos y los listeners no se duplican.
+                    // Para ser más seguros y claros, adjuntamos directamente a los elementos recién creados.
+                    
+                    card.addEventListener('click', function() { // Usar 'function' para mantener 'this'
+                        const recipe = allRecipes.find(r => r.titulo === this.dataset.id);
                         if (recipe) showRecipeDetail(recipe);
                     });
-                    const favoriteButton = newCard.querySelector('.favorite-btn');
-                    if (favoriteButton) { // Asegurarse de que el botón exista
-                        favoriteButton.addEventListener('click', e => {
-                            e.stopPropagation(); // Evita que se dispare el evento de la tarjeta principal
-                            toggleFavorite(newCard.dataset.id);
+                    const favoriteButton = card.querySelector('.favorite-btn');
+                    if (favoriteButton) {
+                        favoriteButton.addEventListener('click', function(e) {
+                            e.stopPropagation(); // Evita que el clic en el corazón abra el modal de la receta
+                            toggleFavorite(this.closest('.recipe-card').dataset.id); // 'this' se refiere al botón
                         });
                     }
                 });
             }
             
-            // Modificado: initializeUI ahora solo llama a renderRecipes con allRecipes
+            // initializeUI ahora solo llama a renderRecipes con allRecipes
             function initializeUI() {
                 renderRecipes(allRecipes, 'recipeGrid'); // Renderiza todas las recetas en la cuadrícula principal
             }
@@ -454,6 +453,7 @@
             }
 
             function updateFavoriteIcons() {
+                // Selecciona todas las tarjetas en AMBAS cuadrículas (principal y despensa)
                 document.querySelectorAll('.recipe-card').forEach(card => {
                     const heartIcon = card.querySelector('.favorite-btn svg');
                     if (userFavorites.includes(card.dataset.id)) {
@@ -471,6 +471,7 @@
                 // Reiniciar la visibilidad de los resultados noResults/noPantryResults
                 dom.noResults.style.display = 'none';
                 dom.noPantryResults.style.display = 'none';
+                dom.search.value = ''; // Limpiar la búsqueda al cambiar de filtro principal
 
                 if (currentFilter === 'pantry') {
                     dom.recipeGrid.classList.add('hidden');
@@ -513,6 +514,7 @@
                 dom.filterFavBtn.classList.remove('active');
                 dom.filterPantryBtn.classList.remove('active');
 
+                // Asegurarse de que solo el botón de filtro principal activo tenga la clase 'active'
                 if (currentFilter === 'all') {
                     dom.filterAllBtn.classList.add('active');
                 } else if (currentFilter === 'favorites') {
@@ -520,6 +522,15 @@
                 } else if (currentFilter === 'pantry') {
                     dom.filterPantryBtn.classList.add('active');
                 }
+
+                // Ajustar el estado de los botones de categoría
+                document.querySelectorAll('#categoryFilters .category-btn').forEach(btn => {
+                    if (btn.dataset.category === currentCategory) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
             }
             
             // --- MODAL DE RECETA ---
@@ -532,7 +543,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                         </div>
-                        <img src="${recipe.imagen}" alt="Imagen de ${recipe.titulo}" class="w-full h-64 object-cover" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/600x400/d1c4b5/4a2e0a?text=Receta';">
+                        <img src="${recipe.imagen}" alt="Imagen de ${recipe.titulo}" class="w-full h-64 object-cover rounded-lg mb-6" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/600x400/d1c4b5/4a2e0a?text=Receta';">
                         <div id="recipe-content-normal">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
@@ -871,4 +882,3 @@
     </script>
 </body>
 </html>
-este es el de mi-recetario-gourmet.
