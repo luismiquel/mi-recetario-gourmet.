@@ -363,34 +363,56 @@
 
                 recipesToDisplay.forEach(recipe => {
                     const searchTerms = `${recipe.titulo.toLowerCase()} ${recipe.ingredientes.join(' ').toLowerCase()} ${recipe.categoria.toLowerCase()}`;
+                    // Determine which badge to show for pantry results (if applicable)
+                    let badgeHTML = '';
+                    if (targetElementId === 'pantryRecipeResults') {
+                        // Assuming filterRecipesByPantry has already calculated missingCount and missingList
+                        // We need to re-map or pass these values correctly if rendering outside filterRecipesByPantry
+                        const availableIngredients = pantryIngredients.map(ing => ing.toLowerCase());
+                        const neededIngredients = recipe.ingredientes.map(ing => ing.toLowerCase());
+                        const missingIngredients = neededIngredients.filter(ing => !availableIngredients.includes(ing));
+                        
+                        if (missingIngredients.length === 0) {
+                            badgeHTML = `<div class="pantry-match-badge">100%</div>`;
+                        } else if (missingIngredients.length === 1) {
+                            badgeHTML = `<div class="pantry-match-missing-badge">Falta 1</div>`;
+                        } else if (missingIngredients.length === 2) {
+                            badgeHTML = `<div class="pantry-match-missing-badge">Faltan 2</div>`;
+                        }
+                    }
+
                     recipeHTML += `
                         <div class="recipe-card" data-id="${recipe.titulo}" data-category="${recipe.categoria}" data-search="${searchTerms}">
                             <div class="relative bg-white dark:bg-stone-800 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 cursor-pointer h-full flex flex-col">
                                 <img src="${recipe.imagen}" alt="Imagen de ${recipe.titulo}" class="w-full h-40 object-cover" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/400x300/d1c4b5/4a2e0a?text=Receta';">
                                 <div class="absolute top-2 left-2 bg-amber-800 text-white text-xs font-semibold px-2 py-1 rounded-full">${recipe.categoria}</div>
+                                ${badgeHTML}
                                 <button class="favorite-btn absolute top-2 right-2 bg-white/80 rounded-full p-2 hover:bg-white dark:bg-stone-700/80 dark:hover:bg-stone-600 transition">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600 dark:text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 016.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z" /></svg>
                                 </button>
                                 <div class="p-4 flex-grow flex flex-col">
                                     <h3 class="font-bold text-lg text-amber-900 dark:text-amber-500 truncate">${recipe.titulo}</h3>
+                                    ${targetElementId === 'pantryRecipeResults' ? 
+                                        `<p class="text-xs text-gray-500 dark:text-stone-400 mt-1">
+                                            ${missingIngredients.length === 0 ? 'Tienes todos los ingredientes' : `Faltan: ${missingIngredients.join(', ')}`}
+                                        </p>` : ''}
                                 </div>
                             </div>
                         </div>`;
                 });
                 targetElement.innerHTML = recipeHTML;
-                // addCardEventListeners(); // THIS WAS THE PROBLEM. Needs to use delegation or re-attach correctly.
-                addCardEventListeners(targetElement.querySelectorAll('.recipe-card')); // Pass the new cards to attach listeners
+                addCardEventListeners(`#${targetElementId} .recipe-card`); // Adjuntar listeners a las tarjetas en el elemento específico
                 updateFavoriteIcons();
             }
             
             // Corregida: Esta función ahora adjunta listeners a un selector dado
-            // Simplificado para adjuntar a los elementos existentes sin clonar, ya que renderRecipes ya crea nuevos
-            function addCardEventListeners(cardsNodeList) {
-                cardsNodeList.forEach(card => {
-                    // Solo adjuntar si no tienen ya el listener para evitar duplicados en re-renders parciales
-                    // Sin embargo, si renderRecipes reemplaza innerHTML, los elementos son nuevos y los listeners no se duplican.
-                    // Para ser más seguros y claros, adjuntamos directamente a los elementos recién creados.
-                    
+            function addCardEventListeners(selector) {
+                // Eliminar listeners de los elementos antiguos antes de adjuntar a los nuevos
+                // Para esto, en lugar de clonar, podemos usar delegación de eventos en un contenedor padre
+                // O, si el innerHTML se reemplaza completamente, los elementos antiguos se van y no hay duplicados.
+                // Aquí, asumo que los elementos con el selector son "nuevos" después de un innerHTML.
+
+                document.querySelectorAll(selector).forEach(card => {
                     card.addEventListener('click', function() { // Usar 'function' para mantener 'this'
                         const recipe = allRecipes.find(r => r.titulo === this.dataset.id);
                         if (recipe) showRecipeDetail(recipe);
@@ -405,7 +427,7 @@
                 });
             }
             
-            // initializeUI ahora solo llama a renderRecipes con allRecipes
+            // initializeUI ahora solo llama a renderRecipes con allRecipes para la cuadrícula principal
             function initializeUI() {
                 renderRecipes(allRecipes, 'recipeGrid'); // Renderiza todas las recetas en la cuadrícula principal
             }
