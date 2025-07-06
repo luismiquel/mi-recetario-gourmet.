@@ -8,8 +8,9 @@
     <meta name="theme-color" content="#78350f"/>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Recetario Gourmet">
+    <meta name="apple-mobile-web-app-title" content="Mi Recetario Gourmet"> 
     <link rel="apple-touch-icon" href="https://placehold.co/192x192/78350f/ffffff?text=RG">
+    <meta name="mobile-web-app-capable" content="yes"> 
     
     <link rel="manifest" href="data:application/manifest+json,{
         &quot;name&quot;: &quot;Mi Recetario Gourmet&quot;,
@@ -218,18 +219,18 @@
 
         function runRecipeApp() {
             // *** CONFIGURACIÓN DE FIREBASE ***
-            // IMPORTANTE: Esta configuración usa DEMO_KEYs para depuración.
-            // Cuando todo funcione, puedes pegar tus claves REALES aquí.
+            // IMPORTANTE: Esta configuración ha sido insertada con tus datos reales de Firebase.
+            // NO LA MODIFIQUES a menos que cambies tu proyecto de Firebase.
             const firebaseConfig = {
-                apiKey: "DEMO_KEY", // Usar DEMO_KEY para depuración
-                authDomain: "DEMO.firebaseapp.com",
-                projectId: "DEMO_PROJECT",
-                storageBucket: "DEMO.appspot.com",
-                messagingSenderId: "DEMO_ID",
-                appId: "DEMO_APP_ID",
-                measurementId: "DEMO_MEASUREMENT_ID"
+                apiKey: "AIzaSyBl_mcw-cNm5VM20zupu-EdWbjkcchWUek",
+                authDomain: "rapid-scion-455418-d4.firebaseapp.com",
+                projectId: "rapid-scion-455418-d4",
+                storageBucket: "rapid-scion-455418-d4.firebasestorage.app",
+                messagingSenderId: "118256801071",
+                appId: "1:118256801071:web:c99aed5544d5e62305bdda",
+                measurementId: "G-VTRBE6TWML"
             };
-            const appId = "recetario-gourmet-debug"; // ID para el almacenamiento de Firebase
+            const appId = firebaseConfig.appId; // Usamos el appId de la configuración para Firebase
 
             const app = initializeApp(firebaseConfig);
             const db = getFirestore(app);
@@ -276,7 +277,7 @@
                 { categoria: "Aperitivo", titulo: "Vasitos de Gazpacho de Sandía", imagen: "https://images.unsplash.com/photo-1625944228743-9281a173a113?q=80&w=400", ingredientes: ["Sandía", "Tomate", "Pimiento verde", "Cebolla", "Aceite de oliva", "Menta"], pasos: ["Tritura la sandía con tomate, pimiento, cebolla y menta.", "Aliña y sirve muy frío en vasitos."] },
                 { categoria: "Aperitivo", titulo: "Patatas al Horno con Romero y Pimentón", imagen: "https://images.unsplash.com/photo-1588581176384-a4d5a8b73301?q=80&w=400", ingredientes: ["Patatas", "Romero fresco", "Pimentón dulce", "Aceite de oliva", "Sal"], pasos: ["Corta patatas en gajos. Mezcla con aceite, romero, pimentón y sal.", "Hornea hasta que estén crujientes."] },
                 { categoria: "Aperitivo", titulo: "Brochetas de Dátiles con Bacon y Queso Azul", imagen: "https://images.unsplash.com/photo-1639537339294-35e2193b134a?q=80&w=400", ingredientes: ["Dátiles sin hueso", "Bacon", "Queso azul"], pasos: ["Rellena los dátiles con queso azul. Envuelve en bacon y sujeta con un palillo.", "Hornea hasta que el bacon esté crujiente."] },
-                { categoria: "Aperitivo", titulo: "Tostas de Sobrasada con Queso Mahón", imagen: "https://images.unsplash.com/photo-1619861183287-353f2a8a1599?q=80&w=400", ingredientes: ["Pan rústico", "Sobrasada", "Queso Mahón (semi-curado)"], pasos: ["Tuesta rebanadas de pan. Unta con sobrasada.", "Coloca encima una loncha de queso Mahón y gratina ligeramente."] },
+                { categoria: "Aperitivo", titulo: "Tostas de Sobrasada con Queso Mahón", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Tostas+Sobrasada", ingredientes: ["Pan rústico", "Sobrasada", "Queso Mahón (semi-curado)"], pasos: ["Tuesta rebanadas de pan. Unta con sobrasada.", "Coloca encima una loncha de queso Mahón y gratina ligeramente."] },
                 { categoria: "Aperitivo", titulo: "Tartar de Tomate y Aguacate con Tostadas", imagen: "https://images.unsplash.com/photo-1604329227594-3d9697ac7249?q=80&w=400", ingredientes: ["Tomate", "Aguacate", "Cebolla morada", "Zumo de lima", "Aceite de oliva", "Tostadas"], pasos: ["Pica tomate, aguacate y cebolla en dados pequeños. Mezcla y aliña.", "Sirve con tostadas."] },
                 { categoria: "Aperitivo", titulo: "Bocaditos de Tortilla de Patatas con Pimiento", imagen: "https://images.unsplash.com/photo-1588581176384-a4d5a8b73301?q=80&w=400", ingredientes: ["Tortilla de patatas (casera o comprada)", "Pimiento del Piquillo", "Palillos"], pasos: ["Corta la tortilla en pequeños cuadrados. Coloca un trozo de pimiento del piquillo encima.", "Sujeta con un palillo."] },
                 { categoria: "Aperitivo", titulo: "Mejillones al Vapor con Salsa de Tomate Picante", imagen: "https://images.unsplash.com/photo-1598514982249-916212e62444?q=80&w=400", ingredientes: ["Mejillones frescos", "Tomate triturado", "Cebolla", "Ajo", "Guindilla", "Vino blanco"], pasos: ["Sofríe cebolla, ajo y guindilla. Añade tomate y cocina salsa. Cuece mejillones al vapor con vino. Sirve mejillones con salsa."] },
@@ -287,7 +288,7 @@
                 { categoria: "Aperitivo", titulo: "Olivas Esferificadas (Falsas)", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Olivas+Esferificadas", ingredientes: ["Zumo de oliva (aceite licuado)", "Agar-agar", "Pipeta", "Baño de alginato de sodio"], pasos: ["Calienta zumo de oliva con agar-agar. Forma esferas con pipeta en baño de alginato. Enjuaga y sirve."] },
                 { categoria: "Aperitivo", titulo: "Mini Arepas con Queso y Aguacate", imagen: "https://images.unsplash.com/photo-1621244249146-2169820786a3?q=80&w=400", ingredientes: ["Harina de maíz precocida", "Agua", "Sal", "Queso fresco", "Aguacate"], pasos: ["Prepara masa de arepas. Forma y cocina. Abre y rellena con queso y aguacate."] },
                 { categoria: "Aperitivo", titulo: "Edamame Salteado con Sésamo y Soja", imagen: "https://images.unsplash.com/photo-1598514983318-7293e6875953?q=80&w=400", ingredientes: ["Edamame congelado", "Salsa de soja", "Aceite de sésamo", "Semillas de sésamo", "Ajo picado"], pasos: ["Hierve edamame. Saltea ajo, edamame, soja y aceite de sésamo.", "Espolvorea semillas de sésamo."] },
-                { categoria: "Aperitivo", titulo: "Croquetones de Jamón Ibérico", imagen: "https://images.unsplash.com/photo-1619861183287-353f2a8a1599?q=80&w=400", ingredientes: ["Jamón ibérico", "Harina", "Mantequilla", "Leche", "Huevo", "Pan rallado", "Aceite para freír"], pasos: ["Prepara bechamel con jamón. Enfría. Forma croquetones grandes, empanar y freír."] },
+                { categoria: "Aperitivo", titulo: "Croquetones de Jamón Ibérico", imagen: "https://images.unsplash.com/photo-1619861183287-353f2a8a1599?q=80&w=400", ingredientes: ["Jamón ibérico", "Harina", "Mantequilla", "Leche", "Huevo", "Pan rallado", "Aceite para freír"], pasos: ["Prepara bechamel con jamón. Enfría. Forma croquetones grandes, empanar y fríe."] },
 
                 // --- 20 Primeros ---
                 { categoria: "Primero", titulo: "Crema de Puerro y Patata (Vichyssoise)", imagen: "https://images.unsplash.com/photo-1598514983318-7293e6875953?q=80&w=400", ingredientes: ["Puerros", "Patatas", "Caldo de pollo o verduras", "Nata líquida (opcional)", "Mantequilla", "Sal"], pasos: ["Sofríe puerros en mantequilla. Añade patata y caldo. Cocina hasta tiernas. Tritura y, si quieres, añade nata."] },
@@ -338,7 +339,7 @@
                 { categoria: "Postre", titulo: "Arroz con Leche Cremoso y Canela", imagen: "https://images.unsplash.com/photo-1599043513901-3c5b52f6b3a2?q=80&w=400", ingredientes: ["Arroz", "Leche entera", "Azúcar", "Piel de limón", "Rama de canela", "Canela en polvo"], pasos: ["Cuece arroz en leche con limón y canela a fuego lento. Añade azúcar. Sirve frío con canela."] },
                 { categoria: "Postre", titulo: "Flan de Huevo Casero (Al Vapor)", imagen: "https://images.unsplash.com/photo-1559529845-362a1913a2d7?q=80&w=400", ingredientes: ["Huevos", "Leche", "Azúcar", "Caramelo líquido"], pasos: ["Prepara caramelo en flaneras. Bate huevos, leche y azúcar. Vierte en flaneras. Cocina al vapor o al baño maría."] },
                 { categoria: "Postre", titulo: "Macedonia de Frutas Tropicales con Miel y Menta", imagen: "https://images.unsplash.com/photo-1583091936302-3f1a0e1c2a0d?q=80&w=400", ingredientes: ["Mango", "Piña", "Papaya", "Kiwi", "Zumo de lima", "Miel", "Menta fresca"], pasos: ["Pela y corta frutas. Mezcla. Aliña con zumo de lima y miel. Decora con menta."] },
-                { categoria: "Postre", titulo: "Natillas con Galleta y Canela", imagen: "https://images.unsplash.com/photo-1621244249146-2169820786a3?q=80&w=400", ingredientes: ["Leche", "Yemas de huevo", "Azúcar", "Maicena", "Piel de limón", "Rama de canela", "Galletas María"], pasos: ["Calienta leche con limón y canela. Mezcla yemas, azúcar, maicena. Une y cocina hasta espesar. Sirve con galleta y canela."] },
+                { categoria: "Postre", titulo: "Natillas con Galleta y Canela", imagen: "https://images.unsplash.com/photo-1621244249146-2169820786a3?q=80&w=400", ingredientes: ["Leche", "Yemas de huevo", "Azúcar", "Maicena", "Piel de limón", "Rama de canela", "Galletas María"], pasos: ["Calienta leche con limón y canela. Mezcla yemas, azúcar, maicena. Une, cocina hasta espesar. Sirve con galleta y canela."] },
                 { categoria: "Postre", titulo: "Bizcocho de Chocolate Húmedo", imagen: "https://images.unsplash.com/photo-1567613768463-b9254d39994f?q=80&w=400", ingredientes: ["Harina", "Cacao puro", "Azúcar", "Huevos", "Leche", "Aceite", "Levadura", "Vainilla"], pasos: ["Mezcla ingredientes secos. Combina con húmedos. Hornea en molde hasta que esté hecho. Deja enfriar."] },
                 { categoria: "Postre", titulo: "Peras al Horno con Vino Tinto y Pasas", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Peras+Vino", ingredientes: ["Peras", "Vino tinto", "Pasas", "Canela en rama", "Cáscara de naranja"], pasos: ["Pela peras. Hornea con vino, pasas, canela y naranja hasta que estén tiernas."] },
                 { categoria: "Postre", titulo: "Crema Catalana con Azúcar Quemado", imagen: "https://images.unsplash.com/photo-1621244249146-2169820786a3?q=80&w=400", ingredientes: ["Leche", "Yemas de huevo", "Azúcar", "Maicena", "Piel de limón", "Canela en rama", "Azúcar (para quemar)"], pasos: ["Infusiona leche. Mezcla yemas, azúcar y maicena. Une, cocina hasta espesar. Enfría. Quema azúcar antes de servir."] },
@@ -347,7 +348,7 @@
                 { categoria: "Postre", titulo: "Melocotones en Almíbar Caseros", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Melocotones+Almíbar", ingredientes: ["Melocotones", "Agua", "Azúcar", "Vaina de vainilla"], pasos: ["Prepara almíbar con agua, azúcar y vainilla. Pela y corta melocotones. Cuece en almíbar hasta tiernos. Enfría."] },
                 { categoria: "Postre", titulo: "Buñuelos de Viento Rellenos de Nata", imagen: "https://images.unsplash.com/photo-1621244249146-2169820786a3?q=80&w=400", ingredientes: ["Harina", "Agua", "Mantequilla", "Huevos", "Nata montada", "Azúcar glas"], pasos: ["Prepara masa choux. Fríe buñuelos. Rellena con nata montada. Espolvorea azúcar glas."] },
                 { categoria: "Postre", titulo: "Pudín de Pan y Pasas", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Pudín+Pan", ingredientes: ["Pan del día anterior", "Leche", "Huevos", "Azúcar", "Pasas", "Ron (opcional)"], pasos: ["Remoja pan en leche. Mezcla con huevos, azúcar, pasas y ron. Hornea al baño maría."] },
-                { categoria: "Postre", titulo: "Leche Frita con Azúcar y Canela", imagen: "https://images.unsplash.com/photo-1621244249146-2169820786a3?q=80&w=400", ingredientes: ["Leche", "Harina", "Azúcar", "Yemas de huevo", "Piel de limón", "Canela en rama", "Huevo (para rebozar)", "Pan rallado"], pasos: ["Prepara crema con leche, harina, azúcar, yemas, limón y canela. Enfría. Corta, pasa por huevo y pan, fríe. Reboza en azúcar y canela."] },
+                { categoria: "Postre", titulo: "Leche Frita con Azúcar y Canela", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Leche+Frita", ingredientes: ["Leche", "Harina", "Azúcar", "Yemas de huevo", "Piel de limón", "Canela en rama", "Huevo (para rebozar)", "Pan rallado"], pasos: ["Prepara crema con leche, harina, azúcar, yemas, limón y canela. Enfría. Corta, pasa por huevo y pan, fríe. Reboza en azúcar y canela."] },
                 { categoria: "Postre", titulo: "Manzanas Asadas Rellenas de Frutos Secos", imagen: "https://images.unsplash.com/photo-1567613768463-b9254d39994f?q=80&w=400", ingredientes: ["Manzanas", "Dátiles", "Nueces", "Canela", "Vino dulce (opcional)"], pasos: ["Quita corazón a manzanas. Rellena con dátiles y nueces picadas, canela. Hornea con vino dulce hasta tiernas."] },
                 { categoria: "Postre", titulo: "Soufflé de Queso Fresco con Frutos Rojos", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Soufflé+Queso", ingredientes: ["Queso fresco batido", "Claras de huevo", "Azúcar", "Maicena", "Frutos rojos"], pasos: ["Mezcla queso, maicena y azúcar. Monta claras. Incorpora. Hornea en moldes hasta que suba. Sirve con frutos rojos."] },
                 { categoria: "Postre", titulo: "Compota de Pera y Especias", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Compota+Pera", ingredientes: ["Peras", "Agua", "Canela", "Clavo", "Anís estrellado"], pasos: ["Pela y corta peras. Cuece con agua y especias hasta blandas. Tritura al gusto."] },
@@ -366,9 +367,10 @@
                     
                     // Determine which badge to show for pantry results (if applicable)
                     let badgeHTML = '';
-                    let missingIngredientsDisplay = ''; 
+                    let missingIngredientsDisplay = ''; // Para mostrar los ingredientes faltantes
                     
                     if (targetElementId === 'pantryRecipeResults') {
+                        // Re-calculamos missingIngredients aquí para asegurar que siempre esté actualizado.
                         const availableIngredients = pantryIngredients.map(ing => ing.toLowerCase());
                         const neededIngredients = recipe.ingredientes.map(ing => ing.toLowerCase());
                         const missingIngredients = neededIngredients.filter(ing => !availableIngredients.includes(ing));
@@ -382,6 +384,9 @@
                         } else if (missingIngredients.length === 2) {
                             badgeHTML = `<div class="pantry-match-missing-badge">Faltan 2</div>`;
                             missingIngredientsDisplay = `Faltan: ${missingIngredients.join(', ')}`;
+                        } else { // Si faltan más de 2 o no se muestra por el filtro, no mostrar badge específico
+                            badgeHTML = '';
+                            missingIngredientsDisplay = `Faltan ${missingIngredients.length} ingredientes`; // Ocultar si no se filtra por >2
                         }
                     }
 
@@ -403,9 +408,7 @@
                         </div>`;
                 });
                 targetElement.innerHTML = recipeHTML;
-                // addCardEventListeners no es necesario aquí si se usa delegación global.
-                // Si no se usa delegación, esta parte sería problemática al re-renderizar.
-                // updateFavoriteIcons(); // Llamar fuera para asegurar que se actualicen todos los iconos visibles
+                // No se llama a addCardEventListeners aquí, se usa delegación global
             }
             
             // Event listener delegación para clicks en las tarjetas y botones de favorito
@@ -487,6 +490,7 @@
             }
 
             function updateFavoriteIcons() {
+                // Selecciona todas las tarjetas en AMBAS cuadrículas (principal y despensa)
                 document.querySelectorAll('.recipe-card').forEach(card => {
                     const heartIcon = card.querySelector('.favorite-btn svg');
                     if (heartIcon) { // Asegurarse de que el icono existe
@@ -540,10 +544,12 @@
             }
             
             function updateFilterButtonStates() {
+                // Resetear todos los botones principales
                 dom.filterAllBtn.classList.remove('active');
                 dom.filterFavBtn.classList.remove('active');
                 dom.filterPantryBtn.classList.remove('active');
 
+                // Activar el botón principal correcto
                 if (currentFilter === 'all') {
                     dom.filterAllBtn.classList.add('active');
                 } else if (currentFilter === 'favorites') {
@@ -552,6 +558,7 @@
                     dom.filterPantryBtn.classList.add('active');
                 }
 
+                // Ajustar el estado de los botones de categoría
                 document.querySelectorAll('#categoryFilters .category-btn').forEach(btn => {
                     if (btn.dataset.category === currentCategory) {
                         btn.classList.add('active');
@@ -845,6 +852,7 @@
             document.addEventListener('DOMContentLoaded', () => {
                 setupTheme();
                 initializeUI(); // Renderiza todas las recetas al inicio y adjunta listeners
+                setupDelegatedCardEventListeners(); // Adjuntar listeners globales una sola vez al cargar el DOM
             });
 
             dom.search.addEventListener('input', applyFilters);
