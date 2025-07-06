@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Recetario Gourmet</title>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+        // TODO: Reemplaza con la configuración de tu proyecto de Firebase
+        const firebaseConfig = {
+            apiKey: "TU_API_KEY",
+            authDomain: "TU_AUTH_DOMAIN",
+            projectId: "TU_PROJECT_ID",
+            storageBucket: "TU_STORAGE_BUCKET",
+            messagingSenderId: "TU_MESSAGING_SENDER_ID",
+            appId: "TU_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = firebaseConfig.appId; // Para usarlo en la ruta de Firestore
+
+        window.firebase = {
+            auth,
+            db,
+            appId,
+            signInAnonymously,
+            onAuthStateChanged,
+            doc,
+            setDoc,
+            getDoc
+        };
+    </script>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #FEFBF6;
+        }
+        .dark body {
+            background-color: #18181B;
+        }
+        h1, h2, h3 {
+            font-family: 'Playfair Display', serif;
+        }
+        /* Estilos para el filtro de botones */
+        .filter-btn.active, .category-btn.active {
+            background-color: #E2B258; /* Color de Tailwind amber-500 un poco más oscuro o un tono diferente */
+            color: #4A2E0A; /* Color de texto para el botón activo */
+            font-weight: bold;
+        }
+        .filter-btn, .category-btn {
+            @apply px-4 py-2 rounded-full transition-colors duration-200;
+            @apply bg-amber-100 text-amber-800 hover:bg-amber-200 dark:bg-stone-700 dark:text-amber-200 dark:hover:bg-stone-600;
+        }
+        .filter-btn.active {
+            @apply bg-amber-700 text-white dark:bg-amber-600;
+        }
+        .category-btn.active {
+            @apply bg-amber-700 text-white dark:bg-amber-600;
+        }
+
+        /* Estilos de impresión para el modal */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #recipeModal, #recipeModal * {
+                visibility: visible;
+            }
+            #recipeModal {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: auto;
+                background: none;
+                display: block !important;
+                overflow: visible !important;
+            }
+            #modalContent {
+                max-width: none;
+                box-shadow: none;
+                transform: none;
+                background: none;
+                color: black; /* Asegura texto negro en la impresión */
+            }
+            .modal-buttons-container, #closeModalBtn {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="dark:bg-zinc-900 dark:text-zinc-200">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
+        <header class="text-center mb-12">
+            <h1 class="text-5xl md:text-6xl font-bold text-amber-800 dark:text-amber-400">Mi Recetario Gourmet</h1>
+            <p class="text-zinc-600 dark:text-zinc-400 mt-4 text-lg">Una selección de platos para deleitar tu paladar.</p>
+        </header>
+        
+        <div class="flex flex-col sm:flex-row items-center justify-between mb-8 gap-4">
+            <div class="relative w-full sm:w-1/2">
+                <input type="text" id="searchInput" placeholder="Buscar recetas por título o ingrediente..." class="w-full pl-10 pr-4 py-2 rounded-full border border-gray-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:ring-2 focus:ring-amber-500">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+                </div>
+            </div>
+
+            <div class="flex space-x-2">
+                <button id="filterAllBtn" class="filter-btn active">Todas</button>
+                <button id="filterFavBtn" class="filter-btn">Favoritas</button>
+            </div>
+
+            <button id="themeToggle" class="p-2 rounded-full bg-amber-100 dark:bg-stone-700 text-amber-800 dark:text-amber-200 hover:bg-amber-200 dark:hover:bg-stone-600 transition">
+                <svg id="dark-icon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.292 13.792A8 8 0 016.208 2.707a8.001 8.001 0 1011.083 11.083z"></path></svg>
+                <svg id="light-icon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.459 4.582a1 1 0 01-1.396.076l-.6-.6a1 1 0 01.076-1.396l.6-.6a1 1 0 011.396-.076l.6.6a1 1 0 01-.076 1.396l-.6.6zm-4.406-9.135a1 1 0 010-1.414l.707-.707a1 1 0 011.414 0l.707.707a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414 0l-.707-.707zM10 18a1 1 0 01-1 1v1a1 1 0 112 0v-1a1 1 0 01-1-1zm-4.582-1.459a1 1 0 01-.076-1.396l.6-.6a1 1 0 011.396-.076l.6.6a1 1 0 01-.076 1.396l-.6.6a1 1 0 01-1.396-.076zm-2.828-2.828a1 1 0 010-1.414l.707-.707a1 1 0 011.414 0l.707.707a1 1 0 010 1.414l-.707.707a1 1 0 01-1.414 0l-.707-.707zM3 10a1 1 0 011-1h1a1 1 0 110 2H4a1 1 0 01-1-1zm15 0a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1z" clip-rule="evenodd"></path></svg>
+            </button>
+        </div>
+
+        <div id="categoryFilters" class="flex flex-wrap gap-2 justify-center mb-10">
+            <button data-category="all" class="category-btn active">Todas las Categorías</button>
+            </div>
+
+        <div class="text-center text-sm text-zinc-500 dark:text-zinc-400 mb-6" id="userInfo">
+            Cargando sesión...
+        </div>
+
+        <div id="noResults" class="hidden text-center text-xl text-zinc-500 dark:text-zinc-400 mt-12">
+            No se encontraron recetas con los filtros aplicados.
+        </div>
+
+        <div id="recipeGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            </div>
+    </div>
+
+    <footer class="text-center mt-12 py-6 text-zinc-500 dark:text-zinc-400 text-sm">
+        <p>&copy; <span id="copyrightYear"></span> Mi Recetario Gourmet. Todos los derechos reservados.</p>
+    </footer>
+
+    <div id="recipeModal" class="fixed inset-0 bg-black bg-opacity-75 hidden items-center justify-center z-50 p-4">
+        <div id="modalContent" class="bg-white dark:bg-zinc-800 rounded-2xl shadow-2xl w-full max-w-3xl max-h-[95vh] overflow-y-auto transform scale-95 transition-transform duration-300">
+            </div>
+    </div>
+
+    <div id="cooking-mode-view" class="fixed inset-0 bg-white dark:bg-zinc-900 z-50 hidden flex-col items-center justify-center p-8 text-center">
+        <h2 class="text-4xl font-bold text-amber-800 dark:text-amber-400 mb-8" id="cooking-recipe-title"></h2>
+        <p class="text-zinc-600 dark:text-zinc-300 text-xl mb-4" id="step-counter"></p>
+        <p class="text-3xl text-zinc-800 dark:text-zinc-100 mb-12 px-4 md:px-12 leading-relaxed" id="step-text"></p>
+        
+        <div class="flex space-x-6">
+            <button id="prev-step-btn" class="bg-amber-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-amber-700 transition shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+                Anterior
+            </button>
+            <button id="repeat-step-btn" class="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition shadow-lg">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356-2A8.001 8.001 0 004 12c0 2.21.894 4.204 2.342 5.658m0 0l-1.427 1.427m1.427-1.427L8 18.001m.001-1.414A7.989 7.989 0 0118 12c0-2.21-.894-4.204-2.342-5.658M16 6l1.427-1.427m-1.427 1.427L13.999 4" /></svg>
+                Repetir
+            </button>
+            <button id="next-step-btn" class="bg-green-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-700 transition shadow-lg">
+                Siguiente
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 inline-block ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>
+            </button>
+        </div>
+        <button id="exit-cooking-btn" class="mt-10 text-zinc-500 dark:text-zinc-400 hover:text-red-600 dark:hover:text-red-500 transition">
+            Salir del Modo Cocina
+        </button>
+    </div>
+
+    <script type="module">
+        const { auth, db, appId, signInAnonymously, onAuthStateChanged, doc, setDoc, getDoc } = window.firebase;
+
+        // DOM elements
+        const dom = {
+            grid: document.getElementById('recipeGrid'),
+            modal: document.getElementById('recipeModal'),
+            modalContent: document.getElementById('modalContent'),
+            searchInput: document.getElementById('searchInput'),
+            filterAllBtn: document.getElementById('filterAllBtn'),
+            filterFavBtn: document.getElementById('filterFavBtn'),
+            categoryFilters: document.getElementById('categoryFilters'),
+            themeToggle: document.getElementById('themeToggle'),
+            darkIcon: document.getElementById('dark-icon'),
+            lightIcon: document.getElementById('light-icon'),
+            userInfo: document.getElementById('userInfo'),
+            noResults: document.getElementById('noResults'),
+            copyrightYear: document.getElementById('copyrightYear')
+        };
+
+        // Global state
+        let allRecipes = [];
+        let userFavorites = [];
+        let userId = null;
+        let currentFilter = 'all'; // 'all' or 'favorites'
+        let currentCategory = 'all'; // 'all' or specific category
+
+        // --- Recipe Data (Corrección de nombres de propiedades) ---
+        const recipesData = [
+            {
+                title: "Paella Valenciana",
+                image: "https://images.unsplash.com/photo-1579871494474-a4b56a7d1ae9?q=80&w=800",
+                category: "Plato Principal",
+                ingredients: ["Arroz bomba", "Pollo troceado", "Conejo troceado", "Judía verde plana", "Garrofón", "Tomate triturado", "Azafrán", "Aceite de oliva", "Sal"],
+                steps: ["Sofríe el pollo y el conejo en la paellera con aceite.", "Añade las verduras y sofríe.", "Incorpora el tomate y cocina unos minutos.", "Agrega el agua, azafrán y sal. Deja hervir.", "Echa el arroz y cocina a fuego fuerte 10 min, luego 8 min a fuego lento."]
+            },
+            {
+                title: "Gazpacho Andaluz",
+                image: "https://images.unsplash.com/photo-1625944228743-9281a173a113?q=80&w=800",
+                category: "Sopa Fría",
+                ingredients: ["1 kg de tomates maduros", "1 pimiento verde", "1 pepino", "1 diente de ajo", "50g de pan duro", "Aceite de oliva virgen extra", "Vinagre de Jerez", "Sal"],
+                steps: ["Lava y trocea todas las verduras.", "Pon todo en una batidora junto con el pan, aceite, vinagre y sal.", "Bate a máxima potencia hasta obtener una crema fina.", "Pasa por un colador fino si quieres una textura más suave.", "Enfría en la nevera al menos 2 horas antes de servir."]
+            },
+            {
+                title: "Tortilla de Patatas",
+                image: "https://images.unsplash.com/photo-1588581176384-a4d5a8b73301?q=80&w=800",
+                category: "Plato Principal",
+                ingredients: ["500g de patatas", "6 huevos", "1 cebolla (opcional)", "Aceite de oliva", "Sal"],
+                steps: ["Pela y corta las patatas en láminas finas.", "Pocha las patatas (y la cebolla) en abundante aceite a fuego medio.", "Bate los huevos en un bol grande y añade sal.", "Escurre bien las patatas y mézclalas con los huevos batidos.", "Cuaja la tortilla en una sartén por ambos lados."]
+            },
+            {
+                title: "Gambas al Ajillo",
+                image: "https://images.unsplash.com/photo-1639537339294-35e2193b134a?q=80&w=800",
+                category: "Aperitivo",
+                ingredients: ["250g de gambas peladas", "4 dientes de ajo", "1 guindilla", "Aceite de oliva virgen extra", "Sal", "Perejil fresco"],
+                steps: ["Lamina los ajos y sofríelos con la guindilla en una cazuela de barro.", "Cuando los ajos empiecen a dorarse, añade las gambas y una pizca de sal.", "Saltea un par de minutos hasta que las gambas estén hechas.", "Espolvorea perejil picado y sirve inmediatamente."]
+            },
+            {
+                title: "Pulpo a la Gallega",
+                image: "https://images.unsplash.com/photo-1672322437950-e8837775973a?q=80&w=800",
+                category: "Aperitivo",
+                ingredients: ["1 pulpo cocido", "2 patatas grandes", "Pimentón dulce y picante", "Sal gorda", "Aceite de oliva virgen extra"],
+                steps: ["Cuece las patatas con piel. Una vez tiernas, pélalas y córtalas en rodajas.", "Corta el pulpo en rodajas con unas tijeras.", "Coloca una base de patatas en un plato de madera.", "Distribuye el pulpo por encima.", "Aliña con sal gorda, los dos tipos de pimentón y un buen chorro de aceite."]
+            },
+            {
+                title: "Crema Catalana",
+                image: "https://images.unsplash.com/photo-1621244249146-2169820786a3?q=80&w=800",
+                category: "Postre",
+                ingredients: ["1 litro de leche", "8 yemas de huevo", "200g de azúcar", "40g de maicena", "Piel de limón y naranja", "1 rama de canela"],
+                steps: ["Infusiona la leche con los cítricos y la canela.", "Mezcla las yemas con el azúcar y la maicena.", "Cuela la leche y mézclala con las yemas.", "Cocina a fuego lento sin dejar de remover hasta que espese.", "Vierte en cazuelitas de barro y deja enfriar.", "Antes de servir, espolvorea azúcar y quémalo con un soplete."]
+            },
+            {
+                title: "Tarta de Santiago",
+                image: "https://images.unsplash.com/photo-1617344539352-75c6d5b0a3c4?q=80&w=800",
+                category: "Postre",
+                ingredients: ["250g de almendra molida", "250g de azúcar", "5 huevos", "Ralladura de 1 limón", "Canela en polvo (opcional)", "Azúcar glas"],
+                steps: ["Precalienta el horno a 180°C.", "Bate los huevos con el azúcar hasta que blanqueen.", "Añade la ralladura de limón y la almendra molida. Mezcla bien.", "Vierte la masa en un molde redondo engrasado.", "Hornea durante 30-35 minutos.", "Deja enfriar y decora con azúcar glas usando una plantilla de la Cruz de Santiago."]
+            },
+            {
+                title: "Pisto Manchego",
+                image: "https://images.unsplash.com/photo-1571991285272-46a2a078e515?q=80&w=800",
+                category: "Plato Principal",
+                ingredients: ["1 cebolla", "2 pimientos verdes", "1 pimiento rojo", "1 calabacín", "800g de tomate triturado", "Aceite de oliva", "Sal", "Azúcar (una pizca)"],
+                steps: ["Pica todas las verduras en dados pequeños.", "En una sartén grande, pocha la cebolla y los pimientos con aceite.", "Cuando estén tiernos, añade el calabacín y cocina 15 minutos.", "Incorpora el tomate triturado, sal y una pizca de azúcar.", "Cocina a fuego lento durante 25-30 minutos hasta que la salsa espese."]
+            },
+            {
+                title: "Croquetas de Jamón",
+                image: "https://images.unsplash.com/photo-1619861183287-353f2a8a1599?q=80&w=800",
+                category: "Aperitivo",
+                ingredients: ["100g de jamón serrano", "1 litro de leche", "100g de mantequilla", "100g de harina", "Nuez moscada", "Sal", "2 huevos", "Pan rallado"],
+                steps: ["Pica el jamón muy fino. Sofríelo en la mantequilla.", "Añade la harina y tuéstala para hacer un roux.", "Vierte la leche poco a poco sin dejar de remover para hacer la bechamel.", "Añade sal y nuez moscada. Cocina hasta que espese.", "Deja enfriar la masa en la nevera (mínimo 4 horas).", "Forma las croquetas, pásalas por huevo y pan rallado, y fríelas en aceite caliente."]
+            },
+            {
+                title: "Lentejas Estofadas",
+                image: "https://images.unsplash.com/photo-1625944132003-24153a812b1b?q=80&w=800",
+                category: "Plato Principal",
+                ingredients: ["400g de lentejas pardinas", "1 chorizo", "1 morcilla", "1 patata", "1 zanahoria", "1 cebolla", "1 hoja de laurel", "Pimentón dulce", "Sal"],
+                steps: ["Pon las lentejas en una olla con la zanahoria, cebolla, patata y laurel.", "Cubre con agua y lleva a ebullición.", "Añade el chorizo y la morcilla.", "En una sartén, sofríe ajo con pimentón y añádelo a la olla.", "Cocina a fuego lento durante 45-50 minutos."]
+            },
+            {
+                title: "Merluza a la Romana",
+                image: "https://images.unsplash.com/photo-1628203102432-159c3a35f795?q=80&w=800",
+                category: "Segundo Plato",
+                ingredients: ["4 lomos de merluza", "Harina", "2 huevos", "Aceite de oliva para freír", "Sal", "Limón"],
+                steps: ["Sazona los lomos de merluza.", "Pasa cada lomo por harina y luego por huevo batido.", "Fríe en abundante aceite caliente hasta que estén dorados.", "Escurre sobre papel absorbente.", "Sirve caliente con rodajas de limón."]
+            },
+            {
+                title: "Pollo al Ajillo",
+                image: "https://images.unsplash.com/photo-1606013022559-12f865ae487c?q=80&w=800",
+                category: "Segundo Plato",
+                ingredients: ["1 pollo troceado", "1 cabeza de ajos", "1 vaso de vino blanco", "Aceite de oliva", "Sal", "Perejil"],
+                steps: ["Salpimenta el pollo y dóralo en una cazuela con aceite.", "Añade los dientes de ajo enteros y con un corte.", "Vierte el vino blanco y deja que evapore el alcohol.", "Tapa y cocina a fuego lento durante 30 minutos.", "Espolvorea perejil picado antes de servir."]
+            },
+            {
+                title: "Ensaladilla Rusa",
+                image: "https://images.unsplash.com/photo-1604329227594-3d9697ac7249?q=80&w=800",
+                category: "Primero",
+                ingredients: ["500g de patatas", "2 zanahorias", "2 huevos duros", "1 lata de atún", "Guisantes", "Aceitunas", "Mayonesa"],
+                steps: ["Cuece las patatas y zanahorias.", "Pela y pica todo en dados pequeños.", "Mezcla todos los ingredientes con el atún y los guisantes.", "Añade mayonesa y mezcla con cuidado.", "Decora con aceitunas y tiras de pimiento."]
+            },
+            {
+                title: "Flan de Huevo",
+                image: "https://images.unsplash.com/photo-1559529845-362a1913a2d7?q=80&w=800",
+                category: "Postre",
+                ingredients: ["5 huevos", "500ml de leche", "150g de azúcar", "Caramelo líquido"],
+                steps: ["Bate los huevos con el azúcar.", "Calienta la leche y viértela sobre los huevos sin dejar de batir.", "Cubre el fondo de una flanera con caramelo líquido.", "Vierte la mezcla y cocina al baño maría en el horno a 180°C durante 45-50 minutos."]
+            },
+            {
+                title: "Arroz con Leche",
+                image: "https://images.unsplash.com/photo-1599043513901-3c5b52f6b3a2?q=80&w=800",
+                category: "Postre",
+                ingredients: ["1 litro de leche", "100g de arroz", "120g de azúcar", "Piel de limón", "1 rama de canela"],
+                steps: ["Pon a cocer el arroz con la leche, la piel de limón y la canela.", "Cocina a fuego muy lento durante 45 minutos, removiendo a menudo.", "Añade el azúcar y cuece 5 minutos más.", "Retira la canela y el limón. Sirve frío o templado con canela en polvo."]
+            },
+            {
+                title: "Sopa de Ajo",
+                image: "https://images.unsplash.com/photo-1598514983318-7293e6875953?q=80&w=800",
+                category: "Sopa",
+                ingredients: ["200g de pan duro", "6 dientes de ajo", "100g de jamón serrano", "1 cucharada de pimentón", "1 litro de caldo", "2 huevos"],
+                steps: ["Corta el pan en rebanadas finas.", "Dora los ajos laminados y el jamón en una cazuela.", "Retira del fuego, añade el pimentón y remueve.", "Incorpora el pan y el caldo. Cuece 15 minutos.", "Justo antes de servir, casca los huevos en la sopa y remueve."]
+            },
+            {
+                title: "Fabada Asturiana",
+                image: "https://images.unsplash.com/photo-1625944132003-24153a812b1b?q=80&w=800",
+                category: "Plato Principal",
+                ingredients: ["500g de fabes", "2 morcillas asturianas", "2 chorizos asturianos", "200g de panceta", "Azafrán"],
+                steps: ["Deja las fabes en remojo la noche anterior.", "Pon las fabes y el compango en una olla, cubre con agua fría y lleva a ebullición.", "Desespuma y baja el fuego. Cuece lentamente 2-3 horas.", "'Asusta' las fabes con agua fría un par de veces.", "Añade el azafrán al final y deja reposar."]
+            },
+            {
+                title: "Bacalao al Pil-Pil",
+                image: "https://images.unsplash.com/photo-1598514982249-916212e62444?q=80&w=800",
+                category: "Segundo Plato",
+                ingredients: ["4 lomos de bacalao desalado", "6 dientes de ajo", "2 guindillas", "Aceite de oliva virgen extra"],
+                steps: ["Confita los lomos de bacalao en aceite con ajos y guindillas a fuego muy bajo.", "Retira el bacalao y deja templar el aceite.", "Vierte el aceite en un colador fino sobre un bol, moviendo en círculos para que la gelatina del pescado emulsione con el aceite y forme la salsa pil-pil."]
+            },
+            {
+                title: "Tarta de Queso La Viña",
+                image: "https://images.unsplash.com/photo-1567613768463-b9254d39994f?q=80&w=800",
+                category: "Postre",
+                ingredients: ["1kg de queso crema", "500ml de nata (35% M.G.)", "7 huevos", "400g de azúcar", "1 cucharada de harina"],
+                steps: ["Bate el queso crema con el azúcar.", "Añade los huevos uno a uno.", "Incorpora la nata y la harina. Mezcla bien.", "Vierte en un molde forrado con papel de horno arrugado.", "Hornea a 210°C durante 40-50 minutos. El centro debe quedar tembloroso.", "Deja enfriar por completo antes de desmoldar."]
+            },
+            {
+                title: "Salmorejo Cordobés",
+                image: "https://images.unsplash.com/photo-1598514982249-916212e62444?q=80&w=800",
+                category: "Sopa Fría",
+                ingredients: ["1kg de tomates pera", "200g de pan de telera", "1 diente de ajo", "100ml de aceite de oliva", "Sal", "Jamón serrano", "Huevo duro"],
+                steps: ["Tritura los tomates y cuélalos.", "Añade el pan, el ajo y la sal. Tritura.", "Emulsiona añadiendo el aceite en un hilo fino.", "Sirve frío con jamón y huevo duro picado."]
+            }
+        ];
+
+        // Ensure recipesData is assigned to allRecipes at the start
+        allRecipes = recipesData.map(recipe => ({
+            ...recipe,
+            // Normaliza los nombres de las propiedades para que coincidan con tu HTML y JS
+            titulo: recipe.title,
+            imagen: recipe.image,
+            categoria: recipe.category,
+            ingredientes: recipe.ingredients,
+            pasos: recipe.steps
+        }));
+
+        // --- FUNCIONES DE INICIALIZACIÓN Y RENDERIZADO ---
+        function initializeUI() {
+            renderRecipes(allRecipes);
+            renderCategoryFilters();
+            addCardEventListeners();
+        }
+        
+        function renderRecipes(recipesToDisplay) {
+            let recipeHTML = '';
+            recipesToDisplay.forEach(recipe => {
+                const searchTerms = `${recipe.titulo.toLowerCase()} ${recipe.ingredientes.join(' ').toLowerCase()}`;
+                recipeHTML += `
+                    <div class="recipe-card" data-id="${recipe.titulo}" data-category="${recipe.categoria}" data-search="${searchTerms}">
+                        <div class="relative bg-white dark:bg-stone-800 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 cursor-pointer h-full flex flex-col">
+                            <img src="${recipe.imagen}" alt="Imagen de ${recipe.titulo}" class="w-full h-40 object-cover" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/400x300/d1c4b5/4a2e0a?text=Receta';">
+                            <div class="absolute top-2 left-2 bg-amber-800 text-white text-xs font-semibold px-2 py-1 rounded-full">${recipe.categoria}</div>
+                            <button class="favorite-btn absolute top-2 right-2 bg-white/80 rounded-full p-2 hover:bg-white dark:bg-stone-700/80 dark:hover:bg-stone-600 transition">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600 dark:text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 016.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z" /></svg>
+                            </button>
+                            <div class="p-4 flex-grow flex flex-col">
+                                <h3 class="font-bold text-lg text-amber-900 dark:text-amber-500 truncate">${recipe.titulo}</h3>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+            dom.grid.innerHTML = recipeHTML;
+            addCardEventListeners(); // Vuelve a adjuntar listeners después de renderizar
+            updateFavoriteIcons(); // Asegúrate de que los íconos de favoritos estén actualizados
+        }
+        
+        function addCardEventListeners() {
+            document.querySelectorAll('.recipe-card').forEach(card => {
+                card.removeEventListener('click', handleCardClick); // Evita duplicar listeners
+                card.addEventListener('click', handleCardClick);
+
+                const favBtn = card.querySelector('.favorite-btn');
+                favBtn.removeEventListener('click', handleFavoriteClick); // Evita duplicar listeners
+                favBtn.addEventListener('click', handleFavoriteClick);
+            });
+        }
+
+        function handleCardClick(e) {
+            const recipe = allRecipes.find(r => r.titulo === this.dataset.id);
+            if (recipe) showRecipeDetail(recipe);
+        }
+
+        function handleFavoriteClick(e) {
+            e.stopPropagation(); // Previene que se active el click de la tarjeta
+            toggleFavorite(this.closest('.recipe-card').dataset.id);
+        }
+
+        function renderCategoryFilters() {
+            const categories = [...new Set(allRecipes.map(recipe => recipe.categoria))].sort();
+            let categoryFilterHTML = '<button data-category="all" class="category-btn active">Todas las Categorías</button>';
+            categories.forEach(category => {
+                categoryFilterHTML += `<button data-category="${category}" class="category-btn">${category}</button>`;
+            });
+            dom.categoryFilters.innerHTML = categoryFilterHTML;
+        }
+
+        // --- FUNCIONES DE FIREBASE Y ESTADO DE USUARIO ---
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                dom.userInfo.textContent = `Sincronizando...`;
+                await loadUserData();
+                updateFavoriteIcons();
+                applyFilters(); // Aplicar filtros después de cargar favoritos
+                dom.userInfo.textContent = `ID de sesión: ${userId.substring(0,8)}...`;
+            } else {
+                signInAnonymously(auth).catch((error) => console.error("Error login anónimo:", error));
+            }
+        });
+
+        async function loadUserData() {
+            if (!userId) return;
+            const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/profile`);
+            const userDoc = await getDoc(userDocRef);
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                userFavorites = data.favorites || [];
+            }
+        }
+
+        async function saveData(data) {
+            if (!userId) return;
+            const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/profile`);
+            await setDoc(userDocRef, data, { merge: true });
+        }
+
+        async function toggleFavorite(recipeId) {
+            if (!userId) return;
+            const isFavorite = userFavorites.includes(recipeId);
+            userFavorites = isFavorite ? userFavorites.filter(id => id !== recipeId) : [...userFavorites, recipeId];
+            
+            updateFavoriteIcons();
+            applyFilters(); // Vuelve a aplicar filtros para mostrar/ocultar favoritos si el filtro está activo
+
+            await saveData({ favorites: userFavorites });
+        }
+
+        function updateFavoriteIcons() {
+            document.querySelectorAll('.recipe-card').forEach(card => {
+                const heartIcon = card.querySelector('.favorite-btn svg');
+                if (userFavorites.includes(card.dataset.id)) {
+                    heartIcon.classList.add('text-red-500', 'fill-current');
+                    heartIcon.classList.remove('text-gray-600', 'dark:text-gray-400');
+                } else {
+                    heartIcon.classList.remove('text-red-500', 'fill-current');
+                    heartIcon.classList.add('text-gray-600', 'dark:text-gray-400');
+                }
+            });
+        }
+
+        // --- FILTROS Y BÚSQUEDA ---
+        function applyFilters() {
+            const searchTerm = dom.searchInput.value.toLowerCase(); // Corregido a searchInput
+            let visibleCount = 0;
+
+            document.querySelectorAll('.recipe-card').forEach(card => {
+                const id = card.dataset.id;
+                const category = card.dataset.category;
+                const searchData = card.dataset.search;
+
+                const isFavorite = userFavorites.includes(id);
+                
+                const categoryMatch = currentCategory === 'all' || category === currentCategory;
+                const searchMatch = searchTerm === '' || searchData.includes(searchTerm);
+                const favoriteMatch = currentFilter !== 'favorites' || isFavorite;
+                
+                if (categoryMatch && searchMatch && favoriteMatch) {
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            dom.noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+        
+        // --- MODAL DE RECETA ---
+        function showRecipeDetail(recipe) {
+            dom.modalContent.innerHTML = `
+                <div class="p-6 md:p-8">
+                    <div class="flex justify-between items-start">
+                        <h2 class="text-3xl font-bold text-amber-900 dark:text-amber-500 mb-4">${recipe.titulo}</h2>
+                        <button id="closeModalBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-stone-700 transition">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+                    <img src="${recipe.imagen}" alt="Imagen de ${recipe.titulo}" class="w-full h-64 object-cover rounded-lg mb-6" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/600x400/d1c4b5/4a2e0a?text=Receta';">
+                    <div id="recipe-content-normal">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div>
+                                <h4 class="text-xl font-semibold border-b-2 border-amber-200 dark:border-amber-800 pb-2">Ingredientes</h4>
+                                <ul id="ingredient-list" class="list-disc list-inside space-y-2 text-gray-700 dark:text-stone-300"></ul>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-semibold mb-3 border-b-2 border-amber-200 dark:border-amber-800 pb-2">Pasos</h4>
+                                <ol id="steps-list" class="list-decimal list-inside space-y-3 text-gray-700 dark:text-stone-300"></ol>
+                            </div>
+                        </div>
+                        <div class="modal-buttons-container text-center mt-8 flex flex-wrap gap-4 justify-center">
+                            <button id="printRecipeBtn" class="bg-gray-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-600 transition shadow-lg">Imprimir</button>
+                            <button id="shareRecipeBtn" class="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition shadow-lg">Compartir</button>
+                            <button id="start-cooking-btn" class="bg-green-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-700 transition shadow-lg">Iniciar Cocina Guiada</button>
+                        </div>
+                    </div>
+                </div>`;
+            
+            const ingredientList = document.getElementById('ingredient-list');
+            const stepsList = document.getElementById('steps-list');
+
+            ingredientList.innerHTML = recipe.ingredientes.map(ing => `<li>${ing}</li>`).join('');
+            stepsList.innerHTML = recipe.pasos.map(step => `<li>${step}</li>`).join('');
+
+            dom.modal.style.display = 'flex';
+            setTimeout(() => dom.modalContent.classList.add('scale-100'), 10);
+            document.getElementById('closeModalBtn').addEventListener('click', closeModal);
+            document.getElementById('printRecipeBtn').addEventListener('click', () => window.print());
+            
+            const shareBtn = document.getElementById('shareRecipeBtn');
+            if (navigator.share) {
+                shareBtn.addEventListener('click', async () => {
+                    try {
+                        await navigator.share({
+                            title: recipe.titulo,
+                            text: `¡Mira esta receta de ${recipe.titulo}!`,
+                            url: window.location.href, // Puedes generar una URL específica para la receta si tienes rutas
+                        });
+                    } catch (err) {
+                        console.error('Error al compartir:', err);
+                    }
+                });
+            } else {
+                shareBtn.style.display = 'none'; // Oculta el botón si la API de compartir no está disponible
+            }
+            
+            document.getElementById('start-cooking-btn').addEventListener('click', () => startCookingMode(recipe));
+        }
+        
+        function closeModal() {
+            dom.modalContent.classList.remove('scale-100');
+            setTimeout(() => { dom.modal.style.display = 'none'; dom.modalContent.innerHTML = ''; }, 300);
+        }
+
+        // --- MODO OSCURO ---
+        function setupTheme() {
+            if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                dom.darkIcon.classList.remove('hidden'); // Asegura que el icono oscuro esté visible
+                dom.lightIcon.classList.add('hidden'); // Asegura que el icono claro esté oculto
+            } else {
+                document.documentElement.classList.remove('dark');
+                dom.lightIcon.classList.remove('hidden'); // Asegura que el icono claro esté visible
+                dom.darkIcon.classList.add('hidden'); // Asegura que el icono oscuro esté oculto
+            }
+        }
+
+        dom.themeToggle.addEventListener('click', function() {
+            // Alterna la visibilidad de los iconos
+            dom.darkIcon.classList.toggle('hidden');
+            dom.lightIcon.classList.toggle('hidden');
+
+            if (localStorage.getItem('color-theme')) {
+                if (localStorage.getItem('color-theme') === 'light') {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('color-theme', 'dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('color-theme', 'light');
+                }
+            } else {
+                // Si no hay preferencia guardada, usa la actual del DOM
+                if (document.documentElement.classList.contains('dark')) {
+                    document.documentElement.classList.remove('dark');
+                    localStorage.setItem('color-theme', 'light');
+                } else {
+                    document.documentElement.classList.add('dark');
+                    localStorage.setItem('color-theme', 'dark');
+                }
+            }
+        });
+
+        // --- ASISTENTE DE VOZ Y MODO COCINA ---
+        const cookingModeView = document.getElementById('cooking-mode-view');
+        const cookingRecipeTitle = document.getElementById('cooking-recipe-title');
+        const stepCounter = document.getElementById('step-counter');
+        const stepText = document.getElementById('step-text');
+        const prevStepBtn = document.getElementById('prev-step-btn');
+        const repeatStepBtn = document.getElementById('repeat-step-btn');
+        const nextStepBtn = document.getElementById('next-step-btn');
+        const exitCookingBtn = document.getElementById('exit-cooking-btn');
+
+        let currentStep = 0;
+        let currentRecipeSteps = [];
+        let speechSynth = window.speechSynthesis;
+
+        function speak(text) {
+            speechSynth.cancel(); // Detiene cualquier habla actual
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'es-ES'; // Establece el idioma a español
+            speechSynth.speak(utterance);
+        }
+
+        function updateCookingStep() {
+            stepCounter.textContent = `Paso ${currentStep + 1} de ${currentRecipeSteps.length}`;
+            stepText.textContent = currentRecipeSteps[currentStep];
+            speak(currentRecipeSteps[currentStep]);
+        }
+
+        function startCookingMode(recipe) {
+            currentRecipeSteps = recipe.pasos;
+            currentStep = 0;
+            cookingRecipeTitle.textContent = `Modo Cocina: ${recipe.titulo}`;
+            
+            // Oculta el modal de receta
+            closeModal(); 
+            
+            // Muestra la vista del modo cocina
+            cookingModeView.classList.remove('hidden');
+            cookingModeView.classList.add('flex');
+            updateCookingStep();
+        }
+
+        function exitCookingMode() {
+            speechSynth.cancel();
+            cookingModeView.classList.add('hidden');
+            cookingModeView.classList.remove('flex');
+        }
+
+        prevStepBtn.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateCookingStep();
+            } else {
+                speak("Estás en el primer paso.");
+            }
+        });
+
+        nextStepBtn.addEventListener('click', () => {
+            if (currentStep < currentRecipeSteps.length - 1) {
+                currentStep++;
+                updateCookingStep();
+            } else {
+                speak("Has llegado al final de la receta. ¡Buen provecho!");
+                exitCookingMode();
+            }
+        });
+
+        repeatStepBtn.addEventListener('click', () => {
+            speak(currentRecipeSteps[currentStep]);
+        });
+
+        exitCookingBtn.addEventListener('click', exitCookingMode);
+
+        // --- EVENT LISTENERS GENERALES ---
+        document.addEventListener('DOMContentLoaded', () => {
+            setupTheme(); // Configura el tema al cargar la página
+            initializeUI(); // Renderiza las recetas y filtros
+        });
+
+        dom.searchInput.addEventListener('input', applyFilters); // Ahora usa searchInput
+
+        dom.filterAllBtn.addEventListener('click', () => {
+            currentFilter = 'all';
+            dom.filterAllBtn.classList.add('active'); 
+            dom.filterFavBtn.classList.remove('active');
+            applyFilters();
+        });
+        dom.filterFavBtn.addEventListener('click', () => {
+            currentFilter = 'favorites';
+            dom.filterFavBtn.classList.add('active'); 
+            dom.filterAllBtn.classList.remove('active');
+            applyFilters();
+        });
+        
+        dom.categoryFilters.addEventListener('click', (e) => {
+            if (e.target.matches('.category-btn')) {
+                currentCategory = e.target.dataset.category;
+                document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                applyFilters();
+            }
+        });
+        
+        dom.modal.addEventListener('click', (event) => { 
+            // Cierra el modal si se hace click fuera del contenido
+            if (event.target === dom.modal) {
+                closeModal(); 
+            }
+        });
+        
+        // --- COPYRIGHT YEAR ---
+        dom.copyrightYear.textContent = new Date().getFullYear();
+    </script>
+</body>
+</html>
