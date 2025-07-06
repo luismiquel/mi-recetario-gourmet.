@@ -5,32 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Recetario Gourmet</title>
 
+    <!-- Metadatos para PWA -->
     <meta name="theme-color" content="#78350f"/>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Mi Recetario Gourmet"> 
     <link rel="apple-touch-icon" href="https://placehold.co/192x192/78350f/ffffff?text=RG">
+    <!-- Nueva meta tag para PWA, según recomendación de la consola -->
     <meta name="mobile-web-app-capable" content="yes"> 
     
-    <link rel="manifest" href="data:application/manifest+json,{
-        &quot;name&quot;: &quot;Mi Recetario Gourmet&quot;,
-        &quot;short_name&quot;: &quot;RecetarioG&quot;,
-        &quot;start_url&quot;: &quot;.&quot;,
-        &quot;display&quot;: &quot;standalone&quot;,
-        &quot;background_color&quot;: &quot;#f8f7f5&quot;,
-        &quot;theme_color&quot;: &quot;#78350f&quot;,
-        &quot;description&quot;: &quot;Tu app de recetas de cocina gourmet.&quot;,
-        &quot;icons&quot;: [{
-            &quot;src&quot;: &quot;https://placehold.co/192x192/78350f/ffffff?text=RG&quot;,
-            &quot;sizes&quot;: &quot;192x192&quot;,
-            &quot;type&quot;: &quot;image/png&quot;
-        }, {
-            &quot;src&quot;: &quot;https://placehold.co/512x512/78350f/ffffff?text=RG&quot;,
-            &quot;sizes&quot;: &quot;512x512&quot;,
-            &quot;type&quot;: &quot;image/png&quot;
-        }]
-    }">
+    <!-- PWA Manifest Corregido -->
+    <link rel="manifest" href="data:application/manifest+json,{"name":"Mi Recetario Gourmet","short_name":"RecetarioG","start_url":".","display":"standalone","background_color":"#f8f7f5","theme_color":"#78350f","description":"Tu app de recetas de cocina gourmet.","icons":[{"src":"https://placehold.co/192x192/78350f/ffffff?text=RG","sizes":"192x192","type":"image/png"},{"src":"https://placehold.co/512x512/78350f/ffffff?text=RG","sizes":"512x512","type":"image/png"}]}">
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -38,10 +25,12 @@
         }
     </script>
 
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Lora:wght@500;700&display=swap" rel="stylesheet">
 
+    <!-- Estilos personalizados -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -348,7 +337,7 @@
                 { categoria: "Postre", titulo: "Melocotones en Almíbar Caseros", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Melocotones+Almíbar", ingredientes: ["Melocotones", "Agua", "Azúcar", "Vaina de vainilla"], pasos: ["Prepara almíbar con agua, azúcar y vainilla. Pela y corta melocotones. Cuece en almíbar hasta tiernos. Enfría."] },
                 { categoria: "Postre", titulo: "Buñuelos de Viento Rellenos de Nata", imagen: "https://images.unsplash.com/photo-1621244249146-2169820786a3?q=80&w=400", ingredientes: ["Harina", "Agua", "Mantequilla", "Huevos", "Nata montada", "Azúcar glas"], pasos: ["Prepara masa choux. Fríe buñuelos. Rellena con nata montada. Espolvorea azúcar glas."] },
                 { categoria: "Postre", titulo: "Pudín de Pan y Pasas", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Pudín+Pan", ingredientes: ["Pan del día anterior", "Leche", "Huevos", "Azúcar", "Pasas", "Ron (opcional)"], pasos: ["Remoja pan en leche. Mezcla con huevos, azúcar, pasas y ron. Hornea al baño maría."] },
-                { categoria: "Postre", titulo: "Leche Frita con Azúcar y Canela", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Leche+Frita", ingredientes: ["Leche", "Harina", "Azúcar", "Yemas de huevo", "Piel de limón", "Canela en rama", "Huevo (para rebozar)", "Pan rallado"], pasos: ["Prepara crema con leche, harina, azúcar, yemas, limón y canela. Enfría. Corta, pasa por huevo y pan, fríe. Reboza en azúcar y canela."] },
+                { categoria: "Postre", titulo: "Leche Frita con Azúcar y Canela", imagen: "https://images.unsplash.com/photo-1621244249146-2169820786a3?q=80&w=400", ingredientes: ["Leche", "Harina", "Azúcar", "Yemas de huevo", "Piel de limón", "Canela en rama", "Huevo (para rebozar)", "Pan rallado"], pasos: ["Prepara crema con leche, harina, azúcar, yemas, limón y canela. Enfría. Corta, pasa por huevo y pan, fríe. Reboza en azúcar y canela."] },
                 { categoria: "Postre", titulo: "Manzanas Asadas Rellenas de Frutos Secos", imagen: "https://images.unsplash.com/photo-1567613768463-b9254d39994f?q=80&w=400", ingredientes: ["Manzanas", "Dátiles", "Nueces", "Canela", "Vino dulce (opcional)"], pasos: ["Quita corazón a manzanas. Rellena con dátiles y nueces picadas, canela. Hornea con vino dulce hasta tiernas."] },
                 { categoria: "Postre", titulo: "Soufflé de Queso Fresco con Frutos Rojos", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Soufflé+Queso", ingredientes: ["Queso fresco batido", "Claras de huevo", "Azúcar", "Maicena", "Frutos rojos"], pasos: ["Mezcla queso, maicena y azúcar. Monta claras. Incorpora. Hornea en moldes hasta que suba. Sirve con frutos rojos."] },
                 { categoria: "Postre", titulo: "Compota de Pera y Especias", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Compota+Pera", ingredientes: ["Peras", "Agua", "Canela", "Clavo", "Anís estrellado"], pasos: ["Pela y corta peras. Cuece con agua y especias hasta blandas. Tritura al gusto."] },
@@ -558,7 +547,6 @@
                     dom.filterPantryBtn.classList.add('active');
                 }
 
-                // Ajustar el estado de los botones de categoría
                 document.querySelectorAll('#categoryFilters .category-btn').forEach(btn => {
                     if (btn.dataset.category === currentCategory) {
                         btn.classList.add('active');
