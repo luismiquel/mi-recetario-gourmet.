@@ -304,7 +304,7 @@
                 { categoria: "Aperitivo", titulo: "Vasitos de Gazpacho de Sandía", imagen: "https://images.unsplash.com/photo-1625944228743-9281a173a113?q=80&w=400", ingredientes: ["Sandía", "Tomate", "Pimiento verde", "Cebolla", "Aceite de oliva", "Menta"], pasos: ["Tritura la sandía con tomate, pimiento, cebolla y menta.", "Aliña y sirve muy frío en vasitos."] },
                 { categoria: "Aperitivo", titulo: "Patatas al Horno con Romero y Pimentón", imagen: "https://images.unsplash.com/photo-1588581176384-a4d5a8b73301?q=80&w=400", ingredientes: ["Patatas", "Romero fresco", "Pimentón dulce", "Aceite de oliva", "Sal"], pasos: ["Corta patatas en gajos. Mezcla con aceite, romero, pimentón y sal.", "Hornea hasta que estén crujientes."] },
                 { categoria: "Aperitivo", titulo: "Brochetas de Dátiles con Bacon y Queso Azul", imagen: "https://images.unsplash.com/photo-1639537339294-35e2193b134a?q=80&w=400", ingredientes: ["Dátiles sin hueso", "Bacon", "Queso azul"], pasos: ["Rellena los dátiles con queso azul. Envuelve en bacon y sujeta con un palillo.", "Hornea hasta que el bacon esté crujiente."] },
-                { categoria: "Aperitivo", titulo: "Tostas de Sobrasada con Queso Mahón", imagen: "https://images.unsplash.com/photo-1621244249146-2169820786a3?q=80&w=400", ingredientes: ["Pan rústico", "Sobrasada", "Queso Mahón (semi-curado)"], pasos: ["Tuesta rebanadas de pan. Unta con sobrasada.", "Coloca encima una loncha de queso Mahón y gratina ligeramente."] },
+                { categoria: "Aperitivo", titulo: "Tostas de Sobrasada con Queso Mahón", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Tostas+Sobrasada", ingredientes: ["Pan rústico", "Sobrasada", "Queso Mahón (semi-curado)"], pasos: ["Tuesta rebanadas de pan. Unta con sobrasada.", "Coloca encima una loncha de queso Mahón y gratina ligeramente."] },
                 { categoria: "Aperitivo", titulo: "Tartar de Tomate y Aguacate con Tostadas", imagen: "https://images.unsplash.com/photo-1604329227594-3d9697ac7249?q=80&w=400", ingredientes: ["Tomate", "Aguacate", "Cebolla morada", "Zumo de lima", "Aceite de oliva", "Tostadas"], pasos: ["Pica tomate, aguacate y cebolla en dados pequeños. Mezcla y aliña.", "Sirve con tostadas."] },
                 { categoria: "Aperitivo", titulo: "Bocaditos de Tortilla de Patatas con Pimiento", imagen: "https://images.unsplash.com/photo-1588581176384-a4d5a8b73301?q=80&w=400", ingredientes: ["Tortilla de patatas (casera o comprada)", "Pimiento del Piquillo", "Palillos"], pasos: ["Corta la tortilla en pequeños cuadrados. Coloca un trozo de pimiento del piquillo encima.", "Sujeta con un palillo."] },
                 { categoria: "Aperitivo", titulo: "Mejillones al Vapor con Salsa de Tomate Picante", imagen: "https://images.unsplash.com/photo-1598514982249-916212e62444?q=80&w=400", ingredientes: ["Mejillones frescos", "Tomate triturado", "Cebolla", "Ajo", "Guindilla", "Vino blanco"], pasos: ["Sofríe cebolla, ajo y guindilla. Añade tomate y cocina salsa. Cuece mejillones al vapor con vino. Sirve mejillones con salsa."] },
@@ -505,7 +505,7 @@
                     // Usar la sintaxis de Firebase v8 (compat)
                     const userDocRef = db.collection('artifacts').doc(appId).collection('users').doc(userId).collection('data').doc('profile');
                     const userDoc = await userDocRef.get();
-                    if (userDoc.exists) { // .exists es una propiedad, no una función en v8
+                    if (userDoc.exists) { 
                         const data = userDoc.data();
                         userFavorites = data.favorites || [];
                         pantryIngredients = data.pantry || []; 
@@ -532,7 +532,7 @@
             }
 
             async function toggleFavorite(recipeId) {
-                if (!userId || !db || db._isSimulated) {
+                if (!userId) {
                     console.warn("No hay usuario autenticado o Firebase no configurado para guardar favoritos.");
                     return;
                 }
