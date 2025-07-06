@@ -5,12 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recetario Delicioso</title>
 
+    <!-- Metadatos para PWA -->
     <meta name="theme-color" content="#78350f"/>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Recetario">
     <link rel="apple-touch-icon" href="https://placehold.co/192x192/78350f/ffffff?text=R">
     
+    <!-- PWA Manifest -->
     <link rel="manifest" href="data:application/manifest+json,{
         &quot;name&quot;: &quot;Recetario Delicioso&quot;,
         &quot;short_name&quot;: &quot;Recetario&quot;,
@@ -30,6 +32,7 @@
         }]
     }">
 
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -37,10 +40,12 @@
         }
     </script>
 
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Lora:wght@500;700&display=swap" rel="stylesheet">
 
+    <!-- Estilos personalizados -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -218,15 +223,16 @@
 
         function runRecipeApp() {
             // *** CONFIGURACIÓN DE FIREBASE ***
-            // IMPORTANTE: Reemplaza estos valores con la configuración real de tu proyecto de Firebase.
-            // Los encuentras en la consola de Firebase > Configuración del proyecto > Tus apps > Selecciona tu app > Configuración
+            // IMPORTANTE: Esta configuración ha sido insertada con tus datos reales de Firebase.
+            // NO LA MODIFIQUES a menos que cambies tu proyecto de Firebase.
             const firebaseConfig = {
-                apiKey: "TU_API_KEY", // <-- ¡REEMPLAZA ESTO!
-                authDomain: "TU_AUTH_DOMAIN", // <-- ¡REEMPLAZA ESTO!
-                projectId: "TU_PROJECT_ID", // <-- ¡REEMPLAZA ESTO!
-                storageBucket: "TU_STORAGE_BUCKET", // <-- ¡REEMPLAZA ESTO!
-                messagingSenderId: "TU_MESSAGING_SENDER_ID", // <-- ¡REEMPLAZA ESTO!
-                appId: "TU_APP_ID" // <-- ¡REEMPLAZA ESTO!
+                apiKey: "AIzaSyBl_mcw-cNm5VM20zupu-EdWbjkcchWUek",
+                authDomain: "rapid-scion-455418-d4.firebaseapp.com",
+                projectId: "rapid-scion-455418-d4",
+                storageBucket: "rapid-scion-455418-d4.firebasestorage.app",
+                messagingSenderId: "118256801071",
+                appId: "1:118256801071:web:c99aed5544d5e62305bdda",
+                measurementId: "G-VTRBE6TWML"
             };
             const appId = firebaseConfig.appId; // Usamos el appId de la configuración para Firebase
 
@@ -344,474 +350,4 @@
                 { categoria: "Postre", titulo: "Churros de Patata Dulce", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Churros+Patata+Dulce", ingredientes: ["Patata dulce", "Harina", "Azúcar", "Canela", "Aceite para freír"], pasos: ["Hacer puré de patata dulce. Mezclar con harina. Formar churros. Freír. Rebozar en azúcar y canela."] },
                 { categoria: "Postre", titulo: "Sopa Fría de Chocolate Blanco y Cardamomo", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Sopa+Chocolate+Blanco", ingredientes: ["Chocolate blanco", "Nata líquida", "Vainas de cardamomo", "Leche"], pasos: ["Calentar nata, leche y cardamomo. Retirar cardamomo. Fundir chocolate en mezcla. Enfriar."] },
                 { categoria: "Postre", titulo: "Mochi de Té Verde (Matcha)", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Mochi+Matcha", ingredientes: ["Harina de arroz glutinoso", "Azúcar", "Agua", "Polvo de té verde matcha", "Maicena"], pasos: ["Mezclar harina, azúcar, matcha y agua. Cocinar al microondas o vapor. Amasar con maicena. Formar mochis."] },
-                { categoria: "Postre", titulo: "Cheesecake de Calabaza y Especias", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Cheesecake+Calabaza", ingredientes: ["Galletas", "Mantequilla", "Queso crema", "Calabaza", "Huevos", "Azúcar", "Canela", "Nuez moscada"], pasos: ["Base de galleta. Mezclar queso, calabaza, huevos, azúcar y especias. Verter y hornear. Enfriar."] },
-                { categoria: "Postre", titulo: "Vasitos de Arroz con Leche Cremoso", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Vasitos+Arroz+Leche", ingredientes: ["Arroz", "Leche", "Azúcar", "Piel de limón", "Rama de canela", "Canela en polvo"], pasos: ["Cocer arroz en leche con limón y canela. Añadir azúcar. Enfriar. Servir en vasitos con canela."] },
-                { categoria: "Postre", titulo: "Tarta de Santiago (Versión Sin Gluten)", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Tarta+Santiago+Sin+Gluten", ingredientes: ["Almendra molida", "Azúcar", "Huevos", "Ralladura de limón", "Azúcar glas"], pasos: ["Mezclar huevos y azúcar. Añadir almendra y ralladura. Hornear. Decorar con azúcar glas y cruz de Santiago."] },
-                { categoria: "Postre", titulo: "Sorbete de Mango y Fruta de la Pasión", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Sorbete+Mango+Maracuya", ingredientes: ["Mango", "Fruta de la pasión", "Zumo de limón", "Agua", "Edulcorante"], pasos: ["Triturar mango, fruta de la pasión, limón y agua. Congelar, removiendo cada hora para evitar cristales."] },
-                { categoria: "Postre", titulo: "Bizcocho de Yogur Esponjoso", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Bizcocho+Yogur", ingredientes: ["Yogur natural", "Harina", "Azúcar", "Huevos", "Aceite de girasol", "Levadura en polvo", "Ralladura de limón"], pasos: ["Batir huevos y azúcar. Añadir yogur, aceite y ralladura. Incorporar harina y levadura. Hornear."] },
-                { categoria: "Postre", titulo: "Profiteroles con Crema Pastelera y Chocolate", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Profiteroles", ingredientes: ["Pasta choux", "Crema pastelera", "Chocolate", "Nata líquida"], pasos: ["Hornear profiteroles. Rellenar con crema pastelera. Cubrir con chocolate fundido y nata."] },
-                { categoria: "Postre", titulo: "Helado de Frambuesa Casero", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Helado+Frambuesa", ingredientes: ["Frambuesas", "Nata para montar", "Leche condensada"], pasos: ["Triturar frambuesas. Montar nata. Mezclar todo. Congelar en un recipiente, removiendo cada cierto tiempo."] },
-                { categoria: "Postre", titulo: "Coulant de Chocolate con Centro Líquido", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Coulant", ingredientes: ["Chocolate negro", "Mantequilla", "Huevos", "Azúcar", "Harina", "Cacao en polvo"], pasos: ["Fundir chocolate y mantequilla. Batir huevos y azúcar. Unir. Añadir harina y cacao. Verter en moldes. Hornear rápido para centro líquido."] },
-                { categoria: "Postre", titulo: "Galletas de Mantequilla con Jengibre", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Galletas+Jengibre", ingredientes: ["Harina", "Mantequilla", "Azúcar moreno", "Huevo", "Jengibre en polvo", "Canela"], pasos: ["Mezclar ingredientes secos. Añadir mantequilla y huevo hasta formar masa. Estirar y cortar. Hornear."] }
-            ];
-            
-            // Refactorización de initializeUI para que reciba las recetas a renderizar
-            function renderRecipes(recipesToDisplay, targetElementId = 'recipeGrid') {
-                const targetElement = document.getElementById(targetElementId);
-                let recipeHTML = '';
-
-                recipesToDisplay.forEach(recipe => {
-                    const searchTerms = `${recipe.titulo.toLowerCase()} ${recipe.ingredientes.join(' ').toLowerCase()} ${recipe.categoria.toLowerCase()}`;
-                    recipeHTML += `
-                        <div class="recipe-card" data-id="${recipe.titulo}" data-category="${recipe.categoria}" data-search="${searchTerms}">
-                            <div class="relative bg-white dark:bg-stone-800 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 cursor-pointer h-full flex flex-col">
-                                <img src="${recipe.imagen}" alt="Imagen de ${recipe.titulo}" class="w-full h-40 object-cover" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/400x300/d1c4b5/4a2e0a?text=Receta';">
-                                <div class="absolute top-2 left-2 bg-amber-800 text-white text-xs font-semibold px-2 py-1 rounded-full">${recipe.categoria}</div>
-                                <button class="favorite-btn absolute top-2 right-2 bg-white/80 rounded-full p-2 hover:bg-white dark:bg-stone-700/80 dark:hover:bg-stone-600 transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600 dark:text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 016.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z" /></svg>
-                                </button>
-                                <div class="p-4 flex-grow flex flex-col">
-                                    <h3 class="font-bold text-lg text-amber-900 dark:text-amber-500 truncate">${recipe.titulo}</h3>
-                                </div>
-                            </div>
-                        </div>`;
-                });
-                targetElement.innerHTML = recipeHTML;
-                addCardEventListeners(`#${targetElementId} .recipe-card`); // Adjuntar listeners a las tarjetas en el elemento específico
-                updateFavoriteIcons();
-            }
-            
-            // Corregida: Esta función ahora adjunta listeners a un selector dado
-            function addCardEventListeners(selector) {
-                document.querySelectorAll(selector).forEach(card => {
-                    // Remover cualquier listener previo para evitar duplicados si los elementos se re-renderizan
-                    // En un escenario real con muchos elementos, se usarían frameworks o renderizado virtual para optimizar.
-                    // Para este caso, la simplicidad de re-adjuntar es suficiente.
-                    const newCard = card.cloneNode(true);
-                    card.parentNode.replaceChild(newCard, card);
-
-                    newCard.addEventListener('click', () => {
-                        const recipe = allRecipes.find(r => r.titulo === newCard.dataset.id);
-                        if (recipe) showRecipeDetail(recipe);
-                    });
-                    const favoriteButton = newCard.querySelector('.favorite-btn');
-                    if (favoriteButton) {
-                        favoriteButton.addEventListener('click', e => {
-                            e.stopPropagation(); // Evita que se dispare el evento de la tarjeta principal
-                            toggleFavorite(newCard.dataset.id);
-                        });
-                    }
-                });
-            }
-            
-            // Modificado: initializeUI ahora solo llama a renderRecipes con allRecipes
-            function initializeUI() {
-                renderRecipes(allRecipes, 'recipeGrid'); // Renderiza todas las recetas en la cuadrícula principal
-            }
-
-            // ... (resto del código de Firebase, etc., que ya funciona) ...
-
-            // --- FILTROS Y BÚSQUEDA ---
-            function applyFilters() {
-                // Reiniciar la visibilidad de los resultados noResults/noPantryResults
-                dom.noResults.style.display = 'none';
-                dom.noPantryResults.style.display = 'none';
-
-                if (currentFilter === 'pantry') {
-                    dom.recipeGrid.classList.add('hidden');
-                    dom.pantryModeView.classList.remove('hidden');
-                    dom.pantryModeView.classList.add('flex');
-                    filterRecipesByPantry(); // Aplica el filtro de despensa
-                } else {
-                    dom.recipeGrid.classList.remove('hidden');
-                    dom.pantryModeView.classList.add('hidden');
-                    dom.pantryModeView.classList.remove('flex');
-                    filterMainRecipes(); // Aplica el filtro normal
-                }
-                
-                updateFilterButtonStates(); // Actualiza el estado visual de los botones de filtro
-            }
-
-            function filterMainRecipes() {
-                const searchTerm = dom.search.value.toLowerCase();
-                let visibleRecipes = [];
-
-                allRecipes.forEach(recipe => {
-                    const searchData = `${recipe.titulo.toLowerCase()} ${recipe.ingredientes.join(' ').toLowerCase()} ${recipe.categoria.toLowerCase()}`;
-                    const isFavorite = userFavorites.includes(recipe.titulo);
-                    
-                    const categoryMatch = currentCategory === 'all' || recipe.categoria === currentCategory;
-                    const searchMatch = searchTerm === '' || searchData.includes(searchTerm);
-                    const favoriteMatch = currentFilter !== 'favorites' || isFavorite;
-                    
-                    if (categoryMatch && searchMatch && favoriteMatch) {
-                        visibleRecipes.push(recipe);
-                    }
-                });
-
-                renderRecipes(visibleRecipes, 'recipeGrid'); // Renderizar solo las recetas visibles
-                dom.noResults.style.display = visibleRecipes.length === 0 ? 'block' : 'none';
-            }
-            
-            function updateFilterButtonStates() {
-                dom.filterAllBtn.classList.remove('active');
-                dom.filterFavBtn.classList.remove('active');
-                dom.filterPantryBtn.classList.remove('active');
-
-                if (currentFilter === 'all') {
-                    dom.filterAllBtn.classList.add('active');
-                } else if (currentFilter === 'favorites') {
-                    dom.filterFavBtn.classList.add('active');
-                } else if (currentFilter === 'pantry') {
-                    dom.filterPantryBtn.classList.add('active');
-                }
-            }
-            
-            // --- MODAL DE RECETA ---
-            // ... (Esta sección no necesita cambios ya que showRecipeDetail no re-renderiza tarjetas de la cuadrícula) ...
-            function showRecipeDetail(recipe) {
-                dom.modalContent.innerHTML = `
-                    <div class="p-6 md:p-8">
-                        <div class="flex justify-between items-start">
-                            <h2 class="text-3xl font-bold text-amber-900 dark:text-amber-500 mb-4">${recipe.titulo}</h2>
-                            <button id="closeModalBtn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-stone-700 transition">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
-                            </button>
-                        </div>
-                        <img src="${recipe.imagen}" alt="Imagen de ${recipe.titulo}" class="w-full h-64 object-cover rounded-lg mb-6" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/600x400/d1c4b5/4a2e0a?text=Receta';">
-                        <div id="recipe-content-normal">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div>
-                                    <h4 class="text-xl font-semibold border-b-2 border-amber-200 dark:border-amber-800 pb-2">Ingredientes</h4>
-                                    <ul id="ingredient-list" class="list-disc list-inside space-y-2 text-gray-700 dark:text-stone-300"></ul>
-                                </div>
-                                <div>
-                                    <h4 class="text-xl font-semibold mb-3 border-b-2 border-amber-200 dark:border-amber-800 pb-2">Pasos</h4>
-                                    <ol id="steps-list" class="list-decimal list-inside space-y-3 text-gray-700 dark:text-stone-300"></ol>
-                                </div>
-                            </div>
-                            <div class="modal-buttons-container text-center mt-8 flex flex-wrap gap-4 justify-center">
-                                <button id="printRecipeBtn" class="bg-gray-500 text-white px-6 py-3 rounded-full font-semibold hover:bg-gray-600 transition shadow-lg">Imprimir</button>
-                                <button id="shareRecipeBtn" class="bg-blue-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-blue-700 transition shadow-lg">Compartir</button>
-                                <button id="start-cooking-btn" class="bg-green-600 text-white px-6 py-3 rounded-full font-semibold hover:bg-green-700 transition shadow-lg">Iniciar Cocina Guiada</button>
-                            </div>
-                        </div>
-                    </div>`;
-                
-                const ingredientList = document.getElementById('ingredient-list');
-                const stepsList = document.getElementById('steps-list');
-
-                ingredientList.innerHTML = recipe.ingredientes.map(ing => `<li>${ing}</li>`).join('');
-                stepsList.innerHTML = recipe.pasos.map(step => `<li>${step}</li>`).join('');
-
-                dom.modal.style.display = 'flex';
-                setTimeout(() => dom.modalContent.classList.add('scale-100'), 10);
-                document.getElementById('closeModalBtn').addEventListener('click', closeModal);
-                document.getElementById('printRecipeBtn').addEventListener('click', () => window.print());
-                
-                const shareBtn = document.getElementById('shareRecipeBtn');
-                if (navigator.share) {
-                    shareBtn.addEventListener('click', async () => {
-                        try {
-                            await navigator.share({
-                                title: recipe.titulo,
-                                text: `¡Mira esta receta de ${recipe.titulo}!`,
-                                url: window.location.href,
-                            });
-                        } catch (err) {
-                            console.error('Error al compartir:', err);
-                        }
-                    });
-                } else {
-                    shareBtn.style.display = 'none';
-                }
-                
-                document.getElementById('start-cooking-btn').addEventListener('click', () => startCookingMode(recipe));
-            }
-            
-            function closeModal() {
-                dom.modalContent.classList.remove('scale-100');
-                setTimeout(() => { dom.modal.style.display = 'none'; dom.modalContent.innerHTML = ''; }, 300);
-            }
-
-            // --- MODO OSCURO ---
-            function setupTheme() {
-                if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-                    document.documentElement.classList.add('dark');
-                    dom.lightIcon.classList.remove('hidden');
-                } else {
-                    document.documentElement.classList.remove('dark');
-                    dom.darkIcon.classList.remove('hidden');
-                }
-            }
-
-            dom.themeToggle.addEventListener('click', function() {
-                dom.darkIcon.classList.toggle('hidden');
-                dom.lightIcon.classList.toggle('hidden');
-                if (localStorage.getItem('color-theme')) {
-                    if (localStorage.getItem('color-theme') === 'light') {
-                        document.documentElement.classList.add('dark');
-                        localStorage.setItem('color-theme', 'dark');
-                    } else {
-                        document.documentElement.classList.remove('dark');
-                        localStorage.setItem('color-theme', 'light');
-                    }
-                } else {
-                    if (document.documentElement.classList.contains('dark')) {
-                        document.documentElement.classList.remove('dark');
-                        localStorage.setItem('color-theme', 'light');
-                    } else {
-                        document.documentElement.classList.add('dark');
-                        localStorage.setItem('color-theme', 'dark');
-                    }
-                }
-            });
-
-            setupTheme();
-
-            // --- ASISTENTE DE VOZ ---
-            const cookingModeView = document.getElementById('cooking-mode-view');
-            const stepCounter = document.getElementById('step-counter');
-            const stepText = document.getElementById('step-text');
-            const prevStepBtn = document.getElementById('prev-step-btn');
-            const repeatStepBtn = document.getElementById('repeat-step-btn');
-            const nextStepBtn = document.getElementById('next-step-btn');
-            const exitCookingBtn = document.getElementById('exit-cooking-btn');
-
-            let currentStep = 0;
-            let currentRecipeSteps = [];
-
-            function speak(text) {
-                speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text);
-                utterance.lang = 'es-ES';
-                speechSynthesis.speak(utterance);
-            }
-
-            function updateCookingStep() {
-                stepCounter.textContent = `Paso ${currentStep + 1} de ${currentRecipeSteps.length}`;
-                stepText.textContent = currentRecipeSteps[currentStep];
-                speak(currentRecipeSteps[currentStep]);
-            }
-
-            function startCookingMode(recipe) {
-                currentRecipeSteps = recipe.pasos;
-                currentStep = 0;
-                closeModal();
-                cookingModeView.classList.remove('hidden');
-                cookingModeView.classList.add('flex');
-                updateCookingStep();
-            }
-
-            function exitCookingMode() {
-                speechSynthesis.cancel();
-                cookingModeView.classList.add('hidden');
-                cookingModeView.classList.remove('flex');
-            }
-
-            prevStepBtn.addEventListener('click', () => {
-                if (currentStep > 0) {
-                    currentStep--;
-                    updateCookingStep();
-                } else {
-                    speak("Estás en el primer paso.");
-                }
-            });
-
-            nextStepBtn.addEventListener('click', () => {
-                if (currentStep < currentRecipeSteps.length - 1) {
-                    currentStep++;
-                    updateCookingStep();
-                } else {
-                    speak("Has llegado al final de la receta. ¡Buen provecho!");
-                    exitCookingMode();
-                }
-            });
-
-            repeatStepBtn.addEventListener('click', () => {
-                speak(currentRecipeSteps[currentStep]);
-            });
-
-            exitCookingBtn.addEventListener('click', exitCookingMode);
-
-            // --- FUNCIONALIDAD "MI DESPENSA" ---
-
-            function renderPantryTags() {
-                dom.pantryTags.innerHTML = '';
-                pantryIngredients.forEach((ingredient, index) => {
-                    const tag = document.createElement('span');
-                    tag.className = 'pantry-tag';
-                    tag.innerHTML = `${ingredient} <svg class="remove-tag" data-index="${index}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>`;
-                    dom.pantryTags.appendChild(tag);
-                });
-            }
-
-            function addIngredientToPantry() {
-                let input = dom.pantryInput.value.trim();
-                if (input) {
-                    const newIngredients = input.split(',').map(item => item.trim().toLowerCase()).filter(item => item !== '' && !pantryIngredients.includes(item));
-                    pantryIngredients = [...pantryIngredients, ...newIngredients];
-                    dom.pantryInput.value = '';
-                    renderPantryTags();
-                    saveData({ pantry: pantryIngredients });
-                    filterRecipesByPantry(); // Actualizar resultados al añadir
-                }
-            }
-
-            function removeIngredientFromPantry(index) {
-                pantryIngredients.splice(index, 1);
-                renderPantryTags();
-                saveData({ pantry: pantryIngredients });
-                filterRecipesByPantry(); // Actualizar resultados al eliminar
-            }
-
-            function clearPantry() {
-                pantryIngredients = [];
-                renderPantryTags();
-                saveData({ pantry: pantryIngredients });
-                filterRecipesByPantry(); // Limpiar y actualizar resultados
-                dom.noPantryResults.style.display = 'block'; // Mostrar mensaje de no resultados inicialmente
-            }
-
-            function filterRecipesByPantry() {
-                dom.pantryRecipeResults.innerHTML = ''; // Limpiar resultados anteriores
-                let resultsCount = 0;
-                const availableIngredients = pantryIngredients.map(ing => ing.toLowerCase());
-
-                // Ordenar recetas: primero las que tienen 100% de coincidencia, luego las que tienen 1 ingrediente faltante, luego 2.
-                const filteredAndSortedRecipes = allRecipes
-                    .map(recipe => {
-                        const neededIngredients = recipe.ingredientes.map(ing => ing.toLowerCase());
-                        const missingIngredients = neededIngredients.filter(ing => !availableIngredients.includes(ing));
-                        const matchedIngredients = neededIngredients.filter(ing => availableIngredients.includes(ing));
-                        
-                        return {
-                            ...recipe,
-                            missingCount: missingIngredients.length,
-                            missingList: missingIngredients,
-                            matchedCount: matchedIngredients.length,
-                            totalIngredients: neededIngredients.length,
-                            matchPercentage: (matchedIngredients.length / neededIngredients.length) * 100
-                        };
-                    })
-                    .filter(recipe => recipe.missingCount <= 2 && recipe.matchedCount > 0) // Mostrar solo con 0, 1 o 2 ingredientes faltantes Y al menos uno coincidente
-                    .sort((a, b) => {
-                        // Prioridad 1: Menos ingredientes faltantes
-                        if (a.missingCount !== b.missingCount) {
-                            return a.missingCount - b.missingCount;
-                        }
-                        // Prioridad 2: Mayor porcentaje de coincidencia (si faltan los mismos)
-                        return b.matchPercentage - a.matchPercentage;
-                    });
-
-                filteredAndSortedRecipes.forEach(recipe => {
-                    let badgeHTML = '';
-                    if (recipe.missingCount === 0) {
-                        badgeHTML = `<div class="pantry-match-badge">100%</div>`;
-                    } else if (recipe.missingCount === 1) {
-                        badgeHTML = `<div class="pantry-match-missing-badge">Falta 1</div>`;
-                    } else if (recipe.missingCount === 2) {
-                        badgeHTML = `<div class="pantry-match-missing-badge">Faltan 2</div>`;
-                    }
-
-                    const cardHTML = `
-                        <div class="recipe-card" data-id="${recipe.titulo}" data-category="${recipe.categoria}" data-search="${recipe.titulo.toLowerCase()} ${recipe.ingredientes.join(' ').toLowerCase()}">
-                            <div class="relative bg-white dark:bg-stone-800 rounded-lg shadow-md overflow-hidden transform hover:-translate-y-1 transition-transform duration-300 cursor-pointer h-full flex flex-col">
-                                <img src="${recipe.imagen}" alt="Imagen de ${recipe.titulo}" class="w-full h-40 object-cover" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/400x300/d1c4b5/4a2e0a?text=Receta';">
-                                <div class="absolute top-2 left-2 bg-amber-800 text-white text-xs font-semibold px-2 py-1 rounded-full">${recipe.categoria}</div>
-                                ${badgeHTML}
-                                <button class="favorite-btn absolute top-2 right-2 bg-white/80 rounded-full p-2 hover:bg-white dark:bg-stone-700/80 dark:hover:bg-stone-600 transition">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600 dark:text-gray-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 016.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z" /></svg>
-                                </button>
-                                <div class="p-4 flex-grow flex flex-col">
-                                    <h3 class="font-bold text-lg text-amber-900 dark:text-amber-500 truncate">${recipe.titulo}</h3>
-                                    <p class="text-xs text-gray-500 dark:text-stone-400 mt-1">
-                                        ${recipe.missingCount === 0 ? 'Tienes todos los ingredientes' : `Faltan: ${recipe.missingList.join(', ')}`}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>`;
-                    dom.pantryRecipeResults.innerHTML += cardHTML;
-                    resultsCount++;
-                });
-
-                if (resultsCount === 0) {
-                    dom.noPantryResults.style.display = 'block';
-                } else {
-                    dom.noPantryResults.style.display = 'none';
-                }
-                
-                addCardEventListeners('#pantryRecipeResults .recipe-card'); // Adjuntar listeners a las tarjetas de la despensa
-                updateFavoriteIcons(); // Asegurarse de que los iconos de favoritos estén actualizados
-            }
-
-
-            // --- EVENT LISTENERS GENERALES ---
-            document.addEventListener('DOMContentLoaded', () => {
-                setupTheme();
-                initializeUI(); // Renderiza todas las recetas al inicio y adjunta listeners
-            });
-
-            dom.search.addEventListener('input', applyFilters);
-
-            dom.filterAllBtn.addEventListener('click', () => {
-                currentFilter = 'all';
-                currentCategory = 'all'; // Resetear categoría al cambiar a "Todas"
-                document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-                document.querySelector('.category-btn[data-category="all"]').classList.add('active');
-                applyFilters();
-            });
-            dom.filterFavBtn.addEventListener('click', () => {
-                currentFilter = 'favorites';
-                currentCategory = 'all'; // Resetear categoría al cambiar a "Favoritas"
-                document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-                document.querySelector('.category-btn[data-category="all"]').classList.add('active');
-                applyFilters();
-            });
-            dom.filterPantryBtn.addEventListener('click', () => {
-                currentFilter = 'pantry';
-                currentCategory = 'all'; // Resetear categoría al cambiar a "Despensa"
-                document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-                document.querySelector('.category-btn[data-category="all"]').classList.add('active');
-                renderPantryTags(); // Asegurarse de que los tags de despensa se muestren
-                applyFilters();
-            });
-            
-            dom.categoryFilters.addEventListener('click', (e) => {
-                if (e.target.matches('.category-btn')) {
-                    currentCategory = e.target.dataset.category;
-                    document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
-                    e.target.classList.add('active');
-                    applyFilters();
-                }
-            });
-            
-            dom.modal.addEventListener('click', (event) => { if (event.target === dom.modal) closeModal(); });
-            
-            // --- EVENT LISTENERS "MI DESPENSA" ---
-            dom.addPantryIngredientBtn.addEventListener('click', addIngredientToPantry);
-            dom.pantryInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    addIngredientToPantry();
-                }
-            });
-            dom.pantryTags.addEventListener('click', (e) => {
-                if (e.target.classList.contains('remove-tag')) {
-                    removeIngredientFromPantry(parseInt(e.target.dataset.index));
-                }
-            });
-            dom.clearPantryBtn.addEventListener('click', clearPantry);
-            dom.exitPantryBtn.addEventListener('click', () => {
-                currentFilter = 'all'; // Volver al filtro "Todas"
-                applyFilters(); // Re-aplicar filtros para mostrar las recetas normales
-            });
-            
-            // --- COPYRIGHT YEAR ---
-            dom.copyrightYear.textContent = new Date().getFullYear();
-        }
-
-        // Ejecuta la app cuando el DOM esté listo
-        runRecipeApp();
-    </script>
-</body>
-</html>
+                { categoria: "Postre", titulo: "Cheesecake de Calabaza y Especias", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Cheesecake+Calabaza", ingredientes: ["Galletas", "Mantequilla", "Queso crema", "Calabaza", "Huevos", "Azúcar", "Canela", "Nuez mosca
