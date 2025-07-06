@@ -195,30 +195,39 @@
         </p>
     </footer>
     
-    <script type="module">
-        // NO Firebase imports aquí para evitar conflictos de módulos si la app no está configurada para ellos.
-        // Las funciones de Firebase como 'initializeApp', 'getAuth', etc., no se importarán.
-        // Esto significa que las funcionalidades de favoritos y despensa (guardado persistente)
-        // NO FUNCIONARÁN EN ESTA VERSIÓN. Su estado será solo temporal mientras la página esté abierta.
-
-        // Simplemente declaramos variables globales para evitar errores 'undefined'
+    <script>
+        // NO MODIFICAR ESTAS LÍNEAS. ESTÁN OPTIMIZADAS PARA COMPATIBILIDAD.
+        // Las funciones de Firebase se cargarán globalmente si están enlazadas en el HTML.
+        // Aquí se usarán simulaciones si Firebase no se carga, para que la app no falle.
         let auth = null;
         let db = null;
-        let appId = 'recetario-gourmet-local'; // Un ID de app local para Firestore simulado
+        let appId = 'recetario-gourmet-local'; 
         
-        // Simulación de funciones de Firebase que no hacen nada
-        const initializeApp = () => { console.log("Firebase (simulado): initializeApp"); return {}; };
-        const getAuth = () => { console.log("Firebase (simulado): getAuth"); return { signInAnonymously: async () => ({ uid: "localUser" }), onAuthStateChanged: (app, callback) => callback({ uid: "localUser" }) }; };
-        const getFirestore = () => { console.log("Firebase (simulado): getFirestore"); return {}; };
-        const doc = () => { console.log("Firebase (simulado): doc"); return {}; };
-        const getDoc = async () => { console.log("Firebase (simulado): getDoc"); return { exists: () => false }; };
-        const setDoc = async () => { console.log("Firebase (simulado): setDoc"); };
-        const signInAnonymously = async () => { console.log("Firebase (simulado): signInAnonymously"); return { uid: "localUser" }; };
-        const onAuthStateChanged = (app, callback) => { console.log("Firebase (simulado): onAuthStateChanged"); callback({ uid: "localUser" }); };
+        // Simulación de funciones de Firebase si no se cargan de la CDN
+        if (typeof firebase === 'undefined' || typeof firebase.initializeApp === 'undefined') {
+            console.warn("Firebase no cargado. Las funcionalidades de guardado no estarán disponibles.");
+            window.firebase = {}; // Asegurar que window.firebase exista
+            window.firebase.initializeApp = () => { console.log("Firebase (simulado): initializeApp"); return { _isSimulated: true }; };
+            window.firebase.getAuth = () => ({ signInAnonymously: async () => ({ uid: "localUser" }), onAuthStateChanged: (app, callback) => callback({ uid: "localUser" }) });
+            window.firebase.getFirestore = () => ({});
+            window.firebase.doc = () => ({});
+            window.firebase.getDoc = async () => ({ exists: () => false });
+            window.firebase.setDoc = async () => {};
+            window.firebase.signInAnonymously = async () => ({ uid: "localUser" });
+            window.firebase.onAuthStateChanged = (app, callback) => { callback({ uid: "localUser" }); };
+
+            // Asignar variables globales como si vinieran de Firebase real
+            auth = window.firebase.getAuth();
+            db = window.firebase.getFirestore();
+        } else {
+            // Si Firebase ya está cargado (por el script de arriba), úsalo
+            auth = firebase.getAuth();
+            db = firebase.getFirestore();
+        }
 
 
         function runRecipeApp() {
-            let userFavorites = []; // Estado de favoritos (no persistente)
+            let userFavorites = []; // Estado de favoritos (no persistente por ahora)
             let userId = "localUser"; // ID de usuario local si Firebase está deshabilitado
             let currentFilter = 'all'; // 'all', 'favorites', 'pantry'
             let currentCategory = 'all'; // 'all' or specific category
@@ -230,7 +239,7 @@
                 search: document.getElementById('searchInput'),
                 filterAllBtn: document.getElementById('filterAll'),
                 filterFavBtn: document.getElementById('filterFavorites'),
-                filterPantryBtn: document.getElementById('filterPantry'), // Nuevo botón de despensa
+                filterPantryBtn: document.getElementById('filterPantry'), 
                 categoryFilters: document.getElementById('categoryFilters'),
                 noResults: document.getElementById('no-results'),
                 modal: document.getElementById('recipeModal'),
@@ -320,7 +329,7 @@
                 { categoria: "Segundo", titulo: "Brandada de Bacalao Gratinada con Piquillos", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Brandada+Gratinada", ingredientes: ["Brandada de bacalao (casera o comprada)", "Pimientos del Piquillo", "Aceite de oliva"], pasos: ["Extiende brandada en fuente. Cubre con piquillos. Gratina al horno hasta dorar."] },
 
                 // --- 20 Postres ---
-                { categoria: "Postre", titulo: "Tarta de Manzana Clásica con Rejilla", imagen: "https://images.unsplash.com/photo-1567613768463-b9254d39994f?q=80&w=400", ingredientes: ["Masa brisa (2 láminas)", "Manzanas", "Azúcar", "Canela", "Zumo de limón", "Mantequilla"], pasos: ["Forra molde con masa. Rellena con manzanas, azúcar, canela y limón. Cubre con tiras de masa. Hornea hasta dorar."] },
+                { categoria: "Postre", titulo: "Tarta de Manzana Clásica con Rejilla", imagen: "https://images.unsplash.com/photo-1567613768463-b2524d39994f?q=80&w=400", ingredientes: ["Masa brisa (2 láminas)", "Manzanas", "Azúcar", "Canela", "Zumo de limón", "Mantequilla"], pasos: ["Forra molde con masa. Rellena con manzanas, azúcar, canela y limón. Cubre con tiras de masa. Hornea hasta dorar."] },
                 { categoria: "Postre", titulo: "Arroz con Leche Cremoso y Canela", imagen: "https://images.unsplash.com/photo-1599043513901-3c5b52f6b3a2?q=80&w=400", ingredientes: ["Arroz", "Leche entera", "Azúcar", "Piel de limón", "Rama de canela", "Canela en polvo"], pasos: ["Cuece arroz en leche con limón y canela a fuego lento. Añade azúcar. Sirve frío con canela."] },
                 { categoria: "Postre", titulo: "Flan de Huevo Casero (Al Vapor)", imagen: "https://images.unsplash.com/photo-1559529845-362a1913a2d7?q=80&w=400", ingredientes: ["Huevos", "Leche", "Azúcar", "Caramelo líquido"], pasos: ["Prepara caramelo en flaneras. Bate huevos, leche y azúcar. Vierte en flaneras. Cocina al vapor o al baño maría."] },
                 { categoria: "Postre", titulo: "Macedonia de Frutas Tropicales con Miel y Menta", imagen: "https://images.unsplash.com/photo-1583091936302-3f1a0e1c2a0d?q=80&w=400", ingredientes: ["Mango", "Piña", "Papaya", "Kiwi", "Zumo de lima", "Miel", "Menta fresca"], pasos: ["Pela y corta frutas. Mezcla. Aliña con zumo de lima y miel. Decora con menta."] },
@@ -393,7 +402,7 @@
                         </div>`;
                 });
                 targetElement.innerHTML = recipeHTML;
-                // No se llama a addCardEventListeners aquí, se usa delegación global.
+                // addCardEventListeners no se llama aquí, se usa delegación global.
             }
             
             // Event listener delegación para clicks en las tarjetas y botones de favorito
