@@ -196,46 +196,33 @@
     </footer>
     
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        // NO Firebase imports aquí para evitar conflictos de módulos si la app no está configurada para ellos.
+        // Las funciones de Firebase como 'initializeApp', 'getAuth', etc., no se importarán.
+        // Esto significa que las funcionalidades de favoritos y despensa (guardado persistente)
+        // NO FUNCIONARÁN EN ESTA VERSIÓN. Su estado será solo temporal mientras la página esté abierta.
 
-        // Declaración global de window.firebase para compatibilidad
-        // (Nota: Si esta app se convierte a un bundler como Webpack, esto no será necesario)
-        window.firebase = {
-            initializeApp,
-            getAuth,
-            signInAnonymously,
-            onAuthStateChanged,
-            getFirestore,
-            doc,
-            setDoc,
-            getDoc
-        };
+        // Simplemente declaramos variables globales para evitar errores 'undefined'
+        let auth = null;
+        let db = null;
+        let appId = 'recetario-gourmet-local'; // Un ID de app local para Firestore simulado
+        
+        // Simulación de funciones de Firebase que no hacen nada
+        const initializeApp = () => { console.log("Firebase (simulado): initializeApp"); return {}; };
+        const getAuth = () => { console.log("Firebase (simulado): getAuth"); return { signInAnonymously: async () => ({ uid: "localUser" }), onAuthStateChanged: (app, callback) => callback({ uid: "localUser" }) }; };
+        const getFirestore = () => { console.log("Firebase (simulado): getFirestore"); return {}; };
+        const doc = () => { console.log("Firebase (simulado): doc"); return {}; };
+        const getDoc = async () => { console.log("Firebase (simulado): getDoc"); return { exists: () => false }; };
+        const setDoc = async () => { console.log("Firebase (simulado): setDoc"); };
+        const signInAnonymously = async () => { console.log("Firebase (simulado): signInAnonymously"); return { uid: "localUser" }; };
+        const onAuthStateChanged = (app, callback) => { console.log("Firebase (simulado): onAuthStateChanged"); callback({ uid: "localUser" }); };
+
 
         function runRecipeApp() {
-            // *** CONFIGURACIÓN DE FIREBASE ***
-            // IMPORTANTE: Esta configuración ha sido insertada con tus datos reales de Firebase.
-            // NO LA MODIFIQUES a menos que cambies tu proyecto de Firebase.
-            const firebaseConfig = {
-                apiKey: "AIzaSyBl_mcw-cNm5VM20zupu-EdWbjkcchWUek",
-                authDomain: "rapid-scion-455418-d4.firebaseapp.com",
-                projectId: "rapid-scion-455418-d4",
-                storageBucket: "rapid-scion-455418-d4.firebasestorage.app",
-                messagingSenderId: "118256801071",
-                appId: "1:118256801071:web:c99aed5544d5e62305bdda",
-                measurementId: "G-VTRBE6TWML"
-            };
-            const appId = firebaseConfig.appId; // Usamos el appId de la configuración para Firebase
-
-            const app = initializeApp(firebaseConfig);
-            const db = getFirestore(app);
-            const auth = getAuth(app);
-
-            let userFavorites = [], userId = null;
+            let userFavorites = []; // Estado de favoritos (no persistente)
+            let userId = "localUser"; // ID de usuario local si Firebase está deshabilitado
             let currentFilter = 'all'; // 'all', 'favorites', 'pantry'
             let currentCategory = 'all'; // 'all' or specific category
-            let pantryIngredients = []; // Nuevo array para los ingredientes de la despensa
+            let pantryIngredients = []; // Nuevo array para los ingredientes de la despensa (no persistente)
 
             // DOM elements
             const dom = {
@@ -333,12 +320,12 @@
                 { categoria: "Segundo", titulo: "Brandada de Bacalao Gratinada con Piquillos", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Brandada+Gratinada", ingredientes: ["Brandada de bacalao (casera o comprada)", "Pimientos del Piquillo", "Aceite de oliva"], pasos: ["Extiende brandada en fuente. Cubre con piquillos. Gratina al horno hasta dorar."] },
 
                 // --- 20 Postres ---
-                { categoria: "Postre", titulo: "Tarta de Manzana Clásica con Rejilla", imagen: "https://images.unsplash.com/photo-1567613768463-b2524d39994f?q=80&w=400", ingredientes: ["Masa brisa (2 láminas)", "Manzanas", "Azúcar", "Canela", "Zumo de limón", "Mantequilla"], pasos: ["Forra molde con masa. Rellena con manzanas, azúcar, canela y limón. Cubre con tiras de masa. Hornea hasta dorar."] },
+                { categoria: "Postre", titulo: "Tarta de Manzana Clásica con Rejilla", imagen: "https://images.unsplash.com/photo-1567613768463-b9254d39994f?q=80&w=400", ingredientes: ["Masa brisa (2 láminas)", "Manzanas", "Azúcar", "Canela", "Zumo de limón", "Mantequilla"], pasos: ["Forra molde con masa. Rellena con manzanas, azúcar, canela y limón. Cubre con tiras de masa. Hornea hasta dorar."] },
                 { categoria: "Postre", titulo: "Arroz con Leche Cremoso y Canela", imagen: "https://images.unsplash.com/photo-1599043513901-3c5b52f6b3a2?q=80&w=400", ingredientes: ["Arroz", "Leche entera", "Azúcar", "Piel de limón", "Rama de canela", "Canela en polvo"], pasos: ["Cuece arroz en leche con limón y canela a fuego lento. Añade azúcar. Sirve frío con canela."] },
                 { categoria: "Postre", titulo: "Flan de Huevo Casero (Al Vapor)", imagen: "https://images.unsplash.com/photo-1559529845-362a1913a2d7?q=80&w=400", ingredientes: ["Huevos", "Leche", "Azúcar", "Caramelo líquido"], pasos: ["Prepara caramelo en flaneras. Bate huevos, leche y azúcar. Vierte en flaneras. Cocina al vapor o al baño maría."] },
                 { categoria: "Postre", titulo: "Macedonia de Frutas Tropicales con Miel y Menta", imagen: "https://images.unsplash.com/photo-1583091936302-3f1a0e1c2a0d?q=80&w=400", ingredientes: ["Mango", "Piña", "Papaya", "Kiwi", "Zumo de lima", "Miel", "Menta fresca"], pasos: ["Pela y corta frutas. Mezcla. Aliña con zumo de lima y miel. Decora con menta."] },
                 { categoria: "Postre", titulo: "Natillas con Galleta y Canela", imagen: "https://images.unsplash.com/photo-1621244249146-2169820786a3?q=80&w=400", ingredientes: ["Leche", "Yemas de huevo", "Azúcar", "Maicena", "Piel de limón", "Rama de canela", "Galletas María"], pasos: ["Calienta leche con limón y canela. Mezcla yemas, azúcar, maicena. Une, cocina hasta espesar. Sirve con galleta y canela."] },
-                { categoria: "Postre", titulo: "Bizcocho de Chocolate Húmedo", imagen: "https://images.unsplash.com/photo-1567613768463-b9254d39994f?q=80&w=400", ingredientes: ["Harina", "Cacao puro", "Azúcar", "Huevos", "Leche", "Aceite", "Levadura", "Vainilla"], pasos: ["Mezcla ingredientes secos. Combina con húmedos. Hornea en molde hasta que esté hecho. Deja enfriar."] },
+                { categoria: "Postre", titulo: "Bizcocho de Chocolate Húmedo", imagen: "https://images.unsplash.com/photo-1567613768463-b2524d39994f?q=80&w=400", ingredientes: ["Harina", "Cacao puro", "Azúcar", "Huevos", "Leche", "Aceite", "Levadura", "Vainilla"], pasos: ["Mezcla ingredientes secos. Combina con húmedos. Hornea en molde hasta que esté hecho. Deja enfriar."] },
                 { categoria: "Postre", titulo: "Peras al Horno con Vino Tinto y Pasas", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Peras+Vino", ingredientes: ["Peras", "Vino tinto", "Pasas", "Canela en rama", "Cáscara de naranja"], pasos: ["Pela peras. Hornea con vino, pasas, canela y naranja hasta que estén tiernas."] },
                 { categoria: "Postre", titulo: "Crema Catalana con Azúcar Quemado", imagen: "https://images.unsplash.com/photo-1621244249146-2169820786a3?q=80&w=400", ingredientes: ["Leche", "Yemas de huevo", "Azúcar", "Maicena", "Piel de limón", "Canela en rama", "Azúcar (para quemar)"], pasos: ["Infusiona leche. Mezcla yemas, azúcar y maicena. Une, cocina hasta espesar. Enfría. Quema azúcar antes de servir."] },
                 { categoria: "Postre", titulo: "Torrijas de Leche y Canela", imagen: "https://images.unsplash.com/photo-1621244249146-2169820786a3?q=80&w=400", ingredientes: ["Pan de torrijas", "Leche", "Azúcar", "Canela", "Huevo", "Aceite para freír"], pasos: ["Remoja pan en leche. Pasa por huevo. Fríe. Reboza en azúcar y canela."] },
@@ -406,7 +393,7 @@
                         </div>`;
                 });
                 targetElement.innerHTML = recipeHTML;
-                // addCardEventListeners no se llama aquí, se usa delegación global.
+                // No se llama a addCardEventListeners aquí, se usa delegación global.
             }
             
             // Event listener delegación para clicks en las tarjetas y botones de favorito
@@ -596,7 +583,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                         </div>
-                        <img src="${recipe.imagen}" alt="Imagen de ${recipe.titulo}" class="w-full h-64 object-cover rounded-lg mb-6" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/600x400/d1c4b5/4a2e0a?text=Receta';">
+                        <img src="${recipe.imagen}" alt="Imagen de ${recipe.titulo}" class="w-full h-64 object-cover" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/600x400/d1c4b5/4a2e0a?text=Receta';">
                         <div id="recipe-content-normal">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
@@ -861,7 +848,8 @@
                     dom.noPantryResults.style.display = 'none';
                 }
                 
-                addCardEventListeners('#pantryRecipeResults .recipe-card'); // Adjuntar listeners a las tarjetas de la despensa
+                // Estos listeners se adjuntan en setupDelegatedCardEventListeners
+                // addCardEventListeners('#pantryRecipeResults .recipe-card'); 
                 updateFavoriteIcons(); // Asegurarse de que los iconos de favoritos estén actualizados
             }
 
@@ -869,8 +857,8 @@
             // --- EVENT LISTENERS GENERALES ---
             document.addEventListener('DOMContentLoaded', () => {
                 setupTheme();
-                initializeUI(); // Renderiza todas las recetas al inicio y adjunta listeners
-                setupDelegatedCardEventListeners(); // Adjuntar listeners globales una sola vez al cargar el DOM
+                initializeUI(); // Renderiza todas las recetas al inicio
+                setupDelegatedCardEventListeners(); // Adjuntar listeners globales una sola vez
             });
 
             dom.search.addEventListener('input', applyFilters);
