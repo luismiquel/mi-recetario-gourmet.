@@ -5,19 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Recetario Gourmet</title>
 
-    <!-- Metadatos para PWA -->
     <meta name="theme-color" content="#78350f"/>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Mi Recetario Gourmet"> 
     <link rel="apple-touch-icon" href="https://placehold.co/192x192/78350f/ffffff?text=RG">
-    <!-- Nueva meta tag para PWA, según recomendación de la consola -->
     <meta name="mobile-web-app-capable" content="yes"> 
     
-    <!-- PWA Manifest Corregido -->
     <link rel="manifest" href="data:application/manifest+json,{"name":"Mi Recetario Gourmet","short_name":"RecetarioG","start_url":".","display":"standalone","background_color":"#f8f7f5","theme_color":"#78350f","description":"Tu app de recetas de cocina gourmet.","icons":[{"src":"https://placehold.co/192x192/78350f/ffffff?text=RG","sizes":"192x192","type":"image/png"},{"src":"https://placehold.co/512x512/78350f/ffffff?text=RG","sizes":"512x512","type":"image/png"}]}">
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -25,12 +21,10 @@
         }
     </script>
 
-    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Lora:wght@500;700&display=swap" rel="stylesheet">
 
-    <!-- Estilos personalizados -->
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -397,7 +391,7 @@
                         </div>`;
                 });
                 targetElement.innerHTML = recipeHTML;
-                // No se llama a addCardEventListeners aquí, se usa delegación global
+                // addCardEventListeners no se llama aquí, se usa delegación global.
             }
             
             // Event listener delegación para clicks en las tarjetas y botones de favorito
@@ -436,6 +430,7 @@
                 applyFilters(); // Aplica los filtros iniciales al cargar la UI
             }
 
+            // Authentication con Firebase (Desactivado temporalmente para depuración si se usa DEMO_KEY)
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     userId = user.uid;
@@ -445,44 +440,64 @@
                     applyFilters(); // Aplicar filtros después de cargar favoritos
                     dom.userInfo.textContent = `ID de sesión: ${userId.substring(0,8)}...`;
                 } else {
+                    // Si se usa DEMO_KEY, esta llamada fallará. Es esperado.
+                    // Para depuración, podemos comentar la línea o rodearla de un try/catch más robusto.
+                    // En esta versión, se maneja el error con .catch()
                     signInAnonymously(auth).catch((error) => console.error("Error login anónimo:", error));
                 }
             });
 
             async function loadUserData() {
+                // Si Firebase está usando DEMO_KEYs, esta función podría fallar.
+                // Manejamos un error si no hay userId válido o si la conexión a db es un problema.
                 if (!userId) return;
-                const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/profile`);
-                const userDoc = await getDoc(userDocRef);
-                if (userDoc.exists()) {
-                    const data = userDoc.data();
-                    userFavorites = data.favorites || [];
-                    pantryIngredients = data.pantry || []; 
-                    renderPantryTags(); 
+                try {
+                    const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/profile`);
+                    const userDoc = await getDoc(userDocRef);
+                    if (userDoc.exists()) {
+                        const data = userDoc.data();
+                        userFavorites = data.favorites || [];
+                        pantryIngredients = data.pantry || []; 
+                        renderPantryTags(); 
+                    }
+                } catch (error) {
+                    console.error("Error al cargar datos del usuario (posiblemente Firebase no configurado correctamente o sin permisos):", error);
+                    // Opcional: mostrar un mensaje al usuario
+                    dom.userInfo.textContent = `Sincronización Fallida (¡Configura Firebase!)`;
                 }
             }
 
             async function saveData(data) {
+                // Si Firebase está usando DEMO_KEYs, esta función podría fallar.
                 if (!userId) return;
-                const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/profile`);
-                await setDoc(userDocRef, data, { merge: true });
+                try {
+                    const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/profile`);
+                    await setDoc(userDocRef, data, { merge: true });
+                } catch (error) {
+                    console.error("Error al guardar datos del usuario (posiblemente Firebase no configurado correctamente o sin permisos):", error);
+                    // Opcional: mostrar un mensaje al usuario
+                }
             }
 
             async function toggleFavorite(recipeId) {
-                if (!userId) return;
+                if (!userId) {
+                    console.warn("No hay usuario autenticado para guardar favoritos. ¿Firebase configurado?");
+                    // Opcional: mostrar un mensaje al usuario para que configure Firebase
+                    return;
+                }
                 const isFavorite = userFavorites.includes(recipeId);
                 userFavorites = isFavorite ? userFavorites.filter(id => id !== recipeId) : [...userFavorites, recipeId];
                 
                 updateFavoriteIcons();
-                applyFilters(); // Re-aplicar filtros para actualizar la vista
+                applyFilters(); // Re-aplicar filtros para actualizar la vista (si está en favoritos)
 
                 await saveData({ favorites: userFavorites });
             }
 
             function updateFavoriteIcons() {
-                // Selecciona todas las tarjetas en AMBAS cuadrículas (principal y despensa)
                 document.querySelectorAll('.recipe-card').forEach(card => {
                     const heartIcon = card.querySelector('.favorite-btn svg');
-                    if (heartIcon) { // Asegurarse de que el icono existe
+                    if (heartIcon) {
                         if (userFavorites.includes(card.dataset.id)) {
                             heartIcon.classList.add('text-red-500', 'fill-current');
                             heartIcon.classList.remove('text-gray-600', 'dark:text-gray-400');
