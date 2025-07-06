@@ -14,6 +14,11 @@
     
     <link rel="manifest" href="data:application/manifest+json,{"name":"Mi Recetario Gourmet","short_name":"RecetarioG","start_url":".","display":"standalone","background_color":"#f8f7f5","theme_color":"#78350f","description":"Tu app de recetas de cocina gourmet.","icons":[{"src":"https://placehold.co/192x192/78350f/ffffff?text=RG","sizes":"192x192","type":"image/png"},{"src":"https://placehold.co/512x512/78350f/ffffff?text=RG","sizes":"512x512","type":"image/png"}]}">
 
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -196,36 +201,62 @@
     </footer>
     
     <script>
-        // NO Firebase imports aquí para evitar conflictos de módulos si la app no está configurada para ellos.
-        // Las funciones de Firebase se cargarán globalmente si están enlazadas en el HTML.
-        // Aquí se usarán simulaciones si Firebase no se carga, para que la app no falle.
+        // Inicialización de Firebase con compatibilidad, si está disponible
         let auth = null;
         let db = null;
-        let appId = 'recetario-gourmet-local'; 
+        let appId = 'recetario-gourmet-local'; // ID local por si Firebase no se carga
         
-        // Simulación de funciones de Firebase si no se cargan de la CDN
-        if (typeof firebase === 'undefined' || typeof firebase.initializeApp === 'undefined') {
-            console.warn("Firebase no cargado. Las funcionalidades de guardado no estarán disponibles.");
-            window.firebase = {}; // Asegurar que window.firebase exista
-            window.firebase.initializeApp = () => { console.log("Firebase (simulado): initializeApp"); return { _isSimulated: true }; };
-            window.firebase.getAuth = () => ({ signInAnonymously: async () => ({ uid: "localUser" }), onAuthStateChanged: (app, callback) => callback({ uid: "localUser" }) });
-            window.firebase.getFirestore = () => ({});
-            window.firebase.doc = () => ({});
-            window.firebase.getDoc = async () => ({ exists: () => false });
-            window.firebase.setDoc = async () => {};
-            window.firebase.signInAnonymously = async () => ({ uid: "localUser" });
-            window.firebase.onAuthStateChanged = (app, callback) => { callback({ uid: "localUser" }); };
+        // Verifica si Firebase ha sido cargado globalmente por los scripts en el <head>
+        if (typeof firebase !== 'undefined' && typeof firebase.initializeApp === 'function') {
+            console.log("Firebase SDKs detectados. Intentando inicializar Firebase REAL.");
+            try {
+                // *** TU CONFIGURACIÓN REAL DE FIREBASE AQUÍ ***
+                const firebaseConfig = {
+                    apiKey: "AIzaSyBl_mcw-cNm5VM20zupu-EdWbjkcchWUek",
+                    authDomain: "rapid-scion-455418-d4.firebaseapp.com",
+                    projectId: "rapid-scion-455418-d4",
+                    storageBucket: "rapid-scion-455418-d4.firebasestorage.app",
+                    messagingSenderId: "118256801071",
+                    appId: "1:118256801071:web:c99aed5544d5e62305bdda",
+                    measurementId: "G-VTRBE6TWML" // Asegúrate de que este valor esté correcto
+                };
+                
+                const app = firebase.initializeApp(firebaseConfig);
+                auth = firebase.auth(); // Asignación directa
+                db = firebase.firestore(); // Asignación directa
+                appId = firebaseConfig.appId; // Usar el appId real de la configuración
+                console.log("Firebase REAL inicializado con éxito.");
 
-            // Asignar variables globales como si vinieran de Firebase real
-            auth = window.firebase.getAuth();
-            db = window.firebase.getFirestore();
+            } catch (error) {
+                console.error("Error al inicializar Firebase REAL:", error);
+                console.warn("Se usarán funcionalidades locales (sin guardado persistente).");
+                setupLocalFirebaseSimulations(); // Si falla, usar las simulaciones
+            }
         } else {
-            // Si Firebase ya está cargado (por el script de arriba), úsalo
-            auth = firebase.getAuth();
-            db = firebase.getFirestore();
+            console.warn("Firebase SDKs no detectados o no disponibles. Se usarán funcionalidades locales (sin guardado persistente).");
+            setupLocalFirebaseSimulations(); // Usar las simulaciones si Firebase no está disponible
         }
 
-
+        // Función para configurar simulaciones locales de Firebase
+        function setupLocalFirebaseSimulations() {
+            auth = {
+                signInAnonymously: async () => ({ user: { uid: "localUser" } }), // user object para simular
+                onAuthStateChanged: (callback) => { callback({ uid: "localUser" }); }
+            };
+            db = {
+                collection: () => ({ doc: () => ({ get: async () => ({ exists: () => false }), set: async () => {} }) })
+            };
+            // Simplificar doc, getDoc, setDoc para que funcionen con las simulaciones de db y auth
+            window.firebase.doc = (dbInstance, path, docId, data, options) => { console.log(`Simulando doc: ${path}/${docId}`); return {}; };
+            window.firebase.getDoc = async (docRef) => { console.log("Simulando getDoc"); return { exists: () => false, data: () => ({}) }; };
+            window.firebase.setDoc = async (docRef, data, options) => { console.log("Simulando setDoc:", data); };
+            window.firebase.onAuthStateChanged = (authInstance, callback) => { callback({ uid: "localUser" }); };
+            window.firebase.signInAnonymously = async () => ({ user: { uid: "localUser" } });
+            
+            console.log("Funcionalidades de Firebase simuladas (sin persistencia).");
+        }
+        
+        // El resto de tu código JavaScript
         function runRecipeApp() {
             let userFavorites = []; // Estado de favoritos (no persistente por ahora)
             let userId = "localUser"; // ID de usuario local si Firebase está deshabilitado
@@ -395,8 +426,9 @@
                                 </button>
                                 <div class="p-4 flex-grow flex flex-col">
                                     <h3 class="font-bold text-lg text-amber-900 dark:text-amber-500 truncate">${recipe.titulo}</h3>
-                                    ${targetElementId === 'pantryRecipeResults' ? 
-                                        `<p class="text-xs text-gray-500 dark:text-stone-400 mt-1">${missingIngredientsDisplay}</p>` : ''}
+                                    <p class="text-xs text-gray-500 dark:text-stone-400 mt-1">
+                                        ${recipe.missingCount === 0 ? 'Tienes todos los ingredientes' : `Faltan: ${recipe.missingList.join(', ')}`}
+                                    </p>
                                 </div>
                             </div>
                         </div>`;
@@ -463,9 +495,9 @@
                 // Manejamos un error si no hay userId válido o si la conexión a db es un problema.
                 if (!userId) return;
                 try {
-                    const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/profile`);
-                    const userDoc = await getDoc(userDocRef);
-                    if (userDoc.exists()) {
+                    const userDocRef = db.collection('artifacts').doc(appId).collection('users').doc(userId).collection('data').doc('profile');
+                    const userDoc = await userDocRef.get(); // Usar .get() en el objeto doc de firestore v8
+                    if (userDoc.exists) { // .exists es una propiedad, no una función en v8
                         const data = userDoc.data();
                         userFavorites = data.favorites || [];
                         pantryIngredients = data.pantry || []; 
@@ -482,8 +514,8 @@
                 // Si Firebase está usando DEMO_KEYs, esta función podría fallar.
                 if (!userId) return;
                 try {
-                    const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/profile`);
-                    await setDoc(userDocRef, data, { merge: true });
+                    const userDocRef = db.collection('artifacts').doc(appId).collection('users').doc(userId).collection('data').doc('profile');
+                    await userDocRef.set(data, { merge: true }); // Usar .set() en el objeto doc de firestore v8
                 } catch (error) {
                     console.error("Error al guardar datos del usuario (posiblemente Firebase no configurado correctamente o sin permisos):", error);
                     // Opcional: mostrar un mensaje al usuario
