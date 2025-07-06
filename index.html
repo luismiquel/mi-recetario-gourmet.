@@ -18,7 +18,6 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
 
-
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -211,14 +210,15 @@
             console.log("Firebase SDKs detectados. Intentando inicializar Firebase REAL.");
             try {
                 // *** TU CONFIGURACIÓN REAL DE FIREBASE AQUÍ ***
+                // PEGA AQUÍ LOS VALORES REALES DE TU CONSOLA DE FIREBASE
                 const firebaseConfig = {
-                    apiKey: "AIzaSyBl_mcw-cNm5VM20zupu-EdWbjkcchWUek",
+                    apiKey: "AIzaSyBl_mcw-cNm5VM20zupu-EdWbjkcchWUek", // Tus valores EXACTOS
                     authDomain: "rapid-scion-455418-d4.firebaseapp.com",
                     projectId: "rapid-scion-455418-d4",
                     storageBucket: "rapid-scion-455418-d4.firebasestorage.app",
                     messagingSenderId: "118256801071",
                     appId: "1:118256801071:web:c99aed5544d5e62305bdda",
-                    measurementId: "G-VTRBE6TWML" // Asegúrate de que este valor esté correcto
+                    measurementId: "G-VTRBE6TWML" 
                 };
                 
                 const app = firebase.initializeApp(firebaseConfig);
@@ -247,11 +247,22 @@
                 collection: () => ({ doc: () => ({ get: async () => ({ exists: () => false }), set: async () => {} }) })
             };
             // Simplificar doc, getDoc, setDoc para que funcionen con las simulaciones de db y auth
-            window.firebase.doc = (dbInstance, path, docId, data, options) => { console.log(`Simulando doc: ${path}/${docId}`); return {}; };
+            // Estas variables se usan dentro de loadUserData y saveData, por eso las necesitamos aquí
+            window.firebase.firestore = () => db; // Para que el código pueda llamar firebase.firestore()
+            window.firebase.auth = () => auth; // Para que el código pueda llamar firebase.auth()
+
+            // Estas son funciones que se usan directamente y necesitan ser globales o pasadas
+            window.firebase.doc = (dbInstance, path, docId) => { // Simplificado para simulación
+                console.log(`Simulando doc: ${path}/${docId}`);
+                return {
+                    get: async () => ({ exists: () => false, data: () => ({}) }),
+                    set: async (data, options) => { console.log("Simulando set:", data); }
+                };
+            };
             window.firebase.getDoc = async (docRef) => { console.log("Simulando getDoc"); return { exists: () => false, data: () => ({}) }; };
             window.firebase.setDoc = async (docRef, data, options) => { console.log("Simulando setDoc:", data); };
+            window.firebase.signInAnonymously = async (authInstance) => ({ user: { uid: "localUser" } });
             window.firebase.onAuthStateChanged = (authInstance, callback) => { callback({ uid: "localUser" }); };
-            window.firebase.signInAnonymously = async () => ({ user: { uid: "localUser" } });
             
             console.log("Funcionalidades de Firebase simuladas (sin persistencia).");
         }
@@ -426,9 +437,8 @@
                                 </button>
                                 <div class="p-4 flex-grow flex flex-col">
                                     <h3 class="font-bold text-lg text-amber-900 dark:text-amber-500 truncate">${recipe.titulo}</h3>
-                                    <p class="text-xs text-gray-500 dark:text-stone-400 mt-1">
-                                        ${recipe.missingCount === 0 ? 'Tienes todos los ingredientes' : `Faltan: ${recipe.missingList.join(', ')}`}
-                                    </p>
+                                    ${targetElementId === 'pantryRecipeResults' ? 
+                                        `<p class="text-xs text-gray-500 dark:text-stone-400 mt-1">${missingIngredientsDisplay}</p>` : ''}
                                 </div>
                             </div>
                         </div>`;
@@ -473,66 +483,72 @@
                 applyFilters(); // Aplica los filtros iniciales al cargar la UI
             }
 
-            // Authentication con Firebase (Desactivado temporalmente para depuración si se usa DEMO_KEY)
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    dom.userInfo.textContent = `Sincronizando...`;
-                    await loadUserData();
-                    updateFavoriteIcons();
-                    applyFilters(); // Aplicar filtros después de cargar favoritos
-                    dom.userInfo.textContent = `ID de sesión: ${userId.substring(0,8)}...`;
-                } else {
-                    // Si se usa DEMO_KEY, esta llamada fallará. Es esperado.
-                    // Para depuración, podemos comentar la línea o rodearla de un try/catch más robusto.
-                    // En esta versión, se maneja el error con .catch()
-                    signInAnonymously(auth).catch((error) => console.error("Error login anónimo:", error));
-                }
-            });
+            // Authentication con Firebase 
+            // Usamos las variables auth, db, appId que ya están definidas globalmente por los scripts de compatibilidad
+            if (typeof firebase !== 'undefined' && firebase.auth && firebase.firestore) { // Verificar que las funciones estén disponibles
+                firebase.auth().onAuthStateChanged(async (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        dom.userInfo.textContent = `Sincronizando...`;
+                        await loadUserData();
+                        updateFavoriteIcons();
+                        applyFilters(); // Aplicar filtros después de cargar favoritos
+                        dom.userInfo.textContent = `ID de sesión: ${userId.substring(0,8)}...`;
+                    } else {
+                        firebase.auth().signInAnonymously().catch((error) => console.error("Error login anónimo:", error));
+                    }
+                });
+            } else {
+                console.warn("Firebase Authentication o Firestore no están completamente cargados/disponibles. Las funcionalidades de guardado no estarán disponibles.");
+                dom.userInfo.textContent = `Sincronización Fallida (Firebase no cargado).`;
+            }
+
 
             async function loadUserData() {
-                // Si Firebase está usando DEMO_KEYs, esta función podría fallar.
-                // Manejamos un error si no hay userId válido o si la conexión a db es un problema.
-                if (!userId) return;
+                if (!userId || !db || db._isSimulated) { // No intentar cargar si userId es nulo o db es simulada
+                    console.log("No se cargan datos de usuario (Firebase inactivo/simulado).");
+                    return;
+                }
                 try {
+                    // Usar la sintaxis de Firebase v8 (compat)
                     const userDocRef = db.collection('artifacts').doc(appId).collection('users').doc(userId).collection('data').doc('profile');
-                    const userDoc = await userDocRef.get(); // Usar .get() en el objeto doc de firestore v8
-                    if (userDoc.exists) { // .exists es una propiedad, no una función en v8
+                    const userDoc = await userDocRef.get();
+                    if (userDoc.exists) { 
                         const data = userDoc.data();
                         userFavorites = data.favorites || [];
                         pantryIngredients = data.pantry || []; 
                         renderPantryTags(); 
                     }
                 } catch (error) {
-                    console.error("Error al cargar datos del usuario (posiblemente Firebase no configurado correctamente o sin permisos):", error);
-                    // Opcional: mostrar un mensaje al usuario
-                    dom.userInfo.textContent = `Sincronización Fallida (¡Configura Firebase!)`;
+                    console.error("Error al cargar datos del usuario (revisar permisos de Firestore y reglas de seguridad):", error);
+                    dom.userInfo.textContent = `Error al cargar datos.`;
                 }
             }
 
             async function saveData(data) {
-                // Si Firebase está usando DEMO_KEYs, esta función podría fallar.
-                if (!userId) return;
+                if (!userId || !db || db._isSimulated) { // No intentar guardar si userId es nulo o db es simulada
+                    console.log("No se guardan datos de usuario (Firebase inactivo/simulado).");
+                    return;
+                }
                 try {
+                    // Usar la sintaxis de Firebase v8 (compat)
                     const userDocRef = db.collection('artifacts').doc(appId).collection('users').doc(userId).collection('data').doc('profile');
-                    await userDocRef.set(data, { merge: true }); // Usar .set() en el objeto doc de firestore v8
+                    await userDocRef.set(data, { merge: true });
                 } catch (error) {
-                    console.error("Error al guardar datos del usuario (posiblemente Firebase no configurado correctamente o sin permisos):", error);
-                    // Opcional: mostrar un mensaje al usuario
+                    console.error("Error al guardar datos del usuario (revisar permisos de Firestore y reglas de seguridad):", error);
                 }
             }
 
             async function toggleFavorite(recipeId) {
-                if (!userId) {
-                    console.warn("No hay usuario autenticado para guardar favoritos. ¿Firebase configurado?");
-                    // Opcional: mostrar un mensaje al usuario para que configure Firebase
+                if (!userId || !db || db._isSimulated) {
+                    console.warn("No hay usuario autenticado o Firebase no configurado para guardar favoritos.");
                     return;
                 }
                 const isFavorite = userFavorites.includes(recipeId);
                 userFavorites = isFavorite ? userFavorites.filter(id => id !== recipeId) : [...userFavorites, recipeId];
                 
                 updateFavoriteIcons();
-                applyFilters(); // Re-aplicar filtros para actualizar la vista (si está en favoritos)
+                applyFilters(); 
 
                 await saveData({ favorites: userFavorites });
             }
@@ -540,7 +556,7 @@
             function updateFavoriteIcons() {
                 document.querySelectorAll('.recipe-card').forEach(card => {
                     const heartIcon = card.querySelector('.favorite-btn svg');
-                    if (heartIcon) { // Asegurarse de que el icono existe
+                    if (heartIcon) { 
                         if (userFavorites.includes(card.dataset.id)) {
                             heartIcon.classList.add('text-red-500', 'fill-current');
                             heartIcon.classList.remove('text-gray-600', 'dark:text-gray-400');
