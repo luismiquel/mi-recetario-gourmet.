@@ -8,7 +8,8 @@
     <meta name="theme-color" content="#78350f"/>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-touch-icon" href="https://placehold.co/192x192/78350f/ffffff?text=R">
+    <meta name="apple-mobile-web-app-title" content="Recetario">
+    <link rel="apple-touch-icon" href="https://placehold.co/192x192/78350f/ffffff?text=R">
     
     <link rel="manifest" href="data:application/manifest+json,{
         &quot;name&quot;: &quot;Recetario Delicioso&quot;,
@@ -598,6 +599,8 @@
             function startCookingMode(recipe) {
                 currentRecipeSteps = recipe.pasos;
                 currentStep = 0;
+                // Puedes añadir el título de la receta al modo cocina si quieres:
+                // document.getElementById('cooking-recipe-title').textContent = `Modo Cocina: ${recipe.titulo}`;
                 closeModal(); // Cierra el modal de detalle de la receta
                 cookingModeView.classList.remove('hidden');
                 cookingModeView.classList.add('flex');
