@@ -200,6 +200,19 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // Declaración global de window.firebase para compatibilidad
+        // (Nota: Si esta app se convierte a un bundler como Webpack, esto no será necesario)
+        window.firebase = {
+            initializeApp,
+            getAuth,
+            signInAnonymously,
+            onAuthStateChanged,
+            getFirestore,
+            doc,
+            setDoc,
+            getDoc
+        };
+
         function runRecipeApp() {
             // *** CONFIGURACIÓN DE FIREBASE ***
             // IMPORTANTE: Esta configuración ha sido insertada con tus datos reales de Firebase.
@@ -320,7 +333,7 @@
                 { categoria: "Segundo", titulo: "Brandada de Bacalao Gratinada con Piquillos", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Brandada+Gratinada", ingredientes: ["Brandada de bacalao (casera o comprada)", "Pimientos del Piquillo", "Aceite de oliva"], pasos: ["Extiende brandada en fuente. Cubre con piquillos. Gratina al horno hasta dorar."] },
 
                 // --- 20 Postres ---
-                { categoria: "Postre", titulo: "Tarta de Manzana Clásica con Rejilla", imagen: "https://images.unsplash.com/photo-1567613768463-b9254d39994f?q=80&w=400", ingredientes: ["Masa brisa (2 láminas)", "Manzanas", "Azúcar", "Canela", "Zumo de limón", "Mantequilla"], pasos: ["Forra molde con masa. Rellena con manzanas, azúcar, canela y limón. Cubre con tiras de masa. Hornea hasta dorar."] },
+                { categoria: "Postre", titulo: "Tarta de Manzana Clásica con Rejilla", imagen: "https://images.unsplash.com/photo-1567613768463-b2524d39994f?q=80&w=400", ingredientes: ["Masa brisa (2 láminas)", "Manzanas", "Azúcar", "Canela", "Zumo de limón", "Mantequilla"], pasos: ["Forra molde con masa. Rellena con manzanas, azúcar, canela y limón. Cubre con tiras de masa. Hornea hasta dorar."] },
                 { categoria: "Postre", titulo: "Arroz con Leche Cremoso y Canela", imagen: "https://images.unsplash.com/photo-1599043513901-3c5b52f6b3a2?q=80&w=400", ingredientes: ["Arroz", "Leche entera", "Azúcar", "Piel de limón", "Rama de canela", "Canela en polvo"], pasos: ["Cuece arroz en leche con limón y canela a fuego lento. Añade azúcar. Sirve frío con canela."] },
                 { categoria: "Postre", titulo: "Flan de Huevo Casero (Al Vapor)", imagen: "https://images.unsplash.com/photo-1559529845-362a1913a2d7?q=80&w=400", ingredientes: ["Huevos", "Leche", "Azúcar", "Caramelo líquido"], pasos: ["Prepara caramelo en flaneras. Bate huevos, leche y azúcar. Vierte en flaneras. Cocina al vapor o al baño maría."] },
                 { categoria: "Postre", titulo: "Macedonia de Frutas Tropicales con Miel y Menta", imagen: "https://images.unsplash.com/photo-1583091936302-3f1a0e1c2a0d?q=80&w=400", ingredientes: ["Mango", "Piña", "Papaya", "Kiwi", "Zumo de lima", "Miel", "Menta fresca"], pasos: ["Pela y corta frutas. Mezcla. Aliña con zumo de lima y miel. Decora con menta."] },
@@ -334,7 +347,7 @@
                 { categoria: "Postre", titulo: "Buñuelos de Viento Rellenos de Nata", imagen: "https://images.unsplash.com/photo-1621244249146-2169820786a3?q=80&w=400", ingredientes: ["Harina", "Agua", "Mantequilla", "Huevos", "Nata montada", "Azúcar glas"], pasos: ["Prepara masa choux. Fríe buñuelos. Rellena con nata montada. Espolvorea azúcar glas."] },
                 { categoria: "Postre", titulo: "Pudín de Pan y Pasas", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Pudín+Pan", ingredientes: ["Pan del día anterior", "Leche", "Huevos", "Azúcar", "Pasas", "Ron (opcional)"], pasos: ["Remoja pan en leche. Mezcla con huevos, azúcar, pasas y ron. Hornea al baño maría."] },
                 { categoria: "Postre", titulo: "Leche Frita con Azúcar y Canela", imagen: "https://images.unsplash.com/photo-1621244249146-2169820786a3?q=80&w=400", ingredientes: ["Leche", "Harina", "Azúcar", "Yemas de huevo", "Piel de limón", "Canela en rama", "Huevo (para rebozar)", "Pan rallado"], pasos: ["Prepara crema con leche, harina, azúcar, yemas, limón y canela. Enfría. Corta, pasa por huevo y pan, fríe. Reboza en azúcar y canela."] },
-                { categoria: "Postre", titulo: "Manzanas Asadas Rellenas de Frutos Secos", imagen: "https://images.unsplash.com/photo-1567613768463-b9254d39994f?q=80&w=400", ingredientes: ["Manzanas", "Dátiles", "Nueces", "Canela", "Vino dulce (opcional)"], pasos: ["Quita corazón a manzanas. Rellena con dátiles y nueces picadas, canela. Hornea con vino dulce hasta tiernas."] },
+                { categoria: "Postre", titulo: "Manzanas Asadas Rellenas de Frutos Secos", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Manzanas+Asadas", ingredientes: ["Manzanas", "Dátiles", "Nueces", "Canela", "Vino dulce (opcional)"], pasos: ["Quita corazón a manzanas. Rellena con dátiles y nueces picadas, canela. Hornea con vino dulce hasta tiernas."] },
                 { categoria: "Postre", titulo: "Soufflé de Queso Fresco con Frutos Rojos", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Soufflé+Queso", ingredientes: ["Queso fresco batido", "Claras de huevo", "Azúcar", "Maicena", "Frutos rojos"], pasos: ["Mezcla queso, maicena y azúcar. Monta claras. Incorpora. Hornea en moldes hasta que suba. Sirve con frutos rojos."] },
                 { categoria: "Postre", titulo: "Compota de Pera y Especias", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Compota+Pera", ingredientes: ["Peras", "Agua", "Canela", "Clavo", "Anís estrellado"], pasos: ["Pela y corta peras. Cuece con agua y especias hasta blandas. Tritura al gusto."] },
                 { categoria: "Postre", titulo: "Barritas de Cereales Caseras con Miel", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Barritas+Cereales", ingredientes: ["Copos de avena", "Miel", "Frutos secos (nueces, almendras)", "Semillas (chía, lino)"], pasos: ["Mezcla avena, frutos secos, semillas y miel. Presiona en molde. Hornea y corta en barritas."] },
@@ -393,7 +406,7 @@
                         </div>`;
                 });
                 targetElement.innerHTML = recipeHTML;
-                // No se llama a addCardEventListeners aquí, se usa delegación global.
+                // addCardEventListeners no se llama aquí, se usa delegación global.
             }
             
             // Event listener delegación para clicks en las tarjetas y botones de favorito
