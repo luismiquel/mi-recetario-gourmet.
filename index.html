@@ -356,7 +356,7 @@
                 { categoria: "Postre", titulo: "Galletas de Mantequilla con Jengibre", imagen: "https://placehold.co/800x600/d1c4b5/4a2e0a?text=Galletas+Jengibre", ingredientes: ["Harina", "Mantequilla", "Azúcar moreno", "Huevo", "Jengibre en polvo", "Canela"], pasos: ["Mezclar ingredientes secos. Añadir mantequilla y huevo hasta formar masa. Estirar y cortar. Hornear."] }
             ];
             
-            // Refactorización de initializeUI para que reciba las recetas a renderizar
+            // Refactorización de renderRecipes para que reciba las recetas a renderizar
             function renderRecipes(recipesToDisplay, targetElementId = 'recipeGrid') {
                 const targetElement = document.getElementById(targetElementId);
                 let recipeHTML = '';
@@ -411,7 +411,60 @@
                 renderRecipes(allRecipes, 'recipeGrid'); // Renderiza todas las recetas en la cuadrícula principal
             }
 
-            // ... (resto del código de Firebase, etc., que ya funciona) ...
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    dom.userInfo.textContent = `Sincronizando...`;
+                    await loadUserData();
+                    updateFavoriteIcons();
+                    applyFilters(); // Aplicar filtros después de cargar favoritos
+                    dom.userInfo.textContent = `ID de sesión: ${userId.substring(0,8)}...`;
+                } else {
+                    signInAnonymously(auth).catch((error) => console.error("Error login anónimo:", error));
+                }
+            });
+
+            async function loadUserData() {
+                if (!userId) return;
+                const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/profile`);
+                const userDoc = await getDoc(userDocRef);
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    userFavorites = data.favorites || [];
+                    pantryIngredients = data.pantry || []; // Cargar ingredientes de la despensa
+                    renderPantryTags(); // Renderizar tags de la despensa al cargar
+                }
+            }
+
+            async function saveData(data) {
+                if (!userId) return;
+                const userDocRef = doc(db, `artifacts/${appId}/users/${userId}/data/profile`);
+                await setDoc(userDocRef, data, { merge: true });
+            }
+
+            async function toggleFavorite(recipeId) {
+                if (!userId) return;
+                const isFavorite = userFavorites.includes(recipeId);
+                userFavorites = isFavorite ? userFavorites.filter(id => id !== recipeId) : [...userFavorites, recipeId];
+                
+                updateFavoriteIcons();
+                applyFilters(); // Re-aplicar filtros para actualizar la vista
+
+                await saveData({ favorites: userFavorites });
+            }
+
+            function updateFavoriteIcons() {
+                document.querySelectorAll('.recipe-card').forEach(card => {
+                    const heartIcon = card.querySelector('.favorite-btn svg');
+                    if (userFavorites.includes(card.dataset.id)) {
+                        heartIcon.classList.add('text-red-500', 'fill-current');
+                        heartIcon.classList.remove('text-gray-600', 'dark:text-gray-400');
+                    } else {
+                        heartIcon.classList.remove('text-red-500', 'fill-current');
+                        heartIcon.classList.add('text-gray-600', 'dark:text-gray-400');
+                    }
+                });
+            }
 
             // --- FILTROS Y BÚSQUEDA ---
             function applyFilters() {
@@ -470,7 +523,6 @@
             }
             
             // --- MODAL DE RECETA ---
-            // ... (Esta sección no necesita cambios ya que showRecipeDetail no re-renderiza tarjetas de la cuadrícula) ...
             function showRecipeDetail(recipe) {
                 dom.modalContent.innerHTML = `
                     <div class="p-6 md:p-8">
@@ -480,7 +532,7 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                         </div>
-                        <img src="${recipe.imagen}" alt="Imagen de ${recipe.titulo}" class="w-full h-64 object-cover" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/600x400/d1c4b5/4a2e0a?text=Receta';">
+                        <img src="${recipe.imagen}" alt="Imagen de ${recipe.titulo}" class="w-full h-64 object-cover rounded-lg mb-6" loading="lazy" onerror="this.onerror=null;this.src='https://placehold.co/600x400/d1c4b5/4a2e0a?text=Receta';">
                         <div id="recipe-content-normal">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                                 <div>
