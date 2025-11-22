@@ -1,206 +1,336 @@
-/**
- * Lógica principal del Recetario Gourmet Navideño
- * Maneja la carga de datos, el renderizado y las funciones de voz/favoritos.
- */
+// Usa el array global RECETAS definido en recetas.js
 
-// --- 1. CONFIGURACIÓN GLOBAL Y VOZ ---
-// Se requiere que el navegador soporte la API de Síntesis de Voz (SpeechSynthesis API)
-const sintetizador = window.speechSynthesis;
-let recetasDatos = []; // Almacenará los datos cargados del JSON
+let favorites = JSON.parse(localStorage.getItem("gourmet_favorites") || "[]");
+let shoppingList = JSON.parse(localStorage.getItem("gourmet_shopping") || "[]");
+let currentFilter = "todas";
+let showOnlyFavorites = false;
+let currentRecipeId = null;
+let currentStepIndex = 0;
 
-/**
- * Función para activar la guía por voz de una receta.
- * Detiene la lectura si ya está hablando (funciona como Stop).
- * @param {number} id - ID de la receta a leer.
- */
-const leerReceta = (id) => {
-    if (!sintetizador) {
-        alert('Lo siento, tu navegador no soporta la síntesis de voz.');
-        return;
-    }
+const listEl = document.getElementById("recipe-list");
+const detailEl = document.getElementById("detail-section");
+const shoppingEl = document.getElementById("shopping-list");
+const clearShoppingBtn = document.getElementById("clear-shopping");
+const toggleFavsBtn = document.getElementById("toggle-favs");
 
-    const receta = recetasDatos.find(r => r.id === id);
-    if (!receta) return;
-    
-    // Detener cualquier lectura previa (si se presiona de nuevo, detiene)
-    if (sintetizador.speaking) {
-        sintetizador.cancel();
-        return;
-    }
+function capitalize(str) {
+  if (!str) return "";
+  return str.charAt(0).toUpperCase() + str.slice(1);
+}
 
-    // Mensaje que se narrará
-    const textoCompleto = `
-        ¡Comencemos a cocinar! Título: ${receta.titulo}. 
-        Ingredientes: ${receta.ingredientes}. 
-        Instrucciones de preparación: ${receta.preparacion}.
-        Recuerda, pulsa el botón para detener la narración.
-    `;
-    
-    const voz = new SpeechSynthesisUtterance(textoCompleto);
-    voz.lang = 'es-ES'; // Configuración de idioma en español
-    voz.rate = 0.9;     // Velocidad de lectura un poco más lenta
-    
-    sintetizador.speak(voz);
-};
+/*************** LISTADO ***************/
+function renderRecipeList() {
+  listEl.innerHTML = "";
 
-// --- 2. FUNCIONALIDAD DE FAVORITOS Y LISTA DE LA COMPRA ---
+  const filtered = RECETAS.filter(r => {
+    const byCategory = currentFilter === "todas" || r.category === currentFilter;
+    const byFav = !showOnlyFavorites || favorites.includes(r.id);
+    return byCategory && byFav;
+  });
 
-/**
- * Obtiene los IDs de las recetas favoritas almacenadas en localStorage.
- * @returns {Array<number>} IDs de las recetas favoritas.
- */
-const obtenerFavoritos = () => {
-    // Usamos localStorage para que la lista de favoritos persista en el navegador
-    const favoritosJSON = localStorage.getItem('recetasFavoritas');
-    return favoritosJSON ? JSON.parse(favoritosJSON) : [];
-};
+  if (filtered.length === 0) {
+    listEl.innerHTML = '<p class="empty">No hay recetas para este filtro.</p>';
+    return;
+  }
 
-/**
- * Alterna el estado de Favorito de una receta.
- * @param {number} id - ID de la receta.
- * @param {HTMLElement} boton - El elemento botón que fue clickeado.
- */
-const toggleFavorito = (id, boton) => {
-    let favoritos = obtenerFavoritos();
-    const esFavorito = favoritos.includes(id);
+  filtered.forEach(r => {
+    const card = document.createElement("article");
+    card.className = "recipe-card";
+    card.dataset.id = r.id;
 
-    if (esFavorito) {
-        // Quitar de favoritos
-        favoritos = favoritos.filter(favId => favId !== id);
-        boton.setAttribute('data-favorito', 'false');
-        boton.textContent = '⭐ Añadir a Favoritos';
-    } else {
-        // Añadir a favoritos
-        favoritos.push(id);
-        boton.setAttribute('data-favorito', 'true');
-        boton.textContent = '🌟 En Favoritos';
-    }
+    const img = document.createElement("img");
+    img.className = "recipe-thumb";
+    img.src = r.image || "https://via.placeholder.com/120x90?text=Plato";
+    img.alt = r.title;
 
-    // Guardar los nuevos favoritos
-    localStorage.setItem('recetasFavoritas', JSON.stringify(favoritos));
-};
+    const info = document.createElement("div");
+    info.className = "recipe-info";
 
-/**
- * Genera la lista de la compra a partir de las recetas favoritas.
- */
-const generarListaCompra = () => {
-    const favoritosIDs = obtenerFavoritos();
-    if (favoritosIDs.length === 0) {
-        alert('No has marcado ninguna receta como favorita. ¡Selecciona algunas para crear tu lista de la compra!');
-        return;
-    }
+    const h3 = document.createElement("h3");
+    h3.textContent = r.title;
 
-    // Filtramos las recetas favoritas a partir de los datos completos
-    const recetasFavoritas = recetasDatos.filter(r => favoritosIDs.includes(r.id));
-    
-    let lista = '🛒 **LISTA DE LA COMPRA para tus Recetas Favoritas**\n\n';
-    const ingredientesTotales = {};
+    const meta = document.createElement("small");
+    meta.textContent = `${capitalize(r.category)} · ${r.time || "Tiempo variable"}`;
 
-    recetasFavoritas.forEach(receta => {
-        // Dividimos los ingredientes por coma y quitamos los números y espacios iniciales
-        receta.ingredientes.split(',').forEach(item => {
-            const limpio = item.trim().replace(/^\d+\.\s*/, '');
-            if (limpio) {
-                // Contamos las veces que aparece el ingrediente (sin manejo de cantidades)
-                ingredientesTotales[limpio] = (ingredientesTotales[limpio] || 0) + 1; 
-            }
-        });
+    const badge = document.createElement("span");
+    badge.className = "badge";
+    badge.textContent = r.difficulty || "Receta";
+
+    const favIcon = document.createElement("div");
+    favIcon.className = "fav-icon" + (favorites.includes(r.id) ? " active" : "");
+    favIcon.textContent = "★";
+
+    info.appendChild(h3);
+    info.appendChild(meta);
+    info.appendChild(badge);
+
+    card.appendChild(img);
+    card.appendChild(info);
+    card.appendChild(favIcon);
+
+    card.addEventListener("click", (e) => {
+      if (e.target === favIcon) {
+        toggleFavorite(r.id);
+        renderRecipeList();
+        e.stopPropagation();
+      } else {
+        showRecipeDetail(r.id);
+      }
     });
-    
-    // Formatear la lista para el usuario
-    // Creamos una lista enumerada de los ingredientes únicos
-    const listaFinal = Object.keys(ingredientesTotales).map(ing => `* ${ing}`).join('\n');
-    lista += listaFinal;
 
-    alert(lista);
-};
+    listEl.appendChild(card);
+  });
+}
 
-// --- 3. RENDERIZADO DE RECETAS ---
+/*************** DETALLE ***************/
+function showRecipeDetail(id) {
+  const r = RECETAS.find(x => x.id === id);
+  if (!r) return;
 
-/**
- * Crea el elemento HTML para una única receta.
- * @param {Object} r - Objeto de la receta.
- * @returns {HTMLElement} El div de la receta.
- */
-const crearTarjetaReceta = (r) => {
-    const div = document.createElement('div');
-    div.className = 'receta';
-    
-    const esFavorito = obtenerFavoritos().includes(r.id);
-    const textoBotonFav = esFavorito ? '🌟 En Favoritos' : '⭐ Añadir a Favoritos';
+  currentRecipeId = id;
+  currentStepIndex = 0;
+  stopVoice();
 
-    // Se ha eliminado la etiqueta <img> de este HTML para cumplir con tu requisito.
-    div.innerHTML = `
-        <div class="contenido-receta">
-            <h3>${r.titulo}</h3>
-            
-            <div class="meta">
-              <span class="tiempo">⏱ ${r.tiempo}</span>
-              <span class="dificultad">🔥 Dificultad: ${r.dificultad}</span>
-            </div>
-            
-            <div class="contenido-receta-detalle">
-              <h4>Ingredientes:</h4>
-              <p>${r.ingredientes}</p>
-              <h4>Preparación:</h4>
-              <p>${r.preparacion}</p>
-              
-              <div class="acciones">
-                <button class="btn-voz" onclick="leerReceta(${r.id})">🎤 Instrucciones por Voz</button>
-                <button class="btn-favorito" data-favorito="${esFavorito}" onclick="toggleFavorito(${r.id}, this)">${textoBotonFav}</button>
-              </div>
-            </div>
-        </div>
-    `;
-    return div;
-};
+  detailEl.innerHTML = "";
 
-/**
- * Carga las recetas del JSON y las renderiza en la página.
- */
-const renderizarRecetas = () => {
-    const contenedores = {
-        'aperitivos': document.getElementById('contenedor-aperitivos'),
-        'primeros': document.getElementById('contenedor-primeros'),
-        'segundos': document.getElementById('contenedor-segundos'),
-        'postres': document.getElementById('contenedor-postres')
-    };
+  const header = document.createElement("div");
+  header.className = "detail-header";
 
-    recetasDatos.forEach(r => {
-        const tarjeta = crearTarjetaReceta(r);
-        // Aseguramos que la categoría exista para prevenir errores
-        if (contenedores[r.categoria]) {
-            contenedores[r.categoria].appendChild(tarjeta);
-        } else {
-             console.warn(`Categoría no reconocida: ${r.categoria} para la receta ID: ${r.id}`);
-        }
-    });
-};
+  const img = document.createElement("img");
+  img.src = r.image || "https://via.placeholder.com/240x180?text=Plato";
+  img.alt = r.title;
 
-/**
- * Inicializa la aplicación: Carga los datos y renderiza.
- */
-const init = async () => {
-    try {
-        // Intentamos cargar el archivo JSON de forma asíncrona
-        const response = await fetch('recetas.json');
-        if (!response.ok) {
-            // Si hay un 404 u otro error HTTP
-            throw new Error(`Error al cargar recetas.json: ${response.statusText || response.status}`);
-        }
-        recetasDatos = await response.json();
-        
-        renderizarRecetas();
-        
-        // Conectar el botón de la lista de la compra al evento click
-        document.getElementById('btn-lista-compra').addEventListener('click', generarListaCompra);
+  const text = document.createElement("div");
+  const h2 = document.createElement("h2");
+  h2.textContent = r.title;
 
-    } catch (error) {
-        console.error('Fallo al inicializar la aplicación:', error);
-        // Alerta que se activa si el archivo no se carga, típico en ejecución local sin servidor
-        alert('Error al cargar las recetas. Asegúrate de que el archivo recetas.json exista en la carpeta raíz.');
+  const meta = document.createElement("div");
+  meta.className = "detail-meta";
+  meta.textContent =
+    `${capitalize(r.category)} · ${r.time || "Tiempo variable"} · ` +
+    `${r.difficulty || ""} · ${r.servings || ""} raciones`;
+
+  const buttons = document.createElement("div");
+  buttons.className = "detail-buttons";
+
+  const btnFav = document.createElement("button");
+  btnFav.className = "btn";
+  btnFav.textContent = favorites.includes(id) ? "Quitar de favoritos" : "Añadir a favoritos";
+  btnFav.addEventListener("click", () => {
+    toggleFavorite(id);
+    btnFav.textContent = favorites.includes(id) ? "Quitar de favoritos" : "Añadir a favoritos";
+    renderRecipeList();
+  });
+
+  const btnShopping = document.createElement("button");
+  btnShopping.className = "btn";
+  btnShopping.textContent = "Añadir ingredientes a la compra";
+  btnShopping.addEventListener("click", () => {
+    addRecipeToShoppingList(r);
+  });
+
+  const btnVoice = document.createElement("button");
+  btnVoice.className = "btn primary";
+  btnVoice.textContent = "Iniciar cocina guiada (voz)";
+  btnVoice.addEventListener("click", () => startGuidedCooking(r));
+
+  const btnPrev = document.createElement("button");
+  btnPrev.className = "btn";
+  btnPrev.textContent = "Paso anterior";
+  btnPrev.addEventListener("click", () => prevStep());
+
+  const btnNext = document.createElement("button");
+  btnNext.className = "btn";
+  btnNext.textContent = "Siguiente paso";
+  btnNext.addEventListener("click", () => nextStep());
+
+  const btnStop = document.createElement("button");
+  btnStop.className = "btn danger";
+  btnStop.textContent = "Parar voz";
+  btnStop.addEventListener("click", () => stopVoice());
+
+  buttons.appendChild(btnFav);
+  buttons.appendChild(btnShopping);
+  buttons.appendChild(btnVoice);
+  buttons.appendChild(btnPrev);
+  buttons.appendChild(btnNext);
+  buttons.appendChild(btnStop);
+
+  const voiceStatus = document.createElement("div");
+  voiceStatus.className = "voice-status";
+  voiceStatus.id = "voice-status";
+  voiceStatus.textContent =
+    "Cocina guiada: selecciona \"Iniciar\" para escuchar los pasos.";
+
+  text.appendChild(h2);
+  text.appendChild(meta);
+  text.appendChild(buttons);
+  text.appendChild(voiceStatus);
+
+  header.appendChild(img);
+  header.appendChild(text);
+
+  const ingTitle = document.createElement("div");
+  ingTitle.className = "section-title";
+  ingTitle.textContent = "Ingredientes";
+
+  const ingList = document.createElement("ul");
+  (r.ingredients || []).forEach(i => {
+    const li = document.createElement("li");
+    li.textContent = i;
+    ingList.appendChild(li);
+  });
+
+  const stepsTitle = document.createElement("div");
+  stepsTitle.className = "section-title";
+  stepsTitle.textContent = "Preparación";
+
+  const stepsList = document.createElement("ol");
+  stepsList.style.fontSize = "0.85rem";
+  (r.steps || []).forEach(s => {
+    const li = document.createElement("li");
+    li.textContent = s;
+    stepsList.appendChild(li);
+  });
+
+  detailEl.appendChild(header);
+  detailEl.appendChild(ingTitle);
+  detailEl.appendChild(ingList);
+  detailEl.appendChild(stepsTitle);
+  detailEl.appendChild(stepsList);
+}
+
+/*************** FAVORITOS ***************/
+function toggleFavorite(id) {
+  if (favorites.includes(id)) {
+    favorites = favorites.filter(x => x !== id);
+  } else {
+    favorites.push(id);
+  }
+  localStorage.setItem("gourmet_favorites", JSON.stringify(favorites));
+}
+
+/*************** LISTA COMPRA ***************/
+function addRecipeToShoppingList(recipe) {
+  (recipe.ingredients || []).forEach(ing => {
+    if (!shoppingList.includes(ing)) {
+      shoppingList.push(ing);
     }
-};
+  });
+  saveShopping();
+  renderShoppingList();
+}
 
-// Iniciar la aplicación al cargar el documento
-document.addEventListener('DOMContentLoaded', init);
+function renderShoppingList() {
+  shoppingEl.innerHTML = "";
+  if (shoppingList.length === 0) {
+    shoppingEl.innerHTML = '<p class="empty">La lista de la compra está vacía.</p>';
+    return;
+  }
+  shoppingList.forEach((item, index) => {
+    const row = document.createElement("div");
+    row.className = "shopping-item";
+
+    const span = document.createElement("span");
+    span.textContent = item;
+
+    const btn = document.createElement("button");
+    btn.textContent = "✕";
+    btn.addEventListener("click", () => {
+      shoppingList.splice(index, 1);
+      saveShopping();
+      renderShoppingList();
+    });
+
+    row.appendChild(span);
+    row.appendChild(btn);
+    shoppingEl.appendChild(row);
+  });
+}
+
+function saveShopping() {
+  localStorage.setItem("gourmet_shopping", JSON.stringify(shoppingList));
+}
+
+if (clearShoppingBtn) {
+  clearShoppingBtn.addEventListener("click", () => {
+    shoppingList = [];
+    saveShopping();
+    renderShoppingList();
+  });
+}
+
+/*************** VOZ (cocina guiada) ***************/
+function startGuidedCooking(recipe) {
+  if (!("speechSynthesis" in window)) {
+    alert("Tu navegador no soporta síntesis de voz.");
+    return;
+  }
+  currentRecipeId = recipe.id;
+  currentStepIndex = 0;
+  speakCurrentStep();
+}
+
+function speakCurrentStep() {
+  stopVoice();
+  const recipe = RECETAS.find(r => r.id === currentRecipeId);
+  if (!recipe || !recipe.steps || recipe.steps.length === 0) return;
+  const status = document.getElementById("voice-status");
+  if (!status) return;
+
+  const stepText = recipe.steps[currentStepIndex];
+  const text = `Paso ${currentStepIndex + 1}: ${stepText}`;
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = "es-ES";
+  window.speechSynthesis.speak(utterance);
+  status.textContent = `Cocina guiada: paso ${currentStepIndex + 1} de ${recipe.steps.length}`;
+}
+
+function nextStep() {
+  const recipe = RECETAS.find(r => r.id === currentRecipeId);
+  if (!recipe || !recipe.steps) return;
+  if (currentStepIndex < recipe.steps.length - 1) {
+    currentStepIndex++;
+    speakCurrentStep();
+  }
+}
+
+function prevStep() {
+  const recipe = RECETAS.find(r => r.id === currentRecipeId);
+  if (!recipe || !recipe.steps) return;
+  if (currentStepIndex > 0) {
+    currentStepIndex--;
+    speakCurrentStep();
+  }
+}
+
+function stopVoice() {
+  if (window.speechSynthesis) {
+    window.speechSynthesis.cancel();
+  }
+  const status = document.getElementById("voice-status");
+  if (status) status.textContent = "Cocina guiada detenida.";
+}
+
+/*************** FILTROS ***************/
+document.querySelectorAll(".filters button[data-filter]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll(".filters button[data-filter]")
+      .forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentFilter = btn.dataset.filter;
+    renderRecipeList();
+  });
+});
+
+if (toggleFavsBtn) {
+  toggleFavsBtn.addEventListener("click", () => {
+    showOnlyFavorites = !showOnlyFavorites;
+    toggleFavsBtn.textContent = showOnlyFavorites ? "Ver todo" : "Solo favoritos";
+    renderRecipeList();
+  });
+}
+
+/*************** INICIO ***************/
+renderRecipeList();
+renderShoppingList();
