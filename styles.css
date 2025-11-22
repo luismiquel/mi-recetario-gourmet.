@@ -1,69 +1,156 @@
-:root {
-  --bg: #f8f7f5;
-  --text: #333;
-  --accent: #8b4513;
+/* Estilos Navideños y Limpios */
+body { 
+    font-family: 'Georgia', serif; 
+    margin: 0; 
+    padding: 0; 
+    background: #fdf6e3; /* Crema Claro */
+    color: #333; 
 }
-body.dark {
-  --bg: #222;
-  --text: #ddd;
-  --accent: #dda15e;
-}
-body {
-  margin:0; padding:0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: "Segoe UI", sans-serif;
-}
-header {
-  display:flex; justify-content:space-between; align-items:center;
-  padding:1rem; background: var(--accent); color:white;
-}
-nav {
-  padding:0.5rem; display:flex; gap:0.5rem;
-}
-nav button {
-  padding:0.5rem 1rem; border:none;
-  background:#eee; cursor:pointer; border-radius:4px;
-}
-nav button.active { background: var(--accent); color:white; }
-#search { display:block; width:calc(100% - 2rem); margin:1rem; padding:0.5rem; }
 
-#recipes {
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px,1fr));
-  gap:1rem;
-  padding:1rem;
-}
-.card {
-  border:1px solid #ccc;
-  border-radius:8px;
-  overflow:hidden;
-  background:white;
-  display:flex; flex-direction:column;
-}
-.card img {
-  width:100%; height:160px; object-fit:cover;
-}
-.card .info {
-  padding:1rem; flex:1;
-}
-.card h3 { margin:0 0 0.5rem; }
-.card button { margin-top:auto; }
+header { 
+    background: #8b0000; /* Rojo Oscuro (Navidad) */ 
+    color: white; 
+    padding: 2rem 1rem; 
+    text-align: center; 
+    border-bottom: 5px solid #006400; /* Verde Oscuro (Navidad) */
+} 
 
-.modal {
-  position:fixed; inset:0;
-  background: rgba(0,0,0,0.6);
-  display:flex; align-items:center; justify-content:center;
+header h1 { 
+    margin: 0 0 0.5rem 0; 
+    font-size: 2.5rem; 
 }
-.modal.hidden { display:none; }
-.modal-content {
-  background:white;
-  padding:1rem;
-  border-radius:8px;
-  max-width:90%; max-height:90%;
-  overflow:auto;
-}
-.modal-content img { max-width:100%; border-radius:4px; }
 
-#start-cooking { background: var(--accent); color:white; padding:0.5rem; border:none; border-radius:4px; cursor:pointer; }
-#favorite-btn { margin-left:1rem; }
+/* Navegación Fija */
+nav { 
+    background: #006400; 
+    padding: 1rem; 
+    text-align: center; 
+    position: sticky; 
+    top: 0; 
+    z-index: 1000; 
+    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+}
+
+nav a, .btn-lista-compra { 
+    margin: 0 0.7rem; 
+    color: white; 
+    text-decoration: none; 
+    font-weight: bold; 
+    padding: 0.5rem 1rem; 
+    background: rgba(255, 255, 255, 0.15); 
+    border-radius: 5px; 
+    transition: background 0.3s;
+    cursor: pointer; 
+    border: none; 
+    font-size: 1rem;
+}
+
+nav a:hover, .btn-lista-compra:hover { 
+    background: rgba(255, 255, 255, 0.4); 
+}
+
+section { 
+    padding: 3rem 5%; 
+}
+
+/* Estilo de rejilla para las recetas */
+.grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+    gap: 2rem; 
+    margin-top: 2rem; 
+}
+
+h2 { 
+    color: #8b0000; 
+    font-size: 2rem; 
+    border-bottom: 2px solid #006400; 
+    padding-bottom: 0.5rem; 
+    margin-top: 0; 
+}
+
+/* Tarjeta de Receta */
+.receta { 
+    background: white; 
+    border-radius: 10px; 
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
+    overflow: hidden; 
+    transition: transform 0.3s; 
+}
+
+.receta:hover { 
+    transform: translateY(-5px); 
+    box-shadow: 0 6px 15px rgba(0,0,0,0.3); 
+}
+
+.receta img { 
+    width: 100%; 
+    height: 250px; 
+    object-fit: cover;
+}
+
+.contenido-receta { 
+    padding: 1.5rem; 
+}
+
+.contenido-receta h3 { 
+    color: #8b0000; 
+    margin-top: 0; 
+    font-size: 1.5rem; 
+}
+
+.meta { 
+    display: flex; 
+    justify-content: space-between; 
+    font-size: 0.9rem; 
+    color: #666; 
+    margin-bottom: 1rem; 
+}
+
+.tiempo, .dificultad { 
+    background: #e0e0e0; 
+    padding: 0.3rem 0.8rem; 
+    border-radius: 15px; 
+}
+
+/* Botones */
+.acciones { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 10px; 
+    margin-top: 15px; 
+}
+
+.btn-voz, .btn-favorito { 
+    padding: 10px; 
+    border: none; 
+    border-radius: 5px; 
+    font-weight: bold; 
+    cursor: pointer;
+    transition: background 0.3s, transform 0.1s;
+}
+
+.btn-voz { 
+    background-color: #f4a261; /* Naranja/Tostado */ 
+    color: white; 
+}
+
+.btn-voz:hover { 
+    background-color: #e08c4e; 
+    transform: scale(1.02); 
+}
+
+.btn-favorito { 
+    background-color: #ffe0b2; /* Amarillo Pálido */ 
+    color: #333; 
+}
+
+/* Estado de Favorito Activo */
+.btn-favorito[data-favorito="true"] { 
+    background-color: #ffd700; /* Oro */ 
+    color: #8b0000; 
+}
+
+.btn-favorito:hover { 
+    background-color: #ffd700; 
+}
