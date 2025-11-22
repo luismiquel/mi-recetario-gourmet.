@@ -12,10 +12,10 @@ let currentRecipeId = null;
 let currentStepIndex = 0;
 let searchTerm = "";
 
-// voz
+// voz (modo paso a paso)
 let currentUtterance = null;
-// 🔹 Ahora usaremos SIEMPRE modo paso a paso (no automático)
-let autoVoiceMode = false;
+let autoVoiceMode = false; // siempre manual
+let helpSpoken = false;    // si ya hemos dicho las instrucciones de ayuda
 
 const listEl = document.getElementById("recipe-list");
 const shoppingEl = document.getElementById("shopping-list");
@@ -133,6 +133,7 @@ function openRecipeModal(id) {
 
   currentRecipeId = id;
   currentStepIndex = 0;
+  helpSpoken = false; // instrucciones de ayuda se dirán de nuevo para esta receta
   stopVoice();
 
   modalContentEl.innerHTML = "";
@@ -179,12 +180,12 @@ function openRecipeModal(id) {
     addRecipeToShoppingList(r);
   });
 
-  // 🔹 Ahora solo lee el paso actual (modo paso a paso)
+  // Lee el paso actual
   const btnVoice = document.createElement("button");
   btnVoice.className = "btn primary";
   btnVoice.textContent = "Leer paso actual (voz)";
   btnVoice.addEventListener("click", () => {
-    autoVoiceMode = false; // siempre manual
+    autoVoiceMode = false;
     startGuidedCooking(r);
   });
 
@@ -220,7 +221,7 @@ function openRecipeModal(id) {
   voiceStatus.className = "voice-status";
   voiceStatus.id = "voice-status";
   voiceStatus.textContent =
-    "Cocina guiada: usa los botones de voz para leer cada paso.";
+    "Cocina guiada: usa los botones de voz o las teclas para leer cada paso.";
 
   const ingTitle = document.createElement("div");
   ingTitle.className = "modal-section-title";
@@ -283,9 +284,31 @@ modalEl.addEventListener("click", (e) => {
   }
 });
 
+// ESC, flechas, R y S para control de voz
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && modalEl.classList.contains("open")) {
     closeRecipeModal();
+    return;
+  }
+
+  if (!modalEl.classList.contains("open")) return;
+  const key = e.key.toLowerCase();
+
+  if (key === "arrowright") {
+    e.preventDefault();
+    autoVoiceMode = false;
+    nextStep();
+  } else if (key === "arrowleft") {
+    e.preventDefault();
+    autoVoiceMode = false;
+    prevStep();
+  } else if (key === "r") {
+    e.preventDefault();
+    autoVoiceMode = false;
+    speakCurrentStep();
+  } else if (key === "s") {
+    e.preventDefault();
+    stopVoice();
   }
 });
 
@@ -350,7 +373,7 @@ if (clearShoppingBtn) {
   });
 }
 
-/*************** VOZ ***************/
+/*************** VOZ (paso a paso con ayuda) ***************/
 function startGuidedCooking(recipe) {
   const status = document.getElementById("voice-status");
   if (!("speechSynthesis" in window)) {
@@ -367,7 +390,7 @@ function startGuidedCooking(recipe) {
     return;
   }
   currentRecipeId = recipe.id;
-  // NO cambiamos índice: lee el paso actual (por si quieres repetir)
+  // se mantiene el índice actual (para poder repetir o seguir donde estabas)
   speakCurrentStep();
 }
 
@@ -381,7 +404,7 @@ function speakCurrentStep() {
   const stepText = recipe.steps[currentStepIndex];
   let text = `Paso ${currentStepIndex + 1} de ${recipe.steps.length}. ${stepText}`;
 
-  // 🔹 En el primer paso, añadimos el tiempo total de la receta si lo hay
+  // En el primer paso, añadir tiempo total aproximado si existe
   if (currentStepIndex === 0 && recipe.time) {
     text += `. El tiempo total aproximado de esta receta es ${recipe.time}.`;
   }
@@ -394,9 +417,24 @@ function speakCurrentStep() {
     status.textContent = `Leyendo paso ${currentStepIndex + 1} de ${recipe.steps.length}...`;
   };
 
-  // 🔹 En modo manual NO pasamos al siguiente paso automáticamente
   utterance.onend = () => {
-    status.textContent = `Fin del paso ${currentStepIndex + 1}. Usa los botones para cambiar de paso.`;
+    status.textContent =
+      `Fin del paso ${currentStepIndex + 1}. Usa los botones o el teclado para continuar.`;
+
+    // 🔹 Solo la primera vez, damos instrucciones de uso para invidentes
+    if (!helpSpoken) {
+      helpSpoken = true;
+      const helpText =
+        "Cuando quieras continuar, pulsa el botón siguiente paso voz, " +
+        "o usa la tecla flecha derecha. Para volver a oír este paso, " +
+        "pulsa el botón leer paso actual o la tecla erre. " +
+        "Para ir al paso anterior, usa la tecla flecha izquierda. " +
+        "Para parar la voz, pulsa el botón parar voz o la tecla ese.";
+      const helpUtter = new SpeechSynthesisUtterance(helpText);
+      helpUtter.lang = "es-ES";
+      helpUtter.rate = 0.95;
+      window.speechSynthesis.speak(helpUtter);
+    }
   };
 
   currentUtterance = utterance;
