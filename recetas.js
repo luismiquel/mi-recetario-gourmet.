@@ -1,4 +1,4 @@
-// === INICIO DEL ARRAY DE RECETAS NAVIDEÑAS (160 REC// === INICIO DEL ARRAY DE RECETAS NAVIDEÑAS (160 RECETAS) ===
+// === INICIO DEL ARRAY DE RECETAS NAVIDEÑAS (160 RECETAS) ===
 const recetas = [
   // =============================================================
   // 🧀 40 APERITIVOS (Índices 0 - 39)
@@ -443,6 +443,7 @@ const recetas = [
     tiempo: '45 min',
     dificultad: 'Difícil'
   },
+
   // =============================================================
   // 🍲 40 PRIMEROS PLATOS (Índices 40 - 79)
   // =============================================================
@@ -886,6 +887,7 @@ const recetas = [
     tiempo: '25 min',
     dificultad: 'Fácil'
   },
+
   // =============================================================
   // 🍖 40 SEGUNDOS PLATOS (Índices 80 - 119)
   // =============================================================
@@ -1329,6 +1331,7 @@ const recetas = [
     tiempo: '45 min',
     dificultad: 'Difícil'
   },
+
   // =============================================================
   // 🎂 40 POSTRES (Índices 120 - 159)
   // =============================================================
@@ -1771,49 +1774,16 @@ const recetas = [
     instrucciones: 'Prepara la crema y monta el *tiramisú* por capas. Utiliza una cantidad generosa de cacao amargo para espolvorear.',
     tiempo: '30 min (+ refrigeración)',
     dificultad: 'Media'
-  },
-  // === FIN DEL ARRAY DE RECETAS NAVIDEÑAS (160 RECETAS) ===
-];ETAS) ===
-const recetas = [
-  //️
-  // (desde id: 1 hasta id: 160)
-
-  {
-    id: 1,
-    titulo: "...",
-    categoria: "aperitivos",
-    descripcion: "...",
-    ingredientes: "...",
-    instrucciones: "...",
-    tiempo: "...",
-    dificultad: "...",
-    img: "placeholder.jpg"
-  },
-
-  {
-    id: 2,
-    titulo: "...",
-    categoria: "aperitivos",
-    ...
-  },
-
-  ...
-
-  {
-    id: 160,
-    titulo: "...",
-    categoria: "postre",
-    ...
   }
-
 ];
 // === FIN DEL ARRAY DE RECETAS NAVIDEÑAS (160 RECETAS) ===
+
+
 // =============================================================
 // 🔁 ADAPTADOR PARA LA APP (NO TOCAR LAS RECETAS DE ARRIBA)
 // Convierte "recetas" → "RECETAS" en el formato que usa app.js
 // =============================================================
 
-// Mapeo de categorías de tu estructura a la que usa la app
 function mapCategoria(cat) {
   switch (cat) {
     case "aperitivos":
@@ -1829,19 +1799,15 @@ function mapCategoria(cat) {
   }
 }
 
-// Transformamos "recetas" (tu array original) a "RECETAS" (la que usa app.js)
 const RECETAS = recetas.map((r) => {
-  // Pasar ingredientes de texto plano → array
   const ingredientesArray = r.ingredientes
     ? r.ingredientes.split(",").map((t) => t.trim()).filter(Boolean)
     : [];
 
-  // Pasar instrucciones de un párrafo → pasos (array)
   const pasosArray = r.instrucciones
     ? r.instrucciones.split(".").map((t) => t.trim()).filter(Boolean)
     : [];
 
-  // Imagen: si es "placeholder.jpg" lo dejamos vacío para usar la imagen por defecto
   const imagePath =
     r.img && r.img !== "placeholder.jpg" ? r.img : "";
 
