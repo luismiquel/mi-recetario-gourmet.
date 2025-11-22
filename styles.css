@@ -76,6 +76,8 @@ h2 {
     box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
     overflow: hidden; 
     transition: transform 0.3s; 
+    /* Hemos ajustado el padding para compensar la falta de imagen */
+    padding-top: 1.5rem; 
 }
 
 .receta:hover { 
@@ -83,11 +85,14 @@ h2 {
     box-shadow: 0 6px 15px rgba(0,0,0,0.3); 
 }
 
+/* Estilos de imagen comentados, ya que no se usarán */
+/*
 .receta img { 
     width: 100%; 
     height: 250px; 
     object-fit: cover;
 }
+*/
 
 .contenido-receta { 
     padding: 1.5rem; 
