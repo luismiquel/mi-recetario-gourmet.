@@ -4,42 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎄 Recetario Gourmet Navideño por Voz (160 Platos)</title>
-    <style>
-        /* Estilos Navideños y Limpios */
-        body { font-family: 'Georgia', serif; margin: 0; padding: 0; background: #fdf6e3; color: #333; }
-        header { background: #8b0000; /* Rojo Oscuro */ color: white; padding: 2rem 1rem; text-align: center; border-bottom: 5px solid #006400; } /* Verde Oscuro */
-        header h1 { margin: 0 0 0.5rem 0; font-size: 2.5rem; }
-        nav { background: #006400; padding: 1rem; text-align: center; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        nav a, .btn-lista-compra { 
-            margin: 0 0.7rem; color: white; text-decoration: none; font-weight: bold; padding: 0.5rem 1rem; 
-            background: rgba(255, 255, 255, 0.1); border-radius: 5px; transition: background 0.3s;
-            cursor: pointer; border: none; font-size: 1rem;
-        }
-        nav a:hover, .btn-lista-compra:hover { background: rgba(255, 255, 255, 0.3); }
-
-        section { padding: 3rem 5%; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem; }
-        h2 { color: #8b0000; font-size: 2rem; border-bottom: 2px solid #006400; padding-bottom: 0.5rem; margin-top: 0; }
-        .receta { background: white; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; transition: transform 0.3s; }
-        .receta:hover { transform: translateY(-5px); box-shadow: 0 6px 15px rgba(0,0,0,0.2); }
-        .receta img { width: 100%; height: 250px; object-fit: cover; }
-        .contenido-receta { padding: 1.5rem; }
-        .contenido-receta h3 { color: #8b0000; margin-top: 0; font-size: 1.5rem; }
-        .meta { display: flex; justify-content: space-between; font-size: 0.9rem; color: #666; margin-bottom: 1rem; }
-        .tiempo, .dificultad { background: #e0e0e0; padding: 0.3rem 0.8rem; border-radius: 15px; }
-        .instrucciones-ocultas { display: none; /* Ocultamos el texto largo de preparación */ }
-        
-        .acciones { display: flex; flex-direction: column; gap: 10px; margin-top: 15px; }
-        .btn-voz, .btn-favorito { 
-            padding: 10px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer;
-            transition: background 0.3s, transform 0.1s;
-        }
-        .btn-voz { background-color: #f4a261; color: white; }
-        .btn-voz:hover { background-color: #e08c4e; transform: scale(1.02); }
-        .btn-favorito { background-color: #ffe0b2; color: #333; }
-        .btn-favorito[data-favorito="true"] { background-color: #ffd700; color: #8b0000; }
-        .btn-favorito:hover { background-color: #ffd700; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header>
@@ -48,181 +13,33 @@
     </header>
     
     <nav>
-        <a href="#aperitivos">Aperitivos (40)</a>
-        <a href="#primeros">Primeros Platos (40)</a>
-        <a href="#segundos">Segundos Platos (40)</a>
-        <a href="#postres">Postres (40)</a>
-        <button class="btn-lista-compra" onclick="generarListaCompra()">🛒 Generar Lista de la Compra</button>
+        <a href="#aperitivos">Aperitivos</a>
+        <a href="#primeros">Primeros Platos</a>
+        <a href="#segundos">Segundos Platos</a>
+        <a href="#postres">Postres</a>
+        <button class="btn-lista-compra" id="btn-lista-compra">🛒 Generar Lista de la Compra</button>
     </nav>
 
     <section id="aperitivos">
-        <h2>🧀 Aperitivos (40 Platos)</h2>
+        <h2>🧀 Aperitivos</h2>
         <div class="grid" id="contenedor-aperitivos"></div>
     </section>
 
     <section id="primeros">
-        <h2>🥗 Primeros Platos (40 Platos)</h2>
+        <h2>🥗 Primeros Platos</h2>
         <div class="grid" id="contenedor-primeros"></div>
     </section>
 
     <section id="segundos">
-        <h2>🍖 Segundos Platos (40 Platos)</h2>
+        <h2>🍖 Segundos Platos</h2>
         <div class="grid" id="contenedor-segundos"></div>
     </section>
 
     <section id="postres">
-        <h2>🍮 Postres (40 Platos)</h2>
+        <h2>🍮 Postres</h2>
         <div class="grid" id="contenedor-postres"></div>
     </section>
 
-    <script>
-        // --- 1. GENERACIÓN DE RECETAS (160 en total, simuladas) ---
-        const generarRecetas = () => {
-            const recetas = [];
-            const categorias = {
-                'aperitivos': { nombre: 'Aperitivos', total: 40 },
-                'primeros': { nombre: 'Primeros Platos', total: 40 },
-                'segundos': { nombre: 'Segundos Platos', total: 40 },
-                'postres': { nombre: 'Postres', total: 40 }
-            };
-            let contador = 1;
-
-            for (const [key, cat] of Object.entries(categorias)) {
-                for (let i = 1; i <= cat.total; i++) {
-                    recetas.push({
-                        id: contador++,
-                        titulo: `Plato Navideño Gourmet ${i} (${cat.nombre})`,
-                        categoria: key,
-                        // Imágenes de ejemplo (placeholders)
-                        img: `https://via.placeholder.com/400x250/8B0000/FFFFFF?text=Plato+${cat.nombre.charAt(0)}+${i}`, 
-                        ingredientes: `1. Ingrediente A de la receta ${i}, 2. Ingrediente B fresco, 3. Ingrediente C gourmet.`, 
-                        preparacion: `Paso 1: Pelar los ingredientes cuidadosamente. Paso 2: Mezclar los ingredientes con amor y sazón navideña. Paso 3: Hornear a 180 grados Celsio por 20 minutos. Paso 4: ¡Servir este manjar de ${cat.nombre} y disfrutar!`, 
-                        tiempo: `${30 + (i % 30)} min`,
-                        dificultad: i % 3 === 0 ? 'Media' : (i % 3 === 1 ? 'Fácil' : 'Difícil')
-                    });
-                }
-            }
-            return recetas;
-        };
-
-        const RECETAS = generarRecetas();
-
-        // --- 2. FUNCIONALIDAD DE VOZ (Cocina Guiada) ---
-        let sintetizador = window.speechSynthesis;
-
-        const leerReceta = (id) => {
-            if (!sintetizador) {
-                alert('Lo siento, tu navegador no soporta la síntesis de voz.');
-                return;
-            }
-
-            const receta = RECETAS.find(r => r.id === id);
-            if (!receta) return;
-            
-            // Detener cualquier lectura previa (si se presiona de nuevo, detiene)
-            if (sintetizador.speaking) {
-                sintetizador.cancel();
-                return;
-            }
-
-            const textoCompleto = `
-                ¡Comencemos a cocinar! Título: ${receta.titulo}. 
-                Ingredientes: ${receta.ingredientes}. 
-                Instrucciones de preparación: ${receta.preparacion}.
-                Recuerda, pulsa el botón para detener la narración.
-            `;
-            
-            const voz = new SpeechSynthesisUtterance(textoCompleto);
-            voz.lang = 'es-ES'; 
-            voz.rate = 0.9;     
-            
-            sintetizador.speak(voz);
-        };
-
-        // --- 3. FUNCIONALIDAD DE FAVORITOS (Simplificada con manejo de DOM) ---
-        const toggleFavorito = (id, event) => {
-            const boton = event.currentTarget;
-            const isFavorito = boton.getAttribute('data-favorito') === 'true';
-            
-            if (isFavorito) {
-                boton.setAttribute('data-favorito', 'false');
-                boton.textContent = '⭐ Añadir a Favoritos';
-            } else {
-                boton.setAttribute('data-favorito', 'true');
-                boton.textContent = '🌟 En Favoritos';
-            }
-            // NOTA: Para persistir, usaríamos localStorage aquí.
-        };
-
-        // --- 4. GENERAR LISTA DE LA COMPRA ---
-        const generarListaCompra = () => {
-            let lista = 'Las siguientes son las cantidades de ingredientes de las 5 primeras recetas (ejemplo):\n\n';
-            const ingredientesAgregados = new Set();
-            
-            // Iteramos sobre las recetas marcadas como favoritas o un subconjunto
-            const recetasParaLista = RECETAS.filter(r => document.querySelector(`.btn-favorito[data-favorito="true"][onclick*="toggleFavorito(${r.id}, event)"]`));
-            
-            // Si no hay favoritos, tomamos las primeras 5 como ejemplo
-            const recetasFinal = recetasParaLista.length > 0 ? recetasParaLista : RECETAS.slice(0, 5);
-
-            recetasFinal.forEach((receta, index) => {
-                lista += `--- ${receta.titulo} ---\n`;
-                receta.ingredientes.split(',').forEach(ingrediente => {
-                    const limpio = ingrediente.trim().replace(/^\d+\.\s*/, '');
-                    if (limpio && !ingredientesAgregados.has(limpio)) {
-                        lista += `* ${limpio}\n`;
-                        ingredientesAgregados.add(limpio);
-                    }
-                });
-                lista += '\n';
-            });
-
-            if (recetasFinal.length === 0) {
-                 lista = 'No has marcado ninguna receta como favorita. Marca algunas para ver la lista de la compra de tus platos seleccionados.';
-            }
-
-            alert(`🛒 **LISTA DE LA COMPRA**\n\n${lista}`);
-        };
-
-
-        // --- 5. RENDERIZADO AL CARGAR LA PÁGINA ---
-        document.addEventListener('DOMContentLoaded', () => {
-            const contenedores = {
-                'aperitivos': document.getElementById('contenedor-aperitivos'),
-                'primeros': document.getElementById('contenedor-primeros'),
-                'segundos': document.getElementById('contenedor-segundos'),
-                'postres': document.getElementById('contenedor-postres')
-            };
-
-            RECETAS.forEach(r => {
-                const div = document.createElement('div');
-                div.className = 'receta';
-                div.innerHTML = `
-                  <img src="${r.img}" alt="${r.titulo}" loading="lazy">
-                  <div class="contenido-receta">
-                      <h3>${r.titulo}</h3>
-                      
-                      <div class="meta">
-                        <span class="tiempo">⏱ ${r.tiempo}</span>
-                        <span class="dificultad">🔥 Dificultad: ${r.dificultad}</span>
-                      </div>
-                      
-                      <div class="contenido-receta-detalle">
-                        <h4>Ingredientes:</h4>
-                        <p>${r.ingredientes}</p>
-                        <h4>Preparación:</h4>
-                        <p>${r.preparacion}</p>
-                        
-                        <div class="acciones">
-                          <button class="btn-voz" onclick="leerReceta(${r.id})">🎤 Instrucciones por Voz</button>
-                          <button class="btn-favorito" data-favorito="false" onclick="toggleFavorito(${r.id}, event)">⭐ Añadir a Favoritos</button>
-                        </div>
-                      </div>
-                  </div>
-                `;
-                contenedores[r.categoria].appendChild(div);
-            });
-        });
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
