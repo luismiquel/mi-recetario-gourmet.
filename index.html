@@ -1,45 +1,53 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎄 Recetario Gourmet Navideño por Voz (160 Platos)</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <title>App Gourmet – Recetas Navideñas</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <header>
-        <h1>🎄 Recetario Gourmet Navideño por Voz</h1>
-        <p>160 Platos: Aperitivos, Primeros, Segundos y Postres con Cocina Guiada</p>
-    </header>
-    
-    <nav>
-        <a href="#aperitivos">Aperitivos</a>
-        <a href="#primeros">Primeros Platos</a>
-        <a href="#segundos">Segundos Platos</a>
-        <a href="#postres">Postres</a>
-        <button class="btn-lista-compra" id="btn-lista-compra">🛒 Generar Lista de la Compra</button>
-    </nav>
+<header class="app-header">
+  <div>
+    <h1>App Gourmet – Recetas Navideñas</h1>
+    <small>40 aperitivos · 40 primeros · 40 segundos · 40 postres</small>
+  </div>
+</header>
 
-    <section id="aperitivos">
-        <h2>🧀 Aperitivos</h2>
-        <div class="grid" id="contenedor-aperitivos"></div>
-    </section>
+<main class="app-main">
+  <!-- PANEL IZQUIERDO: LISTADO -->
+  <section class="panel panel-left">
+    <h2>Recetas</h2>
+    <div class="filters">
+      <button data-filter="todas" class="active">Todas</button>
+      <button data-filter="aperitivo">Aperitivos (40)</button>
+      <button data-filter="primero">Primeros (40)</button>
+      <button data-filter="segundo">Segundos (40)</button>
+      <button data-filter="postre">Postres (40)</button>
+      <button id="toggle-favs" class="secondary">Solo favoritos</button>
+    </div>
+    <div id="recipe-list" class="recipe-list"></div>
+  </section>
 
-    <section id="primeros">
-        <h2>🥗 Primeros Platos</h2>
-        <div class="grid" id="contenedor-primeros"></div>
-    </section>
+  <!-- PANEL DERECHO: DETALLE + LISTA COMPRA -->
+  <section class="detail">
+    <div class="detail-section" id="detail-section">
+      <p class="empty">
+        Selecciona una receta para ver ingredientes, pasos y activar la cocina guiada con voz.
+      </p>
+    </div>
 
-    <section id="segundos">
-        <h2>🍖 Segundos Platos</h2>
-        <div class="grid" id="contenedor-segundos"></div>
-    </section>
+    <div class="detail-section">
+      <div class="section-title">Lista de la compra</div>
+      <div id="shopping-list" class="shopping-list"></div>
+      <button id="clear-shopping" class="btn danger" style="margin-top:0.5rem;">
+        Vaciar lista de la compra
+      </button>
+    </div>
+  </section>
+</main>
 
-    <section id="postres">
-        <h2>🍮 Postres</h2>
-        <div class="grid" id="contenedor-postres"></div>
-    </section>
-
-    <script src="app.js"></script>
+<script src="recetas.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
