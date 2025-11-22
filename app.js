@@ -10,11 +10,12 @@ let currentFilter = "todas";
 let showOnlyFavorites = false;
 let currentRecipeId = null;
 let currentStepIndex = 0;
-let searchTerm = ""; // texto de búsqueda
+let searchTerm = "";
 
-// control voz
+// voz
 let currentUtterance = null;
-let autoVoiceMode = true;
+// 🔹 Ahora usaremos SIEMPRE modo paso a paso (no automático)
+let autoVoiceMode = false;
 
 const listEl = document.getElementById("recipe-list");
 const shoppingEl = document.getElementById("shopping-list");
@@ -24,14 +25,13 @@ const searchInput = document.getElementById("search-recipes");
 const contrastBtn = document.getElementById("toggle-contrast");
 const textSizeBtn = document.getElementById("toggle-textsize");
 
-// elementos del modal
 const modalEl = document.getElementById("recipe-modal");
 const modalContentEl = document.getElementById("modal-content");
 const modalCloseBtn = document.getElementById("modal-close");
 const modalDialog = document.querySelector(".modal-dialog");
 
-let lastFocusedElement = null; // para devolver el foco al cerrar modal
-let textSizeState = 0; // 0=normal,1=grande,2=muy grande
+let lastFocusedElement = null;
+let textSizeState = 0; // 0 normal, 1 grande, 2 muy grande
 
 function capitalize(str) {
   if (!str) return "";
@@ -60,7 +60,7 @@ function renderRecipeList() {
     const card = document.createElement("article");
     card.className = "recipe-card";
     card.dataset.id = r.id;
-    card.tabIndex = 0; // accesible por teclado
+    card.tabIndex = 0;
     card.setAttribute("role", "button");
     card.setAttribute("aria-label", `${r.title}, ${capitalize(r.category)}`);
 
@@ -103,7 +103,6 @@ function renderRecipeList() {
     card.appendChild(info);
     card.appendChild(favIcon);
 
-    // Click con ratón
     card.addEventListener("click", (e) => {
       if (e.target === favIcon) {
         toggleFavorite(r.id);
@@ -114,7 +113,6 @@ function renderRecipeList() {
       }
     });
 
-    // Teclado: Enter / Barra espaciadora
     card.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
@@ -126,12 +124,11 @@ function renderRecipeList() {
   });
 }
 
-/*************** MODAL – DETALLE VERTICAL ***************/
+/*************** MODAL ***************/
 function openRecipeModal(id) {
   const r = RECETAS.find(x => x.id === id);
   if (!r) return;
 
-  // guardar el elemento que tenía el foco
   lastFocusedElement = document.activeElement;
 
   currentRecipeId = id;
@@ -182,11 +179,12 @@ function openRecipeModal(id) {
     addRecipeToShoppingList(r);
   });
 
+  // 🔹 Ahora solo lee el paso actual (modo paso a paso)
   const btnVoice = document.createElement("button");
   btnVoice.className = "btn primary";
-  btnVoice.textContent = "Leer todos los pasos";
+  btnVoice.textContent = "Leer paso actual (voz)";
   btnVoice.addEventListener("click", () => {
-    autoVoiceMode = true; // que lea todos los pasos seguidos
+    autoVoiceMode = false; // siempre manual
     startGuidedCooking(r);
   });
 
@@ -194,7 +192,7 @@ function openRecipeModal(id) {
   btnPrev.className = "btn";
   btnPrev.textContent = "Paso anterior (voz)";
   btnPrev.addEventListener("click", () => {
-    autoVoiceMode = false; // modo manual
+    autoVoiceMode = false;
     prevStep();
   });
 
@@ -202,7 +200,7 @@ function openRecipeModal(id) {
   btnNext.className = "btn";
   btnNext.textContent = "Siguiente paso (voz)";
   btnNext.addEventListener("click", () => {
-    autoVoiceMode = false; // modo manual
+    autoVoiceMode = false;
     nextStep();
   });
 
@@ -222,7 +220,7 @@ function openRecipeModal(id) {
   voiceStatus.className = "voice-status";
   voiceStatus.id = "voice-status";
   voiceStatus.textContent =
-    "Cocina guiada: pulsa \"Leer todos los pasos\" o usa siguiente/anterior paso.";
+    "Cocina guiada: usa los botones de voz para leer cada paso.";
 
   const ingTitle = document.createElement("div");
   ingTitle.className = "modal-section-title";
@@ -241,11 +239,17 @@ function openRecipeModal(id) {
 
   const stepsList = document.createElement("ol");
   stepsList.style.fontSize = "0.85rem";
-  (r.steps || []).forEach(s => {
+  if (!r.steps || r.steps.length === 0) {
     const li = document.createElement("li");
-    li.textContent = s;
+    li.textContent = "Esta receta todavía no tiene pasos definidos.";
     stepsList.appendChild(li);
-  });
+  } else {
+    r.steps.forEach(s => {
+      const li = document.createElement("li");
+      li.textContent = s;
+      stepsList.appendChild(li);
+    });
+  }
 
   body.appendChild(img);
   body.appendChild(title);
@@ -260,9 +264,7 @@ function openRecipeModal(id) {
   modalContentEl.appendChild(body);
 
   modalEl.classList.add("open");
-  if (modalDialog) {
-    modalDialog.focus();
-  }
+  if (modalDialog) modalDialog.focus();
 }
 
 function closeRecipeModal() {
@@ -273,17 +275,14 @@ function closeRecipeModal() {
   }
 }
 
-// cerrar con botón X
 modalCloseBtn.addEventListener("click", closeRecipeModal);
 
-// cerrar haciendo clic en el fondo oscuro
 modalEl.addEventListener("click", (e) => {
   if (e.target.classList.contains("modal-backdrop")) {
     closeRecipeModal();
   }
 });
 
-// cerrar con tecla ESC
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape" && modalEl.classList.contains("open")) {
     closeRecipeModal();
@@ -351,19 +350,24 @@ if (clearShoppingBtn) {
   });
 }
 
-/*************** VOZ (cocina guiada mejorada) ***************/
+/*************** VOZ ***************/
 function startGuidedCooking(recipe) {
+  const status = document.getElementById("voice-status");
   if (!("speechSynthesis" in window)) {
-    const status = document.getElementById("voice-status");
     if (status) {
-      status.textContent = "Tu navegador no soporta voz. Puedes seguir los pasos leyendo la lista.";
+      status.textContent =
+        "Tu navegador no soporta voz. Sigue los pasos leyendo la lista.";
     } else {
       alert("Tu navegador no soporta síntesis de voz.");
     }
     return;
   }
+  if (!recipe.steps || recipe.steps.length === 0) {
+    if (status) status.textContent = "Esta receta no tiene pasos definidos aún.";
+    return;
+  }
   currentRecipeId = recipe.id;
-  currentStepIndex = 0;
+  // NO cambiamos índice: lee el paso actual (por si quieres repetir)
   speakCurrentStep();
 }
 
@@ -375,34 +379,28 @@ function speakCurrentStep() {
   if (!status) return;
 
   const stepText = recipe.steps[currentStepIndex];
-  const text = `Paso ${currentStepIndex + 1}: ${stepText}`;
+  let text = `Paso ${currentStepIndex + 1} de ${recipe.steps.length}. ${stepText}`;
+
+  // 🔹 En el primer paso, añadimos el tiempo total de la receta si lo hay
+  if (currentStepIndex === 0 && recipe.time) {
+    text += `. El tiempo total aproximado de esta receta es ${recipe.time}.`;
+  }
+
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "es-ES";
-  utterance.rate = 0.95; // un pelín más despacio
+  utterance.rate = 0.95;
 
   utterance.onstart = () => {
     status.textContent = `Leyendo paso ${currentStepIndex + 1} de ${recipe.steps.length}...`;
   };
 
+  // 🔹 En modo manual NO pasamos al siguiente paso automáticamente
   utterance.onend = () => {
-    if (autoVoiceMode && currentRecipeIndexValid(recipe)) {
-      if (currentStepIndex < recipe.steps.length - 1) {
-        currentStepIndex++;
-        speakCurrentStep();
-      } else {
-        status.textContent = "Cocina guiada terminada.";
-      }
-    } else if (!autoVoiceMode) {
-      status.textContent = `Fin del paso ${currentStepIndex + 1}.`;
-    }
+    status.textContent = `Fin del paso ${currentStepIndex + 1}. Usa los botones para cambiar de paso.`;
   };
 
   currentUtterance = utterance;
   window.speechSynthesis.speak(utterance);
-}
-
-function currentRecipeIndexValid(recipe) {
-  return currentStepIndex >= 0 && currentStepIndex < recipe.steps.length;
 }
 
 function nextStep() {
@@ -465,7 +463,7 @@ if (searchInput) {
   });
 }
 
-/*************** CONTROLES ACCESIBILIDAD GLOBAL ***************/
+/*************** ACCESIBILIDAD GLOBAL ***************/
 if (contrastBtn) {
   contrastBtn.addEventListener("click", () => {
     const isOn = document.body.classList.toggle("high-contrast");
@@ -473,7 +471,7 @@ if (contrastBtn) {
   });
 }
 
-// Ciclo: normal -> grande -> muy grande -> normal
+// texto: normal -> grande -> muy grande
 if (textSizeBtn) {
   textSizeBtn.addEventListener("click", () => {
     textSizeState = (textSizeState + 1) % 3;
@@ -494,4 +492,3 @@ if (textSizeBtn) {
 /*************** INICIO ***************/
 renderRecipeList();
 renderShoppingList();
-
