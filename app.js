@@ -10,11 +10,15 @@ let currentFilter = "todas";
 let showOnlyFavorites = false;
 let currentRecipeId = null;
 let currentStepIndex = 0;
+let searchTerm = ""; // texto de búsqueda
 
 const listEl = document.getElementById("recipe-list");
 const shoppingEl = document.getElementById("shopping-list");
 const clearShoppingBtn = document.getElementById("clear-shopping");
 const toggleFavsBtn = document.getElementById("toggle-favs");
+const searchInput = document.getElementById("search-recipes");
+const contrastBtn = document.getElementById("toggle-contrast");
+const textSizeBtn = document.getElementById("toggle-textsize");
 
 // elementos del modal
 const modalEl = document.getElementById("recipe-modal");
@@ -36,7 +40,10 @@ function renderRecipeList() {
   const filtered = RECETAS.filter(r => {
     const byCategory = currentFilter === "todas" || r.category === currentFilter;
     const byFav = !showOnlyFavorites || favorites.includes(r.id);
-    return byCategory && byFav;
+    const bySearch =
+      !searchTerm ||
+      r.title.toLowerCase().includes(searchTerm.toLowerCase());
+    return byCategory && byFav && bySearch;
   });
 
   if (filtered.length === 0) {
@@ -70,14 +77,18 @@ function renderRecipeList() {
     badge.className = "badge";
     badge.textContent = r.difficulty || "Receta";
 
+    const isFav = favorites.includes(r.id);
     const favIcon = document.createElement("button");
     favIcon.type = "button";
-    favIcon.className = "fav-icon" + (favorites.includes(r.id) ? " active" : "");
+    favIcon.className = "fav-icon" + (isFav ? " active" : "");
     favIcon.textContent = "★";
-    favIcon.setAttribute("aria-label", favorites.includes(r.id)
-      ? `Quitar ${r.title} de favoritos`
-      : `Añadir ${r.title} a favoritos`);
-    favIcon.setAttribute("aria-pressed", favorites.includes(r.id) ? "true" : "false");
+    favIcon.setAttribute(
+      "aria-label",
+      isFav
+        ? `Quitar ${r.title} de favoritos`
+        : `Añadir ${r.title} a favoritos`
+    );
+    favIcon.setAttribute("aria-pressed", isFav ? "true" : "false");
 
     info.appendChild(h3);
     info.appendChild(meta);
@@ -115,7 +126,7 @@ function openRecipeModal(id) {
   const r = RECETAS.find(x => x.id === id);
   if (!r) return;
 
-  // guardar el elemento que tenía el foco para luego devolverlo
+  // guardar el elemento que tenía el foco
   lastFocusedElement = document.activeElement;
 
   currentRecipeId = id;
@@ -134,7 +145,7 @@ function openRecipeModal(id) {
 
   const title = document.createElement("h2");
   title.className = "modal-title";
-  title.id = "modal-title"; // conecta con aria-labelledby en el contenedor
+  title.id = "modal-title";
   title.textContent = r.title;
 
   const meta = document.createElement("div");
@@ -199,7 +210,6 @@ function openRecipeModal(id) {
   voiceStatus.textContent =
     "Cocina guiada: pulsa \"Iniciar\" para escuchar los pasos.";
 
-  // Ingredientes
   const ingTitle = document.createElement("div");
   ingTitle.className = "modal-section-title";
   ingTitle.textContent = "Ingredientes";
@@ -211,7 +221,6 @@ function openRecipeModal(id) {
     ingList.appendChild(li);
   });
 
-  // Pasos
   const stepsTitle = document.createElement("div");
   stepsTitle.className = "modal-section-title";
   stepsTitle.textContent = "Preparación";
@@ -238,7 +247,7 @@ function openRecipeModal(id) {
 
   modalEl.classList.add("open");
   if (modalDialog) {
-    modalDialog.focus(); // mover el foco al diálogo
+    modalDialog.focus();
   }
 }
 
@@ -246,7 +255,7 @@ function closeRecipeModal() {
   stopVoice();
   modalEl.classList.remove("open");
   if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
-    lastFocusedElement.focus(); // devolver foco donde estaba
+    lastFocusedElement.focus();
   }
 }
 
@@ -383,7 +392,6 @@ function stopVoice() {
 /*************** FILTROS ***************/
 document.querySelectorAll(".filters button[data-filter]").forEach(btn => {
   btn.addEventListener("click", () => {
-    // visual
     document.querySelectorAll(".filters button[data-filter]")
       .forEach(b => {
         b.classList.remove("active");
@@ -403,6 +411,29 @@ if (toggleFavsBtn) {
     toggleFavsBtn.textContent = showOnlyFavorites ? "Ver todo" : "Solo favoritos";
     toggleFavsBtn.setAttribute("aria-pressed", showOnlyFavorites ? "true" : "false");
     renderRecipeList();
+  });
+}
+
+/*************** BUSCADOR ***************/
+if (searchInput) {
+  searchInput.addEventListener("input", () => {
+    searchTerm = searchInput.value.trim();
+    renderRecipeList();
+  });
+}
+
+/*************** CONTROLES ACCESIBILIDAD GLOBAL ***************/
+if (contrastBtn) {
+  contrastBtn.addEventListener("click", () => {
+    const isOn = document.body.classList.toggle("high-contrast");
+    contrastBtn.setAttribute("aria-pressed", isOn ? "true" : "false");
+  });
+}
+
+if (textSizeBtn) {
+  textSizeBtn.addEventListener("click", () => {
+    const isOn = document.body.classList.toggle("large-text");
+    textSizeBtn.setAttribute("aria-pressed", isOn ? "true" : "false");
   });
 }
 
