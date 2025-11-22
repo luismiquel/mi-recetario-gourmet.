@@ -1,5 +1,9 @@
 // Usa el array global RECETAS definido en recetas.js
 
+// Imagen por defecto desde internet (no tienes que crear archivos locales)
+const DEFAULT_IMAGE =
+  "https://images.pexels.com/photos/70497/pexels-photo-70497.jpeg?auto=compress&cs=tinysrgb&w=600";
+
 let favorites = JSON.parse(localStorage.getItem("gourmet_favorites") || "[]");
 let shoppingList = JSON.parse(localStorage.getItem("gourmet_shopping") || "[]");
 let currentFilter = "todas";
@@ -8,10 +12,14 @@ let currentRecipeId = null;
 let currentStepIndex = 0;
 
 const listEl = document.getElementById("recipe-list");
-const detailEl = document.getElementById("detail-section");
 const shoppingEl = document.getElementById("shopping-list");
 const clearShoppingBtn = document.getElementById("clear-shopping");
 const toggleFavsBtn = document.getElementById("toggle-favs");
+
+// elementos del modal
+const modalEl = document.getElementById("recipe-modal");
+const modalContentEl = document.getElementById("modal-content");
+const modalCloseBtn = document.getElementById("modal-close");
 
 function capitalize(str) {
   if (!str) return "";
@@ -40,8 +48,7 @@ function renderRecipeList() {
 
     const img = document.createElement("img");
     img.className = "recipe-thumb";
-    // Imagen local de reserva; crea img/plato.jpg si quieres que se vea algo sin internet
-    img.src = r.image || "img/plato.jpg";
+    img.src = r.image || DEFAULT_IMAGE;
     img.alt = r.title;
 
     const info = document.createElement("div");
@@ -75,7 +82,7 @@ function renderRecipeList() {
         renderRecipeList();
         e.stopPropagation();
       } else {
-        showRecipeDetail(r.id);
+        openRecipeModal(r.id);
       }
     });
 
@@ -83,8 +90,8 @@ function renderRecipeList() {
   });
 }
 
-/*************** DETALLE ***************/
-function showRecipeDetail(id) {
+/*************** MODAL – DETALLE VERTICAL ***************/
+function openRecipeModal(id) {
   const r = RECETAS.find(x => x.id === id);
   if (!r) return;
 
@@ -92,21 +99,22 @@ function showRecipeDetail(id) {
   currentStepIndex = 0;
   stopVoice();
 
-  detailEl.innerHTML = "";
+  modalContentEl.innerHTML = "";
 
-  const header = document.createElement("div");
-  header.className = "detail-header";
+  const body = document.createElement("div");
+  body.className = "modal-body";
 
   const img = document.createElement("img");
-  img.src = r.image || "img/plato.jpg";
+  img.className = "modal-image";
+  img.src = r.image || DEFAULT_IMAGE;
   img.alt = r.title;
 
-  const text = document.createElement("div");
-  const h2 = document.createElement("h2");
-  h2.textContent = r.title;
+  const title = document.createElement("h2");
+  title.className = "modal-title";
+  title.textContent = r.title;
 
   const meta = document.createElement("div");
-  meta.className = "detail-meta";
+  meta.className = "modal-meta";
   meta.textContent =
     `${capitalize(r.category)} · ${r.time || "Tiempo variable"} · ` +
     `${r.difficulty || ""} · ${r.servings || ""} raciones`;
@@ -161,18 +169,11 @@ function showRecipeDetail(id) {
   voiceStatus.className = "voice-status";
   voiceStatus.id = "voice-status";
   voiceStatus.textContent =
-    "Cocina guiada: selecciona \"Iniciar\" para escuchar los pasos.";
+    "Cocina guiada: pulsa \"Iniciar\" para escuchar los pasos.";
 
-  text.appendChild(h2);
-  text.appendChild(meta);
-  text.appendChild(buttons);
-  text.appendChild(voiceStatus);
-
-  header.appendChild(img);
-  header.appendChild(text);
-
+  // Ingredientes
   const ingTitle = document.createElement("div");
-  ingTitle.className = "section-title";
+  ingTitle.className = "modal-section-title";
   ingTitle.textContent = "Ingredientes";
 
   const ingList = document.createElement("ul");
@@ -182,8 +183,9 @@ function showRecipeDetail(id) {
     ingList.appendChild(li);
   });
 
+  // Pasos
   const stepsTitle = document.createElement("div");
-  stepsTitle.className = "section-title";
+  stepsTitle.className = "modal-section-title";
   stepsTitle.textContent = "Preparación";
 
   const stepsList = document.createElement("ol");
@@ -194,12 +196,42 @@ function showRecipeDetail(id) {
     stepsList.appendChild(li);
   });
 
-  detailEl.appendChild(header);
-  detailEl.appendChild(ingTitle);
-  detailEl.appendChild(ingList);
-  detailEl.appendChild(stepsTitle);
-  detailEl.appendChild(stepsList);
+  body.appendChild(img);
+  body.appendChild(title);
+  body.appendChild(meta);
+  body.appendChild(buttons);
+  body.appendChild(voiceStatus);
+  body.appendChild(ingTitle);
+  body.appendChild(ingList);
+  body.appendChild(stepsTitle);
+  body.appendChild(stepsList);
+
+  modalContentEl.appendChild(body);
+
+  modalEl.classList.add("open");
 }
+
+function closeRecipeModal() {
+  stopVoice();
+  modalEl.classList.remove("open");
+}
+
+// cerrar con botón X
+modalCloseBtn.addEventListener("click", closeRecipeModal);
+
+// cerrar haciendo clic en el fondo
+modalEl.addEventListener("click", (e) => {
+  if (e.target.classList.contains("modal-backdrop")) {
+    closeRecipeModal();
+  }
+});
+
+// cerrar con tecla ESC
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && modalEl.classList.contains("open")) {
+    closeRecipeModal();
+  }
+});
 
 /*************** FAVORITOS ***************/
 function toggleFavorite(id) {
