@@ -4,12 +4,13 @@
  */
 
 // --- 1. CONFIGURACIÓN GLOBAL Y VOZ ---
+// Se requiere que el navegador soporte la API de Síntesis de Voz (SpeechSynthesis API)
 const sintetizador = window.speechSynthesis;
 let recetasDatos = []; // Almacenará los datos cargados del JSON
 
 /**
  * Función para activar la guía por voz de una receta.
- * Detiene la lectura si ya está hablando.
+ * Detiene la lectura si ya está hablando (funciona como Stop).
  * @param {number} id - ID de la receta a leer.
  */
 const leerReceta = (id) => {
@@ -18,14 +19,14 @@ const leerReceta = (id) => {
         return;
     }
 
-    // Si ya está hablando, lo cancelamos (funciona como un botón de Stop)
+    const receta = recetasDatos.find(r => r.id === id);
+    if (!receta) return;
+    
+    // Detener cualquier lectura previa (si se presiona de nuevo, detiene)
     if (sintetizador.speaking) {
         sintetizador.cancel();
         return;
     }
-
-    const receta = recetasDatos.find(r => r.id === id);
-    if (!receta) return;
 
     // Mensaje que se narrará
     const textoCompleto = `
@@ -36,8 +37,8 @@ const leerReceta = (id) => {
     `;
     
     const voz = new SpeechSynthesisUtterance(textoCompleto);
-    voz.lang = 'es-ES'; 
-    voz.rate = 0.9;     
+    voz.lang = 'es-ES'; // Configuración de idioma en español
+    voz.rate = 0.9;     // Velocidad de lectura un poco más lenta
     
     sintetizador.speak(voz);
 };
@@ -49,6 +50,7 @@ const leerReceta = (id) => {
  * @returns {Array<number>} IDs de las recetas favoritas.
  */
 const obtenerFavoritos = () => {
+    // Usamos localStorage para que la lista de favoritos persista en el navegador
     const favoritosJSON = localStorage.getItem('recetasFavoritas');
     return favoritosJSON ? JSON.parse(favoritosJSON) : [];
 };
@@ -95,18 +97,18 @@ const generarListaCompra = () => {
     const ingredientesTotales = {};
 
     recetasFavoritas.forEach(receta => {
-        // Suponemos que los ingredientes están separados por coma y tienen un número (ej: 1. Ingrediente A, 2. Ingrediente B)
+        // Dividimos los ingredientes por coma y quitamos los números y espacios iniciales
         receta.ingredientes.split(',').forEach(item => {
             const limpio = item.trim().replace(/^\d+\.\s*/, '');
             if (limpio) {
-                // Aquí podríamos sumar cantidades si el formato fuera más estricto
-                // Por ahora, solo listamos el ingrediente
+                // Contamos las veces que aparece el ingrediente (sin manejo de cantidades)
                 ingredientesTotales[limpio] = (ingredientesTotales[limpio] || 0) + 1; 
             }
         });
     });
     
     // Formatear la lista para el usuario
+    // Creamos una lista enumerada de los ingredientes únicos
     const listaFinal = Object.keys(ingredientesTotales).map(ing => `* ${ing}`).join('\n');
     lista += listaFinal;
 
@@ -127,8 +129,8 @@ const crearTarjetaReceta = (r) => {
     const esFavorito = obtenerFavoritos().includes(r.id);
     const textoBotonFav = esFavorito ? '🌟 En Favoritos' : '⭐ Añadir a Favoritos';
 
+    // NOTA: Se ha eliminado la etiqueta <img> de este HTML.
     div.innerHTML = `
-        <img src="${r.img}" alt="${r.titulo}" loading="lazy">
         <div class="contenido-receta">
             <h3>${r.titulo}</h3>
             
@@ -166,7 +168,12 @@ const renderizarRecetas = () => {
 
     recetasDatos.forEach(r => {
         const tarjeta = crearTarjetaReceta(r);
-        contenedores[r.categoria].appendChild(tarjeta);
+        // Aseguramos que la categoría exista para prevenir errores
+        if (contenedores[r.categoria]) {
+            contenedores[r.categoria].appendChild(tarjeta);
+        } else {
+             console.warn(`Categoría no reconocida: ${r.categoria} para la receta ID: ${r.id}`);
+        }
     });
 };
 
@@ -175,21 +182,22 @@ const renderizarRecetas = () => {
  */
 const init = async () => {
     try {
-        // Usamos fetch para cargar el archivo JSON de forma asíncrona
+        // Intentamos cargar el archivo JSON de forma asíncrona
         const response = await fetch('recetas.json');
         if (!response.ok) {
-            throw new Error(`Error al cargar recetas.json: ${response.statusText}`);
+            // Si hay un 404 u otro error HTTP
+            throw new Error(`Error al cargar recetas.json: ${response.statusText || response.status}`);
         }
         recetasDatos = await response.json();
         
         renderizarRecetas();
         
-        // Conectar el botón de la lista de la compra
+        // Conectar el botón de la lista de la compra al evento click
         document.getElementById('btn-lista-compra').addEventListener('click', generarListaCompra);
 
     } catch (error) {
         console.error('Fallo al inicializar la aplicación:', error);
-        alert('Error al cargar las recetas. Asegúrate de que el archivo recetas.json exista.');
+        alert('Error al cargar las recetas. Asegúrate de que el archivo recetas.json exista en la carpeta raíz.');
     }
 };
 
