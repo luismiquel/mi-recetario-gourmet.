@@ -40,7 +40,8 @@ function renderRecipeList() {
 
     const img = document.createElement("img");
     img.className = "recipe-thumb";
-    img.src = r.image || "https://via.placeholder.com/120x90?text=Plato";
+    // Imagen local de reserva; crea img/plato.jpg si quieres que se vea algo sin internet
+    img.src = r.image || "img/plato.jpg";
     img.alt = r.title;
 
     const info = document.createElement("div");
@@ -97,7 +98,7 @@ function showRecipeDetail(id) {
   header.className = "detail-header";
 
   const img = document.createElement("img");
-  img.src = r.image || "https://via.placeholder.com/240x180?text=Plato";
+  img.src = r.image || "img/plato.jpg";
   img.alt = r.title;
 
   const text = document.createElement("div");
