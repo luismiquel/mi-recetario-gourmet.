@@ -1,13 +1,12 @@
 // RECETAS NAVIDEÑAS GOURMET
-// 40 aperitivos, 40 primeros, 40 segundos, 40 postres
-// Puedes ir mejorando los ingredientes y pasos de las recetas con texto "Por definir..."
+// Puedes ir añadiendo más siguiendo el mismo formato.
+// id: único
+// category: 'aperitivo' | 'primero' | 'segundo' | 'postre'
 
 const RECETAS = [
-  /*********************
-   * APERITIVOS (40)
-   *********************/
-
-  // 1 COMPLETA
+  /**************
+   * APERITIVOS
+   **************/
   {
     id: "aperitivo-1",
     title: "Tartaletas de foie con manzana caramelizada",
@@ -15,7 +14,7 @@ const RECETAS = [
     servings: "6",
     time: "25 min",
     difficulty: "Media",
-    image: "", // ruta imagen si la tienes, ej: "img/aperitivos/tartaletas-foie.jpg"
+    image: "", // ej: "img/aperitivos/tartaletas-foie.jpg"
     ingredients: [
       "12 tartaletas saladas pequeñas",
       "150 g de micuit de foie gras",
@@ -28,16 +27,13 @@ const RECETAS = [
     ],
     steps: [
       "Pelar y cortar las manzanas en daditos pequeños.",
-      "En una sartén, derretir la mantequilla y añadir la manzana y el azúcar moreno.",
+      "Derretir la mantequilla y añadir la manzana y el azúcar.",
       "Saltear a fuego medio hasta que la manzana esté tierna y caramelizada. Añadir el brandy y dejar evaporar.",
-      "Dejar templar ligeramente la manzana.",
-      "Rellenar cada tartaleta con una cucharadita de manzana caramelizada.",
-      "Colocar encima un dado de foie.",
-      "Acabar con una pizca de sal en escamas y pimienta recién molida."
+      "Dejar templar ligeramente.",
+      "Rellenar cada tartaleta con manzana caramelizada.",
+      "Colocar encima un dado de foie y terminar con sal en escamas y pimienta."
     ]
   },
-
-  // 2 COMPLETA
   {
     id: "aperitivo-2",
     title: "Mini volovanes de crema de marisco",
@@ -57,16 +53,14 @@ const RECETAS = [
       "Aceite de oliva, sal y pimienta"
     ],
     steps: [
-      "Picar la cebolleta y pocharla en una sartén con un poco de aceite.",
+      "Picar la cebolleta y pocharla con un poco de aceite.",
       "Añadir las gambas troceadas y el cangrejo, saltear brevemente.",
       "Incorporar la mantequilla y la harina, cocinar 1–2 minutos.",
       "Agregar el fumet poco a poco, removiendo hasta obtener una crema espesa.",
       "Rectificar de sal y pimienta, dejar templar y rellenar los volovanes.",
-      "Calentar unos minutos en el horno antes de servir."
+      "Calentar en el horno unos minutos antes de servir."
     ]
   },
-
-  // 3 COMPLETA
   {
     id: "aperitivo-3",
     title: "Brochetas de langostinos al ajillo",
@@ -84,427 +78,60 @@ const RECETAS = [
       "Sal"
     ],
     steps: [
-      "Ensartar los langostinos en brochetas (4 por brocheta).",
+      "Ensartar los langostinos en brochetas.",
       "Laminar los ajos y dorarlos suavemente con la guindilla en aceite.",
-      "Incorporar las brochetas y cocinar 1–2 minutos por cada lado.",
-      "Espolvorear con perejil picado y sal justo antes de servir."
+      "Añadir las brochetas y cocinar 1–2 minutos por cada lado.",
+      "Espolvorear con perejil y una pizca de sal antes de servir."
     ]
   },
-
-  // 4–40: APERITIVOS PLACEHOLDER (títulos reales, texto por definir)
   {
     id: "aperitivo-4",
-    title: "Canapés de salmón marinado y eneldo",
-    category: "aperitivo",
-    servings: "4",
-    time: "15 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-5",
     title: "Bombones de queso de cabra y pistacho",
     category: "aperitivo",
     servings: "4",
     time: "20 min",
     difficulty: "Fácil",
     image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
+    ingredients: [
+      "200 g de queso de cabra cremoso",
+      "50 g de queso crema",
+      "50 g de pistachos pelados",
+      "Sal y pimienta"
+    ],
+    steps: [
+      "Picar finamente los pistachos.",
+      "Mezclar el queso de cabra con el queso crema, sal y pimienta.",
+      "Formar bolitas pequeñas con la mezcla de queso.",
+      "Rebozar las bolitas en el pistacho picado.",
+      "Refrigerar hasta el momento de servir."
+    ]
   },
   {
-    id: "aperitivo-6",
+    id: "aperitivo-5",
     title: "Hojaldritos de sobrasada y miel",
     category: "aperitivo",
     servings: "4",
     time: "20 min",
     difficulty: "Fácil",
     image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-7",
-    title: "Cucharitas de tartar de atún rojo",
-    category: "aperitivo",
-    servings: "4",
-    time: "25 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-8",
-    title: "Mini croquetas de jamón ibérico",
-    category: "aperitivo",
-    servings: "6",
-    time: "45 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-9",
-    title: "Rollitos de calabacín rellenos de ricotta y nueces",
-    category: "aperitivo",
-    servings: "4",
-    time: "25 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-10",
-    title: "Blinis de crema agria y caviar",
-    category: "aperitivo",
-    servings: "4",
-    time: "30 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-11",
-    title: "Tartaletas de brandada de bacalao",
-    category: "aperitivo",
-    servings: "4",
-    time: "30 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-12",
-    title: "Chupitos de crema de marisco",
-    category: "aperitivo",
-    servings: "6",
-    time: "30 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-13",
-    title: "Dados de tortilla trufada",
-    category: "aperitivo",
-    servings: "6",
-    time: "25 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-14",
-    title: "Mini hamburguesas de cordero con menta",
-    category: "aperitivo",
-    servings: "4",
-    time: "35 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-15",
-    title: "Crujientes de morcilla con manzana",
-    category: "aperitivo",
-    servings: "4",
-    time: "25 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-16",
-    title: "Canapés de roastbeef y rúcula",
-    category: "aperitivo",
-    servings: "4",
-    time: "20 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-17",
-    title: "Palitos de hojaldre con parmesano",
-    category: "aperitivo",
-    servings: "4",
-    time: "20 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-18",
-    title: "Empanadillas de vieiras y puerros",
-    category: "aperitivo",
-    servings: "4",
-    time: "35 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-19",
-    title: "Mini brioche de pulled pork navideño",
-    category: "aperitivo",
-    servings: "4",
-    time: "45 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-20",
-    title: "Higos rellenos de queso azul y nueces",
-    category: "aperitivo",
-    servings: "4",
-    time: "20 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-21",
-    title: "Brochetas caprese con pesto de albahaca",
-    category: "aperitivo",
-    servings: "4",
-    time: "20 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-22",
-    title: "Tostas de escalivada y anchoas",
-    category: "aperitivo",
-    servings: "4",
-    time: "30 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-23",
-    title: "Langostinos en tempura con mayonesa cítrica",
-    category: "aperitivo",
-    servings: "4",
-    time: "25 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-24",
-    title: "Tacos mini de cochinita pibil",
-    category: "aperitivo",
-    servings: "4",
-    time: "45 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-25",
-    title: "Dátiles rellenos de almendra y envueltos en bacon",
-    category: "aperitivo",
-    servings: "4",
-    time: "20 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-26",
-    title: "Cucharitas de ceviche de corvina",
-    category: "aperitivo",
-    servings: "4",
-    time: "25 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-27",
-    title: "Mini quiche de espinacas y queso de cabra",
-    category: "aperitivo",
-    servings: "4",
-    time: "30 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-28",
-    title: "Gyozas de pato y naranja",
-    category: "aperitivo",
-    servings: "4",
-    time: "35 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-29",
-    title: "Chips de yuca con guacamole suave",
-    category: "aperitivo",
-    servings: "4",
-    time: "25 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-30",
-    title: "Canapés de salmón ahumado y crema de rábano",
-    category: "aperitivo",
-    servings: "4",
-    time: "20 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-31",
-    title: "Tartaletas de setas salteadas y trufa",
-    category: "aperitivo",
-    servings: "4",
-    time: "30 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-32",
-    title: "Paté casero de campaña con tostas",
-    category: "aperitivo",
-    servings: "6",
-    time: "40 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-33",
-    title: "Piruletas de queso curado al horno",
-    category: "aperitivo",
-    servings: "4",
-    time: "15 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-34",
-    title: "Mejillones en escabeche casero",
-    category: "aperitivo",
-    servings: "4",
-    time: "35 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-35",
-    title: "Tostas de burrata con pesto rojo",
-    category: "aperitivo",
-    servings: "4",
-    time: "20 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-36",
-    title: "Rollitos de salmón y queso fresco con cebollino",
-    category: "aperitivo",
-    servings: "4",
-    time: "20 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-37",
-    title: "Brandada de bacalao en cucharita",
-    category: "aperitivo",
-    servings: "4",
-    time: "30 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-38",
-    title: "Canapés de brie con confitura de frutos rojos",
-    category: "aperitivo",
-    servings: "4",
-    time: "20 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-39",
-    title: "Mini arenques marinados con cebolla encurtida",
-    category: "aperitivo",
-    servings: "4",
-    time: "30 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "aperitivo-40",
-    title: "Cucharitas de hummus de remolacha y sésamo",
-    category: "aperitivo",
-    servings: "4",
-    time: "20 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
+    ingredients: [
+      "1 lámina de hojaldre",
+      "150 g de sobrasada",
+      "2 cucharadas de miel",
+      "1 huevo batido para pintar"
+    ],
+    steps: [
+      "Precalentar el horno a 200 ºC.",
+      "Extender el hojaldre y cortar en rectángulos pequeños.",
+      "Untar sobrasada en el centro de cada porción y añadir un hilo de miel.",
+      "Cerrar formando paquetitos o rollitos y sellar bien.",
+      "Pintar con huevo batido y hornear 10–12 minutos hasta que estén dorados."
+    ]
   },
 
-  /*********************
-   * PRIMEROS (40)
-   *********************/
-
-  // PRIMEROS COMPLETOS (2) + 38 placeholder, igual que arriba
+  /**************
+   * PRIMEROS
+   **************/
   {
     id: "primero-1",
     title: "Crema de calabaza asada con jengibre y naranja",
@@ -518,7 +145,7 @@ const RECETAS = [
       "1 cebolla",
       "1 zanahoria",
       "1 trocito de jengibre fresco (2–3 cm)",
-      "1 naranja (zumo y ralladura)",
+      "1 naranja (zumo y ralladura fina)",
       "700 ml de caldo de verduras",
       "2 cucharadas de aceite de oliva virgen extra",
       "50 ml de nata líquida (opcional)",
@@ -553,24 +180,38 @@ const RECETAS = [
     ],
     steps: [
       "Colocar la carcasa de ave, el hueso y las verduras limpias en una olla con el agua.",
-      "Llevar a ebullición y desespumar las impurezas que suban a la superficie.",
+      "Llevar a ebullición y desespumar las impurezas.",
       "Cocer a fuego suave 1,5–2 horas.",
       "Colar el caldo, desechar los sólidos y rectificar de sal y pimienta.",
-      "Servir muy caliente en tazas o platos hondos."
+      "Servir muy caliente."
     ]
   },
-
-  // PRIMEROS 3–40 placeholder (nombres resumidos)
   {
     id: "primero-3",
-    title: "Sopa de marisco al aroma de anís",
+    title: "Risotto de setas silvestres y parmesano",
     category: "primero",
     servings: "4",
-    time: "40 min",
+    time: "35 min",
     difficulty: "Media",
     image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
+    ingredients: [
+      "320 g de arroz arborio o carnaroli",
+      "200 g de setas variadas",
+      "1 cebolla pequeña",
+      "1 diente de ajo",
+      "1 l de caldo de verduras o pollo caliente",
+      "80 g de parmesano rallado",
+      "50 g de mantequilla",
+      "Aceite de oliva, sal y pimienta"
+    ],
+    steps: [
+      "Pochar la cebolla y el ajo picados en aceite.",
+      "Añadir las setas troceadas y saltear.",
+      "Incorporar el arroz y nacararlo 1–2 minutos.",
+      "Añadir caldo caliente poco a poco, removiendo constantemente.",
+      "Cuando el arroz esté al dente, apartar del fuego y añadir mantequilla y parmesano.",
+      "Remover hasta obtener textura cremosa y servir inmediatamente."
+    ]
   },
   {
     id: "primero-4",
@@ -580,8 +221,22 @@ const RECETAS = [
     time: "30 min",
     difficulty: "Media",
     image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
+    ingredients: [
+      "1 bogavante cocido",
+      "Mezcla de hojas verdes",
+      "1 naranja",
+      "1 pomelo pequeño",
+      "Aceite de oliva virgen extra",
+      "Vinagre suave o zumo de cítricos",
+      "Sal y pimienta"
+    ],
+    steps: [
+      "Descascarillar el bogavante y cortar la carne en medallones.",
+      "Pelar la naranja y el pomelo a lo vivo y sacar los gajos.",
+      "Colocar las hojas verdes en una fuente.",
+      "Repartir el bogavante templado y los cítricos por encima.",
+      "Aliñar con aceite, vinagre o zumo y salpimentar."
+    ]
   },
   {
     id: "primero-5",
@@ -591,73 +246,26 @@ const RECETAS = [
     time: "45 min",
     difficulty: "Media",
     image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "primero-6",
-    title: "Risotto de setas silvestres y parmesano",
-    category: "primero",
-    servings: "4",
-    time: "30 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "primero-7",
-    title: "Crema de castañas con virutas de jamón ibérico",
-    category: "primero",
-    servings: "4",
-    time: "35 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "primero-8",
-    title: "Ensalada de burrata, higos y jamón",
-    category: "primero",
-    servings: "4",
-    time: "20 min",
-    difficulty: "Fácil",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "primero-9",
-    title: "Vichyssoise trufada con crujiente de puerro",
-    category: "primero",
-    servings: "4",
-    time: "30 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
-  },
-  {
-    id: "primero-10",
-    title: "Ravioli de calabaza con mantequilla y salvia",
-    category: "primero",
-    servings: "4",
-    time: "35 min",
-    difficulty: "Media",
-    image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
+    ingredients: [
+      "Placas de lasaña precocida",
+      "300 g de boletus u otras setas",
+      "1 cebolla",
+      "200 ml de nata o bechamel ligera",
+      "Queso rallado para gratinar",
+      "Aceite de oliva, sal, pimienta y un poco de trufa o aceite de trufa"
+    ],
+    steps: [
+      "Saltear las setas con cebolla picada hasta que pierdan el agua.",
+      "Añadir la nata o bechamel y cocer unos minutos, salpimentar.",
+      "Montar capas de placas de lasaña y relleno de setas en una fuente.",
+      "Terminar con una capa de salsa y queso rallado.",
+      "Gratinar en el horno hasta que esté dorado. Añadir trufa o aceite de trufa al servir."
+    ]
   },
 
-  // ... aquí seguirías con primero-11 hasta primero-40
-  // TODOS con la misma estructura: category "primero",
-  // texto placeholder en ingredientes y steps.
-
-  /*********************
-   * SEGUNDOS (40)
-   *********************/
-
+  /**************
+   * SEGUNDOS
+   **************/
   {
     id: "segundo-1",
     title: "Cordero lechal asado con patatas panadera",
@@ -677,10 +285,10 @@ const RECETAS = [
     ],
     steps: [
       "Precalentar el horno a 190 ºC.",
-      "Cortar patatas y cebolla, colocarlas en una bandeja y salpimentar.",
-      "Poner el cordero sobre las patatas, añadir ajos, vino blanco y un poco de agua.",
-      "Hornear alrededor de 1 hora y 30 minutos, regando con los jugos.",
-      "Subir la temperatura los últimos minutos para dorar bien la piel."
+      "Cortar las patatas y la cebolla, colocarlas en una bandeja y salpimentar.",
+      "Poner el cordero encima, añadir los ajos, el vino y un poco de agua o caldo.",
+      "Hornear alrededor de 1 hora y 30 minutos, regando con los jugos de vez en cuando.",
+      "Subir la temperatura al final para dorar la piel si se desea."
     ]
   },
   {
@@ -702,30 +310,89 @@ const RECETAS = [
       "Secar bien los lomos de bacalao.",
       "Cubrirlos con aceite en un cazo y confitar a fuego muy suave sin que hierva.",
       "Retirar el bacalao y dorar los ajos laminados y la guindilla en el mismo aceite.",
-      "Emulsionar el pil-pil con el aceite templado moviendo la cazuela o con colador.",
+      "Con el aceite templado, emulsionar la salsa pil-pil moviendo el cazo o con un colador.",
       "Servir el bacalao con la salsa y los ajos por encima."
     ]
   },
-
-  // SEGUNDOS placeholder: segundo-3 ... segundo-40
   {
     id: "segundo-3",
-    title: "Cochinillo crujiente con puré de manzana",
+    title: "Solomillo de ternera con salsa de Oporto",
     category: "segundo",
     servings: "4",
-    time: "2 h",
+    time: "35 min",
     difficulty: "Media",
     image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
+    ingredients: [
+      "4 medallones de solomillo de ternera",
+      "150 ml de vino de Oporto",
+      "200 ml de caldo de carne",
+      "1 chalota",
+      "30 g de mantequilla",
+      "Aceite de oliva, sal y pimienta"
+    ],
+    steps: [
+      "Salpimentar los solomillos y marcarlos en una sartén con aceite.",
+      "Reservar la carne y en la misma sartén pochar la chalota picada.",
+      "Añadir el Oporto y dejar reducir.",
+      "Agregar el caldo y reducir hasta obtener una salsa ligeramente espesa.",
+      "Incorporar la mantequilla fuera del fuego para ligar la salsa.",
+      "Servir la carne con la salsa por encima."
+    ]
+  },
+  {
+    id: "segundo-4",
+    title: "Pularda rellena de frutos secos y foie",
+    category: "segundo",
+    servings: "6",
+    time: "2 h",
+    difficulty: "Alta",
+    image: "",
+    ingredients: [
+      "1 pularda limpia",
+      "150 g de foie mi-cuit",
+      "100 g de frutos secos variados",
+      "50 g de pan rallado",
+      "1 huevo",
+      "Caldo de ave, sal, pimienta, hierbas al gusto"
+    ],
+    steps: [
+      "Preparar un relleno mezclando el foie, frutos secos picados, pan rallado, huevo, sal y pimienta.",
+      "Rellenar la pularda y bridar para que mantenga la forma.",
+      "Colocarla en una fuente de horno, regar con un poco de caldo y hornear a 180 ºC hasta que esté bien hecha.",
+      "Regar con sus jugos durante el horneado y servir trinchada con el relleno."
+    ]
+  },
+  {
+    id: "segundo-5",
+    title: "Merluza en salsa verde con almejas",
+    category: "segundo",
+    servings: "4",
+    time: "30 min",
+    difficulty: "Media",
+    image: "",
+    ingredients: [
+      "4 lomos de merluza",
+      "300 g de almejas",
+      "2 dientes de ajo",
+      "Perejil fresco",
+      "200 ml de caldo de pescado",
+      "2 cucharadas de aceite de oliva",
+      "1 cucharadita de harina",
+      "Sal"
+    ],
+    steps: [
+      "Abrir las almejas en una cazuela con un poco de agua, reservar.",
+      "En otra cazuela, dorar los ajos picados con aceite.",
+      "Añadir la harina y tostar ligeramente.",
+      "Incorporar el caldo de pescado y el perejil picado, remover.",
+      "Colocar la merluza en la salsa y cocer unos minutos.",
+      "Añadir las almejas y dejar que todo ligue bien antes de servir."
+    ]
   },
 
-  // ... continuar segundo-4 a segundo-40 igual formato
-
-  /*********************
-   * POSTRES (40)
-   *********************/
-
+  /**************
+   * POSTRES
+   **************/
   {
     id: "postre-1",
     title: "Tarta de turrón blando",
@@ -743,11 +410,11 @@ const RECETAS = [
       "1 sobre de cuajada o gelatina neutra"
     ],
     steps: [
-      "Triturar las galletas y mezclarlas con la mantequilla, forrar la base de un molde.",
+      "Triturar las galletas y mezclarlas con la mantequilla. Forrar la base de un molde.",
       "Calentar la leche con el turrón troceado hasta que se deshaga.",
-      "Añadir la cuajada o gelatina, mezclar bien y templar.",
-      "Montar ligeramente la nata e incorporarla a la mezcla.",
-      "Verter sobre la base de galleta y dejar enfriar varias horas."
+      "Añadir la cuajada o gelatina y mezclar bien.",
+      "Montar ligeramente la nata e incorporarla a la mezcla templada.",
+      "Verter sobre la base de galleta y dejar enfriar varias horas hasta que cuaje."
     ]
   },
   {
@@ -767,26 +434,85 @@ const RECETAS = [
       "Crema de avellanas para el relleno"
     ],
     steps: [
-      "Fundir chocolate y mantequilla.",
-      "Batir huevos con azúcar e incorporar el chocolate.",
-      "Añadir la harina tamizada y mezclar.",
-      "Rellenar moldes engrasados con parte de la masa, poner una cucharadita de crema de avellanas y cubrir.",
-      "Hornear a 200 ºC 8–10 minutos, hasta que el exterior esté hecho y el interior líquido."
+      "Fundir el chocolate con la mantequilla.",
+      "Batir los huevos con el azúcar hasta que espumen.",
+      "Añadir el chocolate fundido y mezclar.",
+      "Incorporar la harina tamizada.",
+      "Rellenar moldes engrasados con parte de la masa, poner una cucharadita de crema de avellanas y cubrir con más masa.",
+      "Hornear a 200 ºC 8–10 minutos, hasta que el exterior esté hecho y el interior siga líquido."
     ]
   },
-
-  // POSTRES placeholder: postre-3 ... postre-40
   {
     id: "postre-3",
-    title: "Cheesecake de Baileys y chocolate blanco",
+    title: "Mousse de cava y frutos rojos",
     category: "postre",
-    servings: "8",
-    time: "40 min + frío",
+    servings: "6",
+    time: "25 min + frío",
     difficulty: "Media",
     image: "",
-    ingredients: ["Por definir ingredientes detallados."],
-    steps: ["Por definir preparación paso a paso."]
+    ingredients: [
+      "200 ml de cava",
+      "300 ml de nata para montar",
+      "80 g de azúcar",
+      "4 hojas de gelatina",
+      "Frutos rojos al gusto"
+    ],
+    steps: [
+      "Hidratar la gelatina en agua fría.",
+      "Calentar una parte del cava con el azúcar y disolver la gelatina escurrida.",
+      "Mezclar con el resto del cava.",
+      "Montar la nata e incorporarla con movimientos envolventes.",
+      "Repartir en copas y dejar enfriar hasta que cuaje.",
+      "Servir con frutos rojos por encima."
+    ]
+  },
+  {
+    id: "postre-4",
+    title: "Tronco de Navidad de chocolate y naranja",
+    category: "postre",
+    servings: "8",
+    time: "45 min",
+    difficulty: "Media",
+    image: "",
+    ingredients: [
+      "Bizcocho genovés en plancha",
+      "Crema de chocolate y naranja para rellenar",
+      "Cobertura de chocolate",
+      "Ralladura de naranja y azúcar glas para decorar"
+    ],
+    steps: [
+      "Extender el bizcocho en plancha y rellenar con la crema.",
+      "Enrollar con cuidado formando un tronco.",
+      "Cubrir con la cobertura de chocolate.",
+      "Decorar con ralladura de naranja y azúcar glas."
+    ]
+  },
+  {
+    id: "postre-5",
+    title: "Peras al vino tinto con especias",
+    category: "postre",
+    servings: "4",
+    time: "40 min",
+    difficulty: "Fácil",
+    image: "",
+    ingredients: [
+      "4 peras firmes",
+      "750 ml de vino tinto",
+      "150 g de azúcar",
+      "1 rama de canela",
+      "1 trozo de piel de naranja",
+      "2–3 clavos de olor"
+    ],
+    steps: [
+      "Pelar las peras dejando el rabito.",
+      "Colocarlas en un cazo con el vino, azúcar y especias.",
+      "Cocer a fuego suave hasta que estén tiernas.",
+      "Dejar enfriar en el propio líquido y servir con parte de la reducción."
+    ]
   }
 
-  // ... continuar con todos los títulos de postres hasta postre-40
+  // 🔁 Para llegar a tus 40 de cada tipo:
+  // copia y pega bloques como estos cambiando:
+  // - id: "aperitivo-6", "aperitivo-7", ..., "primero-6"... etc.
+  // - title, ingredients, steps
 ];
