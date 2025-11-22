@@ -129,7 +129,7 @@ const crearTarjetaReceta = (r) => {
     const esFavorito = obtenerFavoritos().includes(r.id);
     const textoBotonFav = esFavorito ? '🌟 En Favoritos' : '⭐ Añadir a Favoritos';
 
-    // NOTA: Se ha eliminado la etiqueta <img> de este HTML.
+    // Se ha eliminado la etiqueta <img> de este HTML para cumplir con tu requisito.
     div.innerHTML = `
         <div class="contenido-receta">
             <h3>${r.titulo}</h3>
@@ -197,6 +197,7 @@ const init = async () => {
 
     } catch (error) {
         console.error('Fallo al inicializar la aplicación:', error);
+        // Alerta que se activa si el archivo no se carga, típico en ejecución local sin servidor
         alert('Error al cargar las recetas. Asegúrate de que el archivo recetas.json exista en la carpeta raíz.');
     }
 };
