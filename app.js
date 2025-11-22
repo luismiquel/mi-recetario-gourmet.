@@ -1,6 +1,6 @@
 // Usa el array global RECETAS definido en recetas.js
 
-// Imagen por defecto desde internet (no tienes que crear archivos locales)
+// Imagen por defecto desde internet
 const DEFAULT_IMAGE =
   "https://images.pexels.com/photos/70497/pexels-photo-70497.jpeg?auto=compress&cs=tinysrgb&w=600";
 
@@ -20,6 +20,9 @@ const toggleFavsBtn = document.getElementById("toggle-favs");
 const modalEl = document.getElementById("recipe-modal");
 const modalContentEl = document.getElementById("modal-content");
 const modalCloseBtn = document.getElementById("modal-close");
+const modalDialog = document.querySelector(".modal-dialog");
+
+let lastFocusedElement = null; // para devolver el foco al cerrar modal
 
 function capitalize(str) {
   if (!str) return "";
@@ -45,6 +48,9 @@ function renderRecipeList() {
     const card = document.createElement("article");
     card.className = "recipe-card";
     card.dataset.id = r.id;
+    card.tabIndex = 0; // accesible por teclado
+    card.setAttribute("role", "button");
+    card.setAttribute("aria-label", `${r.title}, ${capitalize(r.category)}`);
 
     const img = document.createElement("img");
     img.className = "recipe-thumb";
@@ -64,9 +70,14 @@ function renderRecipeList() {
     badge.className = "badge";
     badge.textContent = r.difficulty || "Receta";
 
-    const favIcon = document.createElement("div");
+    const favIcon = document.createElement("button");
+    favIcon.type = "button";
     favIcon.className = "fav-icon" + (favorites.includes(r.id) ? " active" : "");
     favIcon.textContent = "★";
+    favIcon.setAttribute("aria-label", favorites.includes(r.id)
+      ? `Quitar ${r.title} de favoritos`
+      : `Añadir ${r.title} a favoritos`);
+    favIcon.setAttribute("aria-pressed", favorites.includes(r.id) ? "true" : "false");
 
     info.appendChild(h3);
     info.appendChild(meta);
@@ -76,12 +87,21 @@ function renderRecipeList() {
     card.appendChild(info);
     card.appendChild(favIcon);
 
+    // Click con ratón
     card.addEventListener("click", (e) => {
       if (e.target === favIcon) {
         toggleFavorite(r.id);
         renderRecipeList();
         e.stopPropagation();
       } else {
+        openRecipeModal(r.id);
+      }
+    });
+
+    // Teclado: Enter / Barra espaciadora
+    card.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
         openRecipeModal(r.id);
       }
     });
@@ -94,6 +114,9 @@ function renderRecipeList() {
 function openRecipeModal(id) {
   const r = RECETAS.find(x => x.id === id);
   if (!r) return;
+
+  // guardar el elemento que tenía el foco para luego devolverlo
+  lastFocusedElement = document.activeElement;
 
   currentRecipeId = id;
   currentStepIndex = 0;
@@ -111,6 +134,7 @@ function openRecipeModal(id) {
 
   const title = document.createElement("h2");
   title.className = "modal-title";
+  title.id = "modal-title"; // conecta con aria-labelledby en el contenedor
   title.textContent = r.title;
 
   const meta = document.createElement("div");
@@ -124,10 +148,14 @@ function openRecipeModal(id) {
 
   const btnFav = document.createElement("button");
   btnFav.className = "btn";
-  btnFav.textContent = favorites.includes(id) ? "Quitar de favoritos" : "Añadir a favoritos";
+  const isFav = favorites.includes(id);
+  btnFav.textContent = isFav ? "Quitar de favoritos" : "Añadir a favoritos";
+  btnFav.setAttribute("aria-pressed", isFav ? "true" : "false");
   btnFav.addEventListener("click", () => {
     toggleFavorite(id);
-    btnFav.textContent = favorites.includes(id) ? "Quitar de favoritos" : "Añadir a favoritos";
+    const favNow = favorites.includes(id);
+    btnFav.textContent = favNow ? "Quitar de favoritos" : "Añadir a favoritos";
+    btnFav.setAttribute("aria-pressed", favNow ? "true" : "false");
     renderRecipeList();
   });
 
@@ -209,17 +237,23 @@ function openRecipeModal(id) {
   modalContentEl.appendChild(body);
 
   modalEl.classList.add("open");
+  if (modalDialog) {
+    modalDialog.focus(); // mover el foco al diálogo
+  }
 }
 
 function closeRecipeModal() {
   stopVoice();
   modalEl.classList.remove("open");
+  if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
+    lastFocusedElement.focus(); // devolver foco donde estaba
+  }
 }
 
 // cerrar con botón X
 modalCloseBtn.addEventListener("click", closeRecipeModal);
 
-// cerrar haciendo clic en el fondo
+// cerrar haciendo clic en el fondo oscuro
 modalEl.addEventListener("click", (e) => {
   if (e.target.classList.contains("modal-backdrop")) {
     closeRecipeModal();
@@ -269,6 +303,7 @@ function renderShoppingList() {
 
     const btn = document.createElement("button");
     btn.textContent = "✕";
+    btn.setAttribute("aria-label", `Quitar ${item} de la lista de la compra`);
     btn.addEventListener("click", () => {
       shoppingList.splice(index, 1);
       saveShopping();
@@ -348,9 +383,15 @@ function stopVoice() {
 /*************** FILTROS ***************/
 document.querySelectorAll(".filters button[data-filter]").forEach(btn => {
   btn.addEventListener("click", () => {
+    // visual
     document.querySelectorAll(".filters button[data-filter]")
-      .forEach(b => b.classList.remove("active"));
+      .forEach(b => {
+        b.classList.remove("active");
+        b.setAttribute("aria-pressed", "false");
+      });
     btn.classList.add("active");
+    btn.setAttribute("aria-pressed", "true");
+
     currentFilter = btn.dataset.filter;
     renderRecipeList();
   });
@@ -360,6 +401,7 @@ if (toggleFavsBtn) {
   toggleFavsBtn.addEventListener("click", () => {
     showOnlyFavorites = !showOnlyFavorites;
     toggleFavsBtn.textContent = showOnlyFavorites ? "Ver todo" : "Solo favoritos";
+    toggleFavsBtn.setAttribute("aria-pressed", showOnlyFavorites ? "true" : "false");
     renderRecipeList();
   });
 }
