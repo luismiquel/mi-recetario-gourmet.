@@ -7,84 +7,57 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<!-- Enlace rápido para lectores de pantalla / teclado -->
-<a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
+<a class="skip-link" href="#contenido">Saltar al contenido</a>
 
 <header class="app-header">
   <div>
-    <h1>App Gourmet – Recetas Navideñas</h1>
-    <small>40 aperitivos · 40 primeros · 40 segundos · 40 postres</small>
+    <h1>Recetario Gourmet Navideño</h1>
+    <p class="sub">120 recetas · Aperitivos · Primeros · Segundos · Postres</p>
   </div>
 
-  <!-- Controles globales de accesibilidad -->
-  <div class="accessibility-controls" aria-label="Opciones de accesibilidad">
-    <button id="toggle-contrast" class="btn small" aria-pressed="false">
-      Alto contraste
-    </button>
-    <button id="toggle-textsize" class="btn small" aria-pressed="false">
-      Tamaño texto: normal
-    </button>
+  <div class="herramientas">
+    <button id="btn-contraste" class="btn small">Contraste</button>
+    <button id="btn-texto" class="btn small">Texto normal</button>
   </div>
 </header>
 
-<main id="main-content" class="app-main">
+<main id="contenido">
+
   <!-- LISTA DE LA COMPRA ARRIBA -->
-  <section class="detail-top" aria-label="Lista de la compra">
-    <div class="section-title">Lista de la compra</div>
-    <div id="shopping-list" class="shopping-list"></div>
-    <button id="clear-shopping" class="btn danger" style="margin-top:0.5rem;">
-      Vaciar lista de la compra
-    </button>
+  <section class="panel lista-superior">
+    <h2>Lista de la compra</h2>
+    <div id="lista-compra"></div>
+    <button id="btn-vaciar" class="btn danger">Vaciar lista</button>
   </section>
 
-  <!-- PANEL LISTADO DE RECETAS -->
-  <section class="panel panel-left" aria-labelledby="titulo-recetas">
-    <div class="panel-header">
-      <h2 id="titulo-recetas">Recetas</h2>
-
-      <!-- Buscador -->
-      <label for="search-recipes" class="sr-only">Buscar recetas por nombre</label>
-      <input
-        id="search-recipes"
-        type="search"
-        class="search-input"
-        placeholder="Buscar receta..."
-        aria-label="Buscar recetas por nombre"
-      >
+  <!-- LISTADO DE RECETAS -->
+  <section class="panel">
+    <div class="top-panel">
+      <h2>Recetas</h2>
+      <input id="buscar" type="search" class="buscador" placeholder="Buscar receta…">
     </div>
 
-    <!-- Navegación de filtros accesible -->
-    <nav class="filters" aria-label="Filtrar recetas por categoría">
-      <button data-filter="todas" class="active" aria-pressed="true">Todas</button>
-      <button data-filter="aperitivo" aria-pressed="false">Aperitivos</button>
-      <button data-filter="primero" aria-pressed="false">Primeros</button>
-      <button data-filter="segundo" aria-pressed="false">Segundos</button>
-      <button data-filter="postre" aria-pressed="false">Postres</button>
-      <button id="toggle-favs" class="secondary" aria-pressed="false">
-        Solo favoritos
-      </button>
+    <nav class="filtros">
+      <button data-filtro="todas" class="active">Todas</button>
+      <button data-filtro="aperitivo">Aperitivos</button>
+      <button data-filtro="primero">Primeros</button>
+      <button data-filtro="segundo">Segundos</button>
+      <button data-filtro="postre">Postres</button>
+      <button id="btn-favs" class="secondary">Favoritos</button>
     </nav>
 
-    <p class="empty">
-      Pulsa una receta para verla en detalle en un cuadro emergente, con cocina guiada por voz.
-    </p>
-
-    <div id="recipe-list" class="recipe-list" aria-live="polite"></div>
+    <div id="listado" class="grid-recetas"></div>
   </section>
+
 </main>
 
-<!-- MODAL DE RECETA ACCESIBLE -->
-<div
-  id="recipe-modal"
-  class="modal"
-  role="dialog"
-  aria-modal="true"
-  aria-labelledby="modal-title"
->
-  <div class="modal-backdrop"></div>
-  <div class="modal-dialog" tabindex="-1">
-    <button id="modal-close" class="modal-close" aria-label="Cerrar receta">×</button>
-    <div id="modal-content"></div>
+<!-- MODAL DE RECETA -->
+<div id="modal" class="modal">
+  <div class="fondo"></div>
+  <div class="dialogo" tabindex="-1">
+    <button id="cerrar" class="cerrar">×</button>
+    <div id="contenido-modal"></div>
   </div>
 </div>
 
