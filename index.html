@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>App Gourmet – Recetas Navideñas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Estilos locales -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -20,10 +21,10 @@
     <h2>Recetas</h2>
     <div class="filters">
       <button data-filter="todas" class="active">Todas</button>
-      <button data-filter="aperitivo">Aperitivos (40)</button>
-      <button data-filter="primero">Primeros (40)</button>
-      <button data-filter="segundo">Segundos (40)</button>
-      <button data-filter="postre">Postres (40)</button>
+      <button data-filter="aperitivo">Aperitivos</button>
+      <button data-filter="primero">Primeros</button>
+      <button data-filter="segundo">Segundos</button>
+      <button data-filter="postre">Postres</button>
       <button id="toggle-favs" class="secondary">Solo favoritos</button>
     </div>
     <div id="recipe-list" class="recipe-list"></div>
@@ -47,6 +48,7 @@
   </section>
 </main>
 
+<!-- Datos de recetas y lógica de la app -->
 <script src="recetas.js"></script>
 <script src="app.js"></script>
 </body>
