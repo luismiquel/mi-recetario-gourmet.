@@ -1,152 +1,260 @@
-/* Estilos Navideños y Limpios */
-body { 
-    font-family: 'Georgia', serif; 
-    margin: 0; 
-    padding: 0; 
-    background: #fdf6e3; /* Crema Claro */
-    color: #333; 
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f5f5f7;
+  color: #111827;
 }
 
-header { 
-    background: #8b0000; /* Rojo Oscuro (Navidad) */ 
-    color: white; 
-    padding: 2rem 1rem; 
-    text-align: center; 
-    border-bottom: 5px solid #006400; /* Verde Oscuro (Navidad) */
-} 
-
-header h1 { 
-    margin: 0 0 0.5rem 0; 
-    font-size: 2.5rem; 
+.app-header {
+  background: #111827;
+  color: #f9fafb;
+  padding: 1.2rem 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: space-between;
 }
 
-/* Navegación Fija */
-nav { 
-    background: #006400; 
-    padding: 1rem; 
-    text-align: center; 
-    position: sticky; 
-    top: 0; 
-    z-index: 1000; 
-    box-shadow: 0 2px 5px rgba(0,0,0,0.4);
+.app-header h1 {
+  margin: 0;
+  font-size: 1.4rem;
 }
 
-nav a, .btn-lista-compra { 
-    margin: 0 0.7rem; 
-    color: white; 
-    text-decoration: none; 
-    font-weight: bold; 
-    padding: 0.5rem 1rem; 
-    background: rgba(255, 255, 255, 0.15); 
-    border-radius: 5px; 
-    transition: background 0.3s;
-    cursor: pointer; 
-    border: none; 
-    font-size: 1rem;
+.app-header small {
+  font-size: 0.75rem;
+  opacity: 0.85;
 }
 
-nav a:hover, .btn-lista-compra:hover { 
-    background: rgba(255, 255, 255, 0.4); 
+.app-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(320px, 1.2fr);
+  gap: 1rem;
 }
 
-section { 
-    padding: 3rem 5%; 
+@media (max-width: 900px) {
+  .app-main {
+    grid-template-columns: 1fr;
+  }
 }
 
-/* Estilo de rejilla para las recetas */
-.grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
-    gap: 2rem; 
-    margin-top: 2rem; 
+.panel {
+  background: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  border: 1px solid #e5e7eb;
 }
 
-h2 { 
-    color: #8b0000; 
-    font-size: 2rem; 
-    border-bottom: 2px solid #006400; 
-    padding-bottom: 0.5rem; 
-    margin-top: 0; 
+.panel h2 {
+  margin-top: 0;
+  font-size: 1rem;
 }
 
-/* Tarjeta de Receta */
-.receta { 
-    background: white; 
-    border-radius: 10px; 
-    box-shadow: 0 4px 10px rgba(0,0,0,0.1); 
-    overflow: hidden; 
-    transition: transform 0.3s; 
-    /* Ajustado para compensar la falta de imagen */
-    padding-top: 1.5rem; 
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
-.receta:hover { 
-    transform: translateY(-5px); 
-    box-shadow: 0 6px 15px rgba(0,0,0,0.3); 
+.filters button {
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.8rem;
+  background: #f9fafb;
+  cursor: pointer;
 }
 
-.contenido-receta { 
-    padding: 1.5rem; 
+.filters button.active {
+  background: #111827;
+  color: #f9fafb;
+  border-color: #111827;
 }
 
-.contenido-receta h3 { 
-    color: #8b0000; 
-    margin-top: 0; 
-    font-size: 1.5rem; 
+.filters button.secondary {
+  background: #e5e7eb;
 }
 
-.meta { 
-    display: flex; 
-    justify-content: space-between; 
-    font-size: 0.9rem; 
-    color: #666; 
-    margin-bottom: 1rem; 
+.recipe-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.75rem;
+  max-height: 70vh;
+  overflow: auto;
+  padding-right: 0.3rem;
 }
 
-.tiempo, .dificultad { 
-    background: #e0e0e0; 
-    padding: 0.3rem 0.8rem; 
-    border-radius: 15px; 
+.recipe-card {
+  background: #f9fafb;
+  border-radius: 0.75rem;
+  padding: 0.7rem;
+  border: 1px solid #e5e7eb;
+  cursor: pointer;
+  display: flex;
+  gap: 0.6rem;
 }
 
-/* Botones */
-.acciones { 
-    display: flex; 
-    flex-direction: column; 
-    gap: 10px; 
-    margin-top: 15px; 
+.recipe-card:hover {
+  border-color: #9ca3af;
 }
 
-.btn-voz, .btn-favorito { 
-    padding: 10px; 
-    border: none; 
-    border-radius: 5px; 
-    font-weight: bold; 
-    cursor: pointer;
-    transition: background 0.3s, transform 0.1s;
+.recipe-thumb {
+  width: 64px;
+  height: 64px;
+  border-radius: 0.5rem;
+  object-fit: cover;
+  background: #e5e7eb;
+  flex-shrink: 0;
 }
 
-.btn-voz { 
-    background-color: #f4a261; /* Naranja/Tostado */ 
-    color: white; 
+.recipe-info h3 {
+  margin: 0;
+  font-size: 0.9rem;
 }
 
-.btn-voz:hover { 
-    background-color: #e08c4e; 
-    transform: scale(1.02); 
+.recipe-info small {
+  display: block;
+  font-size: 0.7rem;
+  color: #6b7280;
 }
 
-.btn-favorito { 
-    background-color: #ffe0b2; /* Amarillo Pálido */ 
-    color: #333; 
+.badge {
+  display: inline-block;
+  margin-top: 0.15rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  background: #e5e7eb;
+  color: #374151;
 }
 
-/* Estado de Favorito Activo */
-.btn-favorito[data-favorito="true"] { 
-    background-color: #ffd700; /* Oro */ 
-    color: #8b0000; 
+.fav-icon {
+  margin-left: auto;
+  font-size: 1rem;
+  color: #fbbf24;
+  opacity: 0.2;
 }
 
-.btn-favorito:hover { 
-    background-color: #ffd700; 
+.fav-icon.active {
+  opacity: 1;
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detail-section {
+  background: #ffffff;
+  border-radius: 0.75rem;
+  padding: 0.8rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.detail-header {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.detail-header img {
+  width: 120px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 0.7rem;
+  background: #e5e7eb;
+}
+
+.detail-header h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.detail-meta {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 0.15rem;
+}
+
+.detail-buttons {
+  margin-top: 0.6rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.btn {
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  cursor: pointer;
+}
+
+.btn.primary {
+  background: #111827;
+  color: #f9fafb;
+  border-color: #111827;
+}
+
+.btn.danger {
+  background: #fee2e2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+}
+
+ul {
+  padding-left: 1.1rem;
+  margin: 0.3rem 0 0.5rem;
+  font-size: 0.85rem;
+}
+
+li { margin-bottom: 0.15rem; }
+
+.shopping-list {
+  max-height: 200px;
+  overflow: auto;
+  padding-right: 0.3rem;
+}
+
+.shopping-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.85rem;
+  margin-bottom: 0.15rem;
+}
+
+.shopping-item button {
+  border: none;
+  background: transparent;
+  color: #b91c1c;
+  cursor: pointer;
+  font-size: 0.8rem;
+}
+
+.empty {
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.voice-status {
+  font-size: 0.8rem;
+  color: #6b7280;
+  margin-top: 0.3rem;
 }
