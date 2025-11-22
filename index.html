@@ -22,13 +22,22 @@
       Alto contraste
     </button>
     <button id="toggle-textsize" class="btn small" aria-pressed="false">
-      Texto grande
+      Tamaño texto: normal
     </button>
   </div>
 </header>
 
 <main id="main-content" class="app-main">
-  <!-- PANEL IZQUIERDO: LISTADO -->
+  <!-- LISTA DE LA COMPRA ARRIBA -->
+  <section class="detail-top" aria-label="Lista de la compra">
+    <div class="section-title">Lista de la compra</div>
+    <div id="shopping-list" class="shopping-list"></div>
+    <button id="clear-shopping" class="btn danger" style="margin-top:0.5rem;">
+      Vaciar lista de la compra
+    </button>
+  </section>
+
+  <!-- PANEL LISTADO DE RECETAS -->
   <section class="panel panel-left" aria-labelledby="titulo-recetas">
     <div class="panel-header">
       <h2 id="titulo-recetas">Recetas</h2>
@@ -56,24 +65,11 @@
       </button>
     </nav>
 
+    <p class="empty">
+      Pulsa una receta para verla en detalle en un cuadro emergente, con cocina guiada por voz.
+    </p>
+
     <div id="recipe-list" class="recipe-list" aria-live="polite"></div>
-  </section>
-
-  <!-- PANEL DERECHO: SOLO LISTA COMPRA -->
-  <section class="detail" aria-label="Información adicional">
-    <div class="detail-section">
-      <p class="empty">
-        Pulsa una receta para verla en detalle en un cuadro emergente, con cocina guiada por voz.
-      </p>
-    </div>
-
-    <div class="detail-section">
-      <div class="section-title">Lista de la compra</div>
-      <div id="shopping-list" class="shopping-list"></div>
-      <button id="clear-shopping" class="btn danger" style="margin-top:0.5rem;">
-        Vaciar lista de la compra
-      </button>
-    </div>
   </section>
 </main>
 
