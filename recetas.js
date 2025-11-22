@@ -1,48 +1,54 @@
-window.recetas = [
+[
   {
-    categoria: "Entrante",
-    titulo: "Tartar de atún rojo y aguacate",
-    imagen: "https://source.unsplash.com/featured/?tuna,tartare",
-    ingredientes: ["Atún rojo", "Aguacate", "Cebolla morada", "Salsa de soja", "Limón", "Aire de wasabi"],
-    pasos: [
-      "Corta atún y aguacate en dados finos.",
-      "Mezcla con salsa, limón y cebolla.",
-      "Montar con aro y decorar con aire de wasabi."
-    ]
+    "id": 1,
+    "titulo": "Aperitivo Gourmet de Langosta",
+    "categoria": "aperitivos",
+    "img": "imagenes/aperitivo_1.jpg",
+    "ingredientes": "1. 500g de langosta fresca, 2. Mantequilla de ajo, 3. Perejil picado, 4. Tostadas de pan brioche.",
+    "preparacion": "Paso 1: Cocer la langosta en agua salada. Paso 2: Trocearla y saltearla con mantequilla de ajo y perejil. Paso 3: Servir una cucharada sobre el pan brioche caliente.",
+    "tiempo": "25 min",
+    "dificultad": "Media"
   },
   {
-    categoria: "Primero",
-    titulo: "Risotto de ceps y trufa negra",
-    imagen: "https://source.unsplash.com/featured/?risotto,mushroom",
-    ingredientes: ["Arroz arborio", "Ceps", "Cebolla", "Caldo de pollo", "Trufa negra", "Mantequilla", "Queso parmesano"],
-    pasos: [
-      "Sofreír cebolla y ceps.",
-      "Añadir arroz y tostar.",
-      "Cocer añadiendo caldo caliente en tandas.",
-      "Finalizar con mantequilla, parmesano y trufa."
-    ]
+    "id": 2,
+    "titulo": "Sopa Cremosa de Castañas y Trufa",
+    "categoria": "primeros",
+    "img": "imagenes/primero_1.jpg",
+    "ingredientes": "1. 300g de castañas peladas, 2. 1L de caldo de ave, 3. Nata fresca, 4. Aceite de trufa blanca.",
+    "preparacion": "Paso 1: Cocer las castañas en el caldo de ave hasta que estén blandas. Paso 2: Triturar la mezcla y añadir nata hasta tener una textura cremosa. Paso 3: Calentar y servir con unas gotas de aceite de trufa.",
+    "tiempo": "45 min",
+    "dificultad": "Difícil"
   },
   {
-    categoria: "Segundo",
-    titulo: "Filete de vacuno madurado con reducción de vino",
-    imagen: "https://source.unsplash.com/featured/?steak,gourmet",
-    ingredientes: ["Filete de vacuno", "Vino tinto", "Mantequilla", "Caldo de carne", "Tomillo", "Ajo"],
-    pasos: [
-      "Sellar el filete en sartén caliente.",
-      "Reservar y desglasar con vino, caldo, ajo y tomillo.",
-      "Reducir y montar con mantequilla.",
-      "Servir el filete con la salsa."
-    ]
+    "id": 3,
+    "titulo": "Solomillo de Ternera con Salsa de Oporto",
+    "categoria": "segundos",
+    "img": "imagenes/segundo_1.jpg",
+    "ingredientes": "1. 1kg de solomillo, 2. 200ml de Oporto, 3. Mantequilla, 4. Tomillo fresco, 5. Patatas panaderas.",
+    "preparacion": "Paso 1: Sellar el solomillo en la sartén. Paso 2: Preparar la salsa reduciendo el Oporto con mantequilla y tomillo. Paso 3: Hornear el solomillo al punto deseado. Servir con la salsa y las patatas.",
+    "tiempo": "60 min",
+    "dificultad": "Media"
   },
   {
-    categoria: "Postre",
-    titulo: "Esfera de chocolate con corazón líquido",
-    imagen: "https://source.unsplash.com/featured/?chocolate,dessert",
-    ingredientes: ["Chocolate negro", "Cacao", "Mantequilla", "Ganache líquida", "Fruta roja"],
-    pasos: [
-      "Moldear esferas de chocolate.",
-      "Rellenar con ganache líquida.",
-      "Terminar con polvo de cacao y fruta."
-    ]
+    "id": 4,
+    "titulo": "Tronco de Navidad de Chocolate Especiado",
+    "categoria": "postres",
+    "img": "imagenes/postre_1.jpg",
+    "ingredientes": "1. Bizcocho de chocolate, 2. Crema de especias navideñas, 3. Glaseado de cacao, 4. Azúcar glas.",
+    "preparacion": "Paso 1: Rellenar el bizcocho con la crema y enrollarlo. Paso 2: Cubrir con el glaseado de cacao. Paso 3: Decorar imitando la corteza de un tronco. Dejar enfriar antes de servir.",
+    "tiempo": "90 min",
+    "dificultad": "Difícil"
+  },
+  
+  
+  {
+    "id": 160,
+    "titulo": "Postre de Cuchara Festivo 40",
+    "categoria": "postres",
+    "img": "imagenes/postre_40.jpg",
+    "ingredientes": "Ingredientes de ejemplo final.",
+    "preparacion": "Pasos de ejemplo final.",
+    "tiempo": "50 min",
+    "dificultad": "Fácil"
   }
-];
+]
