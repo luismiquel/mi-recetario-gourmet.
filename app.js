@@ -12,6 +12,10 @@ let currentRecipeId = null;
 let currentStepIndex = 0;
 let searchTerm = ""; // texto de búsqueda
 
+// control voz
+let currentUtterance = null;
+let autoVoiceMode = true;
+
 const listEl = document.getElementById("recipe-list");
 const shoppingEl = document.getElementById("shopping-list");
 const clearShoppingBtn = document.getElementById("clear-shopping");
@@ -27,6 +31,7 @@ const modalCloseBtn = document.getElementById("modal-close");
 const modalDialog = document.querySelector(".modal-dialog");
 
 let lastFocusedElement = null; // para devolver el foco al cerrar modal
+let textSizeState = 0; // 0=normal,1=grande,2=muy grande
 
 function capitalize(str) {
   if (!str) return "";
@@ -179,18 +184,27 @@ function openRecipeModal(id) {
 
   const btnVoice = document.createElement("button");
   btnVoice.className = "btn primary";
-  btnVoice.textContent = "Iniciar cocina guiada (voz)";
-  btnVoice.addEventListener("click", () => startGuidedCooking(r));
+  btnVoice.textContent = "Leer todos los pasos";
+  btnVoice.addEventListener("click", () => {
+    autoVoiceMode = true; // que lea todos los pasos seguidos
+    startGuidedCooking(r);
+  });
 
   const btnPrev = document.createElement("button");
   btnPrev.className = "btn";
-  btnPrev.textContent = "Paso anterior";
-  btnPrev.addEventListener("click", () => prevStep());
+  btnPrev.textContent = "Paso anterior (voz)";
+  btnPrev.addEventListener("click", () => {
+    autoVoiceMode = false; // modo manual
+    prevStep();
+  });
 
   const btnNext = document.createElement("button");
   btnNext.className = "btn";
-  btnNext.textContent = "Siguiente paso";
-  btnNext.addEventListener("click", () => nextStep());
+  btnNext.textContent = "Siguiente paso (voz)";
+  btnNext.addEventListener("click", () => {
+    autoVoiceMode = false; // modo manual
+    nextStep();
+  });
 
   const btnStop = document.createElement("button");
   btnStop.className = "btn danger";
@@ -208,7 +222,7 @@ function openRecipeModal(id) {
   voiceStatus.className = "voice-status";
   voiceStatus.id = "voice-status";
   voiceStatus.textContent =
-    "Cocina guiada: pulsa \"Iniciar\" para escuchar los pasos.";
+    "Cocina guiada: pulsa \"Leer todos los pasos\" o usa siguiente/anterior paso.";
 
   const ingTitle = document.createElement("div");
   ingTitle.className = "modal-section-title";
@@ -337,10 +351,15 @@ if (clearShoppingBtn) {
   });
 }
 
-/*************** VOZ (cocina guiada) ***************/
+/*************** VOZ (cocina guiada mejorada) ***************/
 function startGuidedCooking(recipe) {
   if (!("speechSynthesis" in window)) {
-    alert("Tu navegador no soporta síntesis de voz.");
+    const status = document.getElementById("voice-status");
+    if (status) {
+      status.textContent = "Tu navegador no soporta voz. Puedes seguir los pasos leyendo la lista.";
+    } else {
+      alert("Tu navegador no soporta síntesis de voz.");
+    }
     return;
   }
   currentRecipeId = recipe.id;
@@ -359,8 +378,31 @@ function speakCurrentStep() {
   const text = `Paso ${currentStepIndex + 1}: ${stepText}`;
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = "es-ES";
+  utterance.rate = 0.95; // un pelín más despacio
+
+  utterance.onstart = () => {
+    status.textContent = `Leyendo paso ${currentStepIndex + 1} de ${recipe.steps.length}...`;
+  };
+
+  utterance.onend = () => {
+    if (autoVoiceMode && currentRecipeIndexValid(recipe)) {
+      if (currentStepIndex < recipe.steps.length - 1) {
+        currentStepIndex++;
+        speakCurrentStep();
+      } else {
+        status.textContent = "Cocina guiada terminada.";
+      }
+    } else if (!autoVoiceMode) {
+      status.textContent = `Fin del paso ${currentStepIndex + 1}.`;
+    }
+  };
+
+  currentUtterance = utterance;
   window.speechSynthesis.speak(utterance);
-  status.textContent = `Cocina guiada: paso ${currentStepIndex + 1} de ${recipe.steps.length}`;
+}
+
+function currentRecipeIndexValid(recipe) {
+  return currentStepIndex >= 0 && currentStepIndex < recipe.steps.length;
 }
 
 function nextStep() {
@@ -382,9 +424,10 @@ function prevStep() {
 }
 
 function stopVoice() {
-  if (window.speechSynthesis) {
+  if (window.speechSynthesis && window.speechSynthesis.speaking) {
     window.speechSynthesis.cancel();
   }
+  currentUtterance = null;
   const status = document.getElementById("voice-status");
   if (status) status.textContent = "Cocina guiada detenida.";
 }
@@ -430,13 +473,25 @@ if (contrastBtn) {
   });
 }
 
+// Ciclo: normal -> grande -> muy grande -> normal
 if (textSizeBtn) {
   textSizeBtn.addEventListener("click", () => {
-    const isOn = document.body.classList.toggle("large-text");
-    textSizeBtn.setAttribute("aria-pressed", isOn ? "true" : "false");
+    textSizeState = (textSizeState + 1) % 3;
+    document.body.classList.remove("text-large", "text-xlarge");
+    if (textSizeState === 0) {
+      textSizeBtn.textContent = "Tamaño texto: normal";
+    } else if (textSizeState === 1) {
+      document.body.classList.add("text-large");
+      textSizeBtn.textContent = "Tamaño texto: grande";
+    } else {
+      document.body.classList.add("text-xlarge");
+      textSizeBtn.textContent = "Tamaño texto: muy grande";
+    }
+    textSizeBtn.setAttribute("aria-pressed", textSizeState !== 0 ? "true" : "false");
   });
 }
 
 /*************** INICIO ***************/
 renderRecipeList();
 renderShoppingList();
+
