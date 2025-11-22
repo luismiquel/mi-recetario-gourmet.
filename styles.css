@@ -7,6 +7,29 @@ body {
   color: #111827;
 }
 
+/* Enlace de "Saltar al contenido" accesible */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  top: 0.5rem;
+  background: #111827;
+  color: #f9fafb;
+  padding: 0.4rem 0.8rem;
+  border-radius: 999px;
+  z-index: 100;
+}
+.skip-link:focus {
+  left: 0.5rem;
+}
+
+/* Foco visible en botones y tarjetas */
+button:focus-visible,
+.recipe-card:focus-visible,
+.modal-close:focus-visible {
+  outline: 3px solid #2563eb;
+  outline-offset: 2px;
+}
+
 .app-header {
   background: #111827;
   color: #f9fafb;
@@ -66,7 +89,7 @@ body {
 .filters button {
   border-radius: 999px;
   border: 1px solid #d1d5db;
-  padding: 0.25rem 0.7rem;
+  padding: 0.35rem 0.9rem;
   font-size: 0.8rem;
   background: #f9fafb;
   cursor: pointer;
@@ -289,7 +312,7 @@ li { margin-bottom: 0.15rem; }
 
 .modal-body {
   display: flex;
-  flex-direction: column;  /* vertical, como pedías */
+  flex-direction: column;  /* vertical */
   gap: 0.75rem;
 }
 
