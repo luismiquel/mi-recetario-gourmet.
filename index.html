@@ -15,12 +15,34 @@
     <h1>App Gourmet – Recetas Navideñas</h1>
     <small>40 aperitivos · 40 primeros · 40 segundos · 40 postres</small>
   </div>
+
+  <!-- Controles globales de accesibilidad -->
+  <div class="accessibility-controls" aria-label="Opciones de accesibilidad">
+    <button id="toggle-contrast" class="btn small" aria-pressed="false">
+      Alto contraste
+    </button>
+    <button id="toggle-textsize" class="btn small" aria-pressed="false">
+      Texto grande
+    </button>
+  </div>
 </header>
 
 <main id="main-content" class="app-main">
   <!-- PANEL IZQUIERDO: LISTADO -->
   <section class="panel panel-left" aria-labelledby="titulo-recetas">
-    <h2 id="titulo-recetas">Recetas</h2>
+    <div class="panel-header">
+      <h2 id="titulo-recetas">Recetas</h2>
+
+      <!-- Buscador -->
+      <label for="search-recipes" class="sr-only">Buscar recetas por nombre</label>
+      <input
+        id="search-recipes"
+        type="search"
+        class="search-input"
+        placeholder="Buscar receta..."
+        aria-label="Buscar recetas por nombre"
+      >
+    </div>
 
     <!-- Navegación de filtros accesible -->
     <nav class="filters" aria-label="Filtrar recetas por categoría">
