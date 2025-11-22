@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>App Gourmet – Recetas Navideñas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Estilos locales -->
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -30,11 +29,11 @@
     <div id="recipe-list" class="recipe-list"></div>
   </section>
 
-  <!-- PANEL DERECHO: DETALLE + LISTA COMPRA -->
+  <!-- PANEL DERECHO: SOLO LISTA COMPRA -->
   <section class="detail">
-    <div class="detail-section" id="detail-section">
+    <div class="detail-section">
       <p class="empty">
-        Selecciona una receta para ver ingredientes, pasos y activar la cocina guiada con voz.
+        Pulsa una receta para verla en detalle en un modal, con cocina guiada por voz.
       </p>
     </div>
 
@@ -48,7 +47,15 @@
   </section>
 </main>
 
-<!-- Datos de recetas y lógica de la app -->
+<!-- MODAL DE RECETA -->
+<div id="recipe-modal" class="modal">
+  <div class="modal-backdrop"></div>
+  <div class="modal-dialog">
+    <button id="modal-close" class="modal-close" aria-label="Cerrar receta">×</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
 <script src="recetas.js"></script>
 <script src="app.js"></script>
 </body>
