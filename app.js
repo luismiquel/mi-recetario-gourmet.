@@ -1,99 +1,197 @@
-const recipes = window.recetas;
-let favorites = JSON.parse(localStorage.getItem('fav')) || [];
+/**
+ * Lógica principal del Recetario Gourmet Navideño
+ * Maneja la carga de datos, el renderizado y las funciones de voz/favoritos.
+ */
 
-const main = document.getElementById('recipes');
-const modal = document.getElementById('modal');
-const themeBtn = document.getElementById('toggle-theme');
-const catBtns = document.querySelectorAll('#category-nav button');
-const searchInput = document.getElementById('search');
+// --- 1. CONFIGURACIÓN GLOBAL Y VOZ ---
+const sintetizador = window.speechSynthesis;
+let recetasDatos = []; // Almacenará los datos cargados del JSON
 
-function renderList() {
-  const cat = document.querySelector('#category-nav button.active').dataset.cat;
-  const term = searchInput.value.toLowerCase();
-  main.innerHTML = '';
-  recipes.filter(r => {
-    return (cat === 'all' || r.categoria === cat)
-        && (r.titulo.toLowerCase().includes(term) || r.ingredientes.join(' ').toLowerCase().includes(term));
-  }).forEach(r => {
+/**
+ * Función para activar la guía por voz de una receta.
+ * Detiene la lectura si ya está hablando.
+ * @param {number} id - ID de la receta a leer.
+ */
+const leerReceta = (id) => {
+    if (!sintetizador) {
+        alert('Lo siento, tu navegador no soporta la síntesis de voz.');
+        return;
+    }
+
+    // Si ya está hablando, lo cancelamos (funciona como un botón de Stop)
+    if (sintetizador.speaking) {
+        sintetizador.cancel();
+        return;
+    }
+
+    const receta = recetasDatos.find(r => r.id === id);
+    if (!receta) return;
+
+    // Mensaje que se narrará
+    const textoCompleto = `
+        ¡Comencemos a cocinar! Título: ${receta.titulo}. 
+        Ingredientes: ${receta.ingredientes}. 
+        Instrucciones de preparación: ${receta.preparacion}.
+        Recuerda, pulsa el botón para detener la narración.
+    `;
+    
+    const voz = new SpeechSynthesisUtterance(textoCompleto);
+    voz.lang = 'es-ES'; 
+    voz.rate = 0.9;     
+    
+    sintetizador.speak(voz);
+};
+
+// --- 2. FUNCIONALIDAD DE FAVORITOS Y LISTA DE LA COMPRA ---
+
+/**
+ * Obtiene los IDs de las recetas favoritas almacenadas en localStorage.
+ * @returns {Array<number>} IDs de las recetas favoritas.
+ */
+const obtenerFavoritos = () => {
+    const favoritosJSON = localStorage.getItem('recetasFavoritas');
+    return favoritosJSON ? JSON.parse(favoritosJSON) : [];
+};
+
+/**
+ * Alterna el estado de Favorito de una receta.
+ * @param {number} id - ID de la receta.
+ * @param {HTMLElement} boton - El elemento botón que fue clickeado.
+ */
+const toggleFavorito = (id, boton) => {
+    let favoritos = obtenerFavoritos();
+    const esFavorito = favoritos.includes(id);
+
+    if (esFavorito) {
+        // Quitar de favoritos
+        favoritos = favoritos.filter(favId => favId !== id);
+        boton.setAttribute('data-favorito', 'false');
+        boton.textContent = '⭐ Añadir a Favoritos';
+    } else {
+        // Añadir a favoritos
+        favoritos.push(id);
+        boton.setAttribute('data-favorito', 'true');
+        boton.textContent = '🌟 En Favoritos';
+    }
+
+    // Guardar los nuevos favoritos
+    localStorage.setItem('recetasFavoritas', JSON.stringify(favoritos));
+};
+
+/**
+ * Genera la lista de la compra a partir de las recetas favoritas.
+ */
+const generarListaCompra = () => {
+    const favoritosIDs = obtenerFavoritos();
+    if (favoritosIDs.length === 0) {
+        alert('No has marcado ninguna receta como favorita. ¡Selecciona algunas para crear tu lista de la compra!');
+        return;
+    }
+
+    // Filtramos las recetas favoritas a partir de los datos completos
+    const recetasFavoritas = recetasDatos.filter(r => favoritosIDs.includes(r.id));
+    
+    let lista = '🛒 **LISTA DE LA COMPRA para tus Recetas Favoritas**\n\n';
+    const ingredientesTotales = {};
+
+    recetasFavoritas.forEach(receta => {
+        // Suponemos que los ingredientes están separados por coma y tienen un número (ej: 1. Ingrediente A, 2. Ingrediente B)
+        receta.ingredientes.split(',').forEach(item => {
+            const limpio = item.trim().replace(/^\d+\.\s*/, '');
+            if (limpio) {
+                // Aquí podríamos sumar cantidades si el formato fuera más estricto
+                // Por ahora, solo listamos el ingrediente
+                ingredientesTotales[limpio] = (ingredientesTotales[limpio] || 0) + 1; 
+            }
+        });
+    });
+    
+    // Formatear la lista para el usuario
+    const listaFinal = Object.keys(ingredientesTotales).map(ing => `* ${ing}`).join('\n');
+    lista += listaFinal;
+
+    alert(lista);
+};
+
+// --- 3. RENDERIZADO DE RECETAS ---
+
+/**
+ * Crea el elemento HTML para una única receta.
+ * @param {Object} r - Objeto de la receta.
+ * @returns {HTMLElement} El div de la receta.
+ */
+const crearTarjetaReceta = (r) => {
     const div = document.createElement('div');
-    div.className = 'card';
+    div.className = 'receta';
+    
+    const esFavorito = obtenerFavoritos().includes(r.id);
+    const textoBotonFav = esFavorito ? '🌟 En Favoritos' : '⭐ Añadir a Favoritos';
+
     div.innerHTML = `
-      <img src="${r.imagen}" alt="${r.titulo}">
-      <div class="info">
-        <h3>${r.titulo}</h3>
-        <button data-titulo="${r.titulo}">Ver más</button>
-      </div>`;
-    main.appendChild(div);
-  });
-}
+        <img src="${r.img}" alt="${r.titulo}" loading="lazy">
+        <div class="contenido-receta">
+            <h3>${r.titulo}</h3>
+            
+            <div class="meta">
+              <span class="tiempo">⏱ ${r.tiempo}</span>
+              <span class="dificultad">🔥 Dificultad: ${r.dificultad}</span>
+            </div>
+            
+            <div class="contenido-receta-detalle">
+              <h4>Ingredientes:</h4>
+              <p>${r.ingredientes}</p>
+              <h4>Preparación:</h4>
+              <p>${r.preparacion}</p>
+              
+              <div class="acciones">
+                <button class="btn-voz" onclick="leerReceta(${r.id})">🎤 Instrucciones por Voz</button>
+                <button class="btn-favorito" data-favorito="${esFavorito}" onclick="toggleFavorito(${r.id}, this)">${textoBotonFav}</button>
+              </div>
+            </div>
+        </div>
+    `;
+    return div;
+};
 
-function setupEvents() {
-  catBtns.forEach(b => b.onclick = () => {
-    catBtns.forEach(x => x.classList.remove('active'));
-    b.classList.add('active');
-    renderList();
-  });
-  searchInput.oninput = renderList;
-  themeBtn.onclick = () => {
-    document.body.classList.toggle('dark');
-  };
-  main.onclick = e => {
-    const btn = e.target.closest('button[data-titulo]');
-    if (!btn) return;
-    const rec = recipes.find(r => r.titulo === btn.dataset.titulo);
-    openModal(rec);
-  };
-  document.getElementById('close-modal').onclick = () => modal.classList.add('hidden');
-  document.getElementById('start-cooking').onclick = startCooking;
-  document.getElementById('favorite-btn').onclick = () => {
-    const t = document.getElementById('modal-title').textContent;
-    if (favorites.includes(t)) {
-      favorites = favorites.filter(x => x !== t);
-    } else favorites.push(t);
-    localStorage.setItem('fav', JSON.stringify(favorites));
-    updateFavBtn();
-  };
-}
+/**
+ * Carga las recetas del JSON y las renderiza en la página.
+ */
+const renderizarRecetas = () => {
+    const contenedores = {
+        'aperitivos': document.getElementById('contenedor-aperitivos'),
+        'primeros': document.getElementById('contenedor-primeros'),
+        'segundos': document.getElementById('contenedor-segundos'),
+        'postres': document.getElementById('contenedor-postres')
+    };
 
-function openModal(r) {
-  modal.classList.remove('hidden');
-  document.getElementById('modal-title').textContent = r.titulo;
-  document.getElementById('modal-img').src = r.imagen;
-  const ul = document.getElementById('modal-ingredients');
-  ul.innerHTML = r.ingredientes.map(i => `<li>${i}</li>`).join('');
-  const ol = document.getElementById('modal-steps');
-  ol.innerHTML = r.pasos.map(p => `<li>${p}</li>`).join('');
-  updateFavBtn();
-}
+    recetasDatos.forEach(r => {
+        const tarjeta = crearTarjetaReceta(r);
+        contenedores[r.categoria].appendChild(tarjeta);
+    });
+};
 
-function updateFavBtn() {
-  const btn = document.getElementById('favorite-btn');
-  const t = document.getElementById('modal-title').textContent;
-  btn.textContent = favorites.includes(t) ? '❤ Favorito' : 'Favorito ♡';
-}
+/**
+ * Inicializa la aplicación: Carga los datos y renderiza.
+ */
+const init = async () => {
+    try {
+        // Usamos fetch para cargar el archivo JSON de forma asíncrona
+        const response = await fetch('recetas.json');
+        if (!response.ok) {
+            throw new Error(`Error al cargar recetas.json: ${response.statusText}`);
+        }
+        recetasDatos = await response.json();
+        
+        renderizarRecetas();
+        
+        // Conectar el botón de la lista de la compra
+        document.getElementById('btn-lista-compra').addEventListener('click', generarListaCompra);
 
-let cookSteps, cookIndex;
-function startCooking() {
-  cookSteps = recipes.find(r => r.titulo === document.getElementById('modal-title').textContent).pasos;
-  cookIndex = 0;
-  speakStep();
-}
+    } catch (error) {
+        console.error('Fallo al inicializar la aplicación:', error);
+        alert('Error al cargar las recetas. Asegúrate de que el archivo recetas.json exista.');
+    }
+};
 
-function speakStep() {
-  if (cookIndex >= cookSteps.length) {
-    alert('¡Listo! Has acabado.');
-    return;
-  }
-  const text = `Paso ${cookIndex+1}: ${cookSteps[cookIndex]}`;
-  const u = new SpeechSynthesisUtterance(text);
-  u.lang = 'es-ES';
-  speechSynthesis.speak(u);
-  cookIndex++;
-}
-
-document.getElementById('modal').addEventListener('click', e =>
-  e.target === modal && modal.classList.add('hidden')
-);
-
-renderList();
-setupEvents();
+// Iniciar la aplicación al cargar el documento
+document.addEventListener('DOMContentLoaded', init);
