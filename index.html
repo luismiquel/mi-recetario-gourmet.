@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+<!-- Enlace rápido para lectores de pantalla / teclado -->
+<a href="#main-content" class="skip-link">Saltar al contenido principal</a>
+
 <header class="app-header">
   <div>
     <h1>App Gourmet – Recetas Navideñas</h1>
@@ -14,26 +17,31 @@
   </div>
 </header>
 
-<main class="app-main">
+<main id="main-content" class="app-main">
   <!-- PANEL IZQUIERDO: LISTADO -->
-  <section class="panel panel-left">
-    <h2>Recetas</h2>
-    <div class="filters">
-      <button data-filter="todas" class="active">Todas</button>
-      <button data-filter="aperitivo">Aperitivos</button>
-      <button data-filter="primero">Primeros</button>
-      <button data-filter="segundo">Segundos</button>
-      <button data-filter="postre">Postres</button>
-      <button id="toggle-favs" class="secondary">Solo favoritos</button>
-    </div>
-    <div id="recipe-list" class="recipe-list"></div>
+  <section class="panel panel-left" aria-labelledby="titulo-recetas">
+    <h2 id="titulo-recetas">Recetas</h2>
+
+    <!-- Navegación de filtros accesible -->
+    <nav class="filters" aria-label="Filtrar recetas por categoría">
+      <button data-filter="todas" class="active" aria-pressed="true">Todas</button>
+      <button data-filter="aperitivo" aria-pressed="false">Aperitivos</button>
+      <button data-filter="primero" aria-pressed="false">Primeros</button>
+      <button data-filter="segundo" aria-pressed="false">Segundos</button>
+      <button data-filter="postre" aria-pressed="false">Postres</button>
+      <button id="toggle-favs" class="secondary" aria-pressed="false">
+        Solo favoritos
+      </button>
+    </nav>
+
+    <div id="recipe-list" class="recipe-list" aria-live="polite"></div>
   </section>
 
   <!-- PANEL DERECHO: SOLO LISTA COMPRA -->
-  <section class="detail">
+  <section class="detail" aria-label="Información adicional">
     <div class="detail-section">
       <p class="empty">
-        Pulsa una receta para verla en detalle en un modal, con cocina guiada por voz.
+        Pulsa una receta para verla en detalle en un cuadro emergente, con cocina guiada por voz.
       </p>
     </div>
 
@@ -47,10 +55,16 @@
   </section>
 </main>
 
-<!-- MODAL DE RECETA -->
-<div id="recipe-modal" class="modal">
+<!-- MODAL DE RECETA ACCESIBLE -->
+<div
+  id="recipe-modal"
+  class="modal"
+  role="dialog"
+  aria-modal="true"
+  aria-labelledby="modal-title"
+>
   <div class="modal-backdrop"></div>
-  <div class="modal-dialog">
+  <div class="modal-dialog" tabindex="-1">
     <button id="modal-close" class="modal-close" aria-label="Cerrar receta">×</button>
     <div id="modal-content"></div>
   </div>
