@@ -510,11 +510,10 @@ btnTexto.addEventListener("click", () => {
 });
 
 // ============================================
-// ASISTENTE DE VOZ (VERSIÓN FINAL)
+// ASISTENTE DE VOZ (VERSIÓN FINAL Y ESTABLE)
 // ============================================
 let reconocimiento = null;
 let reconocimientoActivo = false;
-// Declaración de la variable global (CRÍTICA)
 let recetaEnLectura = null; 
 let indicePaso = 0;
 let enPausa = false;
@@ -569,11 +568,15 @@ function detenerAsistenteVoz() {
 
     if (reconocimiento) {
         try {
+            // Abortar la escucha activa
+            reconocimiento.abort();
+            // Limpiar listeners para evitar efectos secundarios
             reconocimiento.onresult = null;
             reconocimiento.onend = null;
             reconocimiento.onerror = null;
-            reconocimiento.abort();
-        } catch (e) {}
+        } catch (e) {
+             console.warn("Error al intentar abortar reconocimiento:", e);
+        }
     }
     if (tieneSpeechSynthesis) {
         window.speechSynthesis.cancel();
@@ -732,15 +735,22 @@ function escucharComando() {
         reconocimientoActivo = false;
         return;
     }
+    
+    // Reiniciar reconocimiento para evitar estados previos
+    if (reconocimiento) {
+        try {
+            reconocimiento.abort();
+        } catch(e) {}
+    }
+
     if (!reconocimiento) {
         reconocimiento = crearReconocimiento();
     }
-    if (reconocimientoActivo) return;
-
+    
     reconocimientoActivo = true;
     actualizarFeedbackVoz("escuchando");
 
-    // Limpiamos los listeners para evitar duplicados
+    // Limpiar y re-asignar listeners
     reconocimiento.onresult = null;
     reconocimiento.onend = null;
     reconocimiento.onerror = null;
@@ -759,11 +769,14 @@ function escucharComando() {
     reconocimiento.onerror = (ev) => {
         console.error("Error en reconocimiento:", ev.error);
         reconocimientoActivo = false;
+        actualizarFeedbackVoz("inactivo");
+
         if (ev.error === "no-speech" || ev.error === "audio-capture") {
-            // Si no hubo habla o micrófono no disponible, volvemos a intentar escuchar
+            // Si el error es temporal (no se detectó habla), intenta escuchar de nuevo inmediatamente
             escucharComando(); 
         } else {
-             actualizarFeedbackVoz("inactivo");
+            // Si es un error de permiso o grave, detente y pide al usuario que revise el navegador
+             leerTexto("Ha ocurrido un error en el micrófono. Por favor, revisa los permisos del navegador.");
         }
     };
 
