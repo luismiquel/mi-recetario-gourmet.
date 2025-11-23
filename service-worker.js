@@ -5,8 +5,7 @@ const urlsToCache = [
   '/app.js',
   '/styles.css',
   '/manifest.json',
-  // Asegúrate de incluir todos los archivos JS de recetas (ej. recetas.js)
-  // y cualquier otro recurso que necesites (fonts, icons, etc.)
+  '/recetas.js', // Asegúrate de tener este archivo con tus 160 recetas
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png'
 ];
