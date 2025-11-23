@@ -9,7 +9,12 @@ let TODAS_LAS_RECETAS = [];
 
 try {
   if (typeof RECETAS !== 'undefined' && Array.isArray(RECETAS)) {
-    TODAS_LAS_RECETAS = RECETAS;
+    // 🌟 MEJORA: Normalización de datos al cargar (Asegurar arrays para pasos/ingredientes)
+    TODAS_LAS_RECETAS = RECETAS.map(receta => ({
+        ...receta,
+        ingredients: Array.isArray(receta.ingredients) ? receta.ingredients : [],
+        steps: Array.isArray(receta.steps) ? receta.steps : [],
+    }));
   } else {
     console.error("❌ RECETAS no está definido o no es un array. Asegúrate de que recetas.js se carga ANTES que app.js");
   }
@@ -227,6 +232,7 @@ function abrirModal(recetaId) {
   const esFav = favoritos.has(receta.id);
   const etiquetaCat = getEtiquetaCategoria(receta.category);
 
+  // NOTA: ingredients y steps se asumen como arrays gracias a la normalización
   const ingredientesHtml = receta.ingredients
     .map((ing) => `<li>${ing}</li>`)
     .join("");
@@ -526,6 +532,9 @@ const tieneSpeechSynthesis = "speechSynthesis" in window;
 // Elemento para el feedback visual
 let feedbackVozEl = null; 
 
+// 🌟 MEJORA: Crear contexto de audio para el feedback auditivo
+const audioContext = tieneSpeechRecognition && typeof AudioContext !== 'undefined' ? new AudioContext() : null;
+
 function crearReconocimiento() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
     const recog = new SR();
@@ -538,6 +547,26 @@ function crearReconocimiento() {
 // ------------------------------------------------------------
 // CONTROL DE VOZ
 // ------------------------------------------------------------
+
+/** 🌟 MEJORA: Genera un 'ding' auditivo para feedback de escucha */
+function emitirFeedbackAuditivo() {
+    if (!audioContext) return;
+    
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.type = 'sine'; // Tono simple
+    oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // 440 Hz (A4)
+    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+    gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + 0.05); // Subir volumen rápido
+    
+    oscillator.start(audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.3); // Bajar volumen rápido
+    oscillator.stop(audioContext.currentTime + 0.3);
+}
 
 function leerTexto(texto, onEnd) {
     if (!tieneSpeechSynthesis) {
@@ -568,9 +597,7 @@ function detenerAsistenteVoz() {
 
     if (reconocimiento) {
         try {
-            // Abortar la escucha activa
             reconocimiento.abort();
-            // Limpiar listeners para evitar efectos secundarios
             reconocimiento.onresult = null;
             reconocimiento.onend = null;
             reconocimiento.onerror = null;
@@ -602,12 +629,12 @@ function actualizarFeedbackVoz(estado) {
     switch (estado) {
         case "escuchando":
             feedbackVozEl.textContent = "🎙️ ESCUCHANDO... Di un comando.";
-            feedbackVozEl.style.backgroundColor = "#ffc107"; // Amarillo
+            feedbackVozEl.style.backgroundColor = "#ffc107"; 
             feedbackVozEl.style.color = "#333";
             break;
         case "procesando":
             feedbackVozEl.textContent = "⚙️ PROCESANDO...";
-            feedbackVozEl.style.backgroundColor = "#17a2b8"; // Azul
+            feedbackVozEl.style.backgroundColor = "#17a2b8"; 
             feedbackVozEl.style.color = "#fff";
             break;
         case "inactivo":
@@ -617,7 +644,7 @@ function actualizarFeedbackVoz(estado) {
             break;
         case "pausado":
              feedbackVozEl.textContent = "⏸️ Asistente en PAUSA. Di reanudar para continuar.";
-             feedbackVozEl.style.backgroundColor = "#dc3545"; // Rojo
+             feedbackVozEl.style.backgroundColor = "#dc3545"; 
              feedbackVozEl.style.color = "#fff";
             break;
         default:
@@ -634,12 +661,21 @@ function leerPasoActual() {
     
     const totalPasos = recetaEnLectura.steps.length;
 
+    // 🌟 MEJORA: Limpiar clase del paso anterior
+    document.querySelectorAll('.lista-pasos li').forEach(li => li.classList.remove('paso-activo'));
+    
     // Caso: Final de la receta
     if (indicePaso >= totalPasos) {
         leerTexto("Has llegado al final de la receta. ¡Buen trabajo! Asistente detenido.", () => {
             detenerAsistenteVoz();
         });
         return;
+    }
+
+    // 🌟 MEJORA: Marcar paso actual en el DOM
+    const pasoActualEl = modalDialogo.querySelector(`[data-paso="${indicePaso}"]`);
+    if (pasoActualEl) {
+        pasoActualEl.classList.add('paso-activo');
     }
 
     // Caso: Lectura de paso normal
@@ -736,7 +772,7 @@ function escucharComando() {
         return;
     }
     
-    // Reiniciar reconocimiento para evitar estados previos
+    // Reiniciar reconocimiento para evitar estados previos (máxima limpieza)
     if (reconocimiento) {
         try {
             reconocimiento.abort();
@@ -749,6 +785,9 @@ function escucharComando() {
     
     reconocimientoActivo = true;
     actualizarFeedbackVoz("escuchando");
+    
+    // 🌟 MEJORA: Emitir feedback auditivo justo antes de empezar a escuchar
+    emitirFeedbackAuditivo();
 
     // Limpiar y re-asignar listeners
     reconocimiento.onresult = null;
@@ -763,7 +802,6 @@ function escucharComando() {
 
     reconocimiento.onend = () => {
         reconocimientoActivo = false;
-        // La actualización de feedback se gestiona dentro de manejarComando
     };
 
     reconocimiento.onerror = (ev) => {
@@ -772,11 +810,9 @@ function escucharComando() {
         actualizarFeedbackVoz("inactivo");
 
         if (ev.error === "no-speech" || ev.error === "audio-capture") {
-            // Si el error es temporal (no se detectó habla), intenta escuchar de nuevo inmediatamente
             escucharComando(); 
         } else {
-            // Si es un error de permiso o grave, detente y pide al usuario que revise el navegador
-             leerTexto("Ha ocurrido un error en el micrófono. Por favor, revisa los permisos del navegador.");
+             leerTexto("Ha ocurrido un error grave en el micrófono. Por favor, revisa los permisos del navegador.");
         }
     };
 
