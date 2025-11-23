@@ -5,6 +5,12 @@
   <title>App Gourmet – Recetas Navideñas</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="styles.css">
+
+  <link rel="manifest" href="/manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#8c1e30">
+
 </head>
 <body>
 
@@ -24,14 +30,12 @@
 
   <main id="contenido">
 
-    <!-- LISTA DE LA COMPRA ARRIBA -->
     <section class="panel lista-superior">
       <h2>Lista de la compra</h2>
       <div id="lista-compra"></div>
       <button id="btn-vaciar" class="btn danger">Vaciar lista</button>
     </section>
 
-    <!-- LISTADO DE RECETAS -->
     <section class="panel">
       <div class="top-panel">
         <h2>Recetas</h2>
@@ -52,7 +56,6 @@
 
   </main>
 
-  <!-- MODAL DE RECETA -->
   <div id="modal" class="modal">
     <div class="fondo"></div>
     <div class="dialogo" tabindex="-1">
