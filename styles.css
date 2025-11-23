@@ -1,86 +1,70 @@
-/* ===========================
-   ESTILOS BASE
-   =========================== */
-
+/* =========================================
+   RESET BÁSICO
+========================================= */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-html {
-  scroll-behavior: smooth;
+html,
+body {
+  margin: 0;
+  padding: 0;
 }
 
 body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 16px;
-  line-height: 1.5;
-  background: #f4f4f8;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, sans-serif;
+  background: #f5f5f7;
   color: #222;
+  line-height: 1.5;
 }
 
-/* Cuando activamos texto grande desde el botón */
-body.texto-grande {
-  font-size: 18px;
-}
-
-img {
-  max-width: 100%;
-  display: block;
-}
-
-button {
-  font: inherit;
-  cursor: pointer;
-}
-
-/* Evitar scroll detrás del modal */
-body.sin-scroll {
+/* Cuando el modal está abierto: evitar scroll de fondo */
+body.modal-abierto {
   overflow: hidden;
 }
 
-/* ===========================
-   ENLACE SALTAR AL CONTENIDO
-   =========================== */
-
+/* Enlaces de salto accesibles */
 .skip-link {
   position: absolute;
   left: -999px;
-  top: 0;
+  top: 10px;
   background: #000;
   color: #fff;
   padding: 0.5rem 1rem;
-  z-index: 1000;
+  border-radius: 999px;
+  z-index: 9999;
 }
 
 .skip-link:focus {
-  left: 0.5rem;
-  top: 0.5rem;
+  left: 10px;
 }
 
-/* ===========================
+/* =========================================
    CABECERA
-   =========================== */
+========================================= */
 
 .app-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 1.5rem;
-  background: #8b1538; /* tono navideño vino */
+  padding: 1.5rem 1.25rem;
+  background: #b30000;
+  background: linear-gradient(135deg, #b30000, #e74c3c);
   color: #fff;
   gap: 1rem;
 }
 
 .app-header h1 {
-  margin: 0;
+  margin: 0 0 0.25rem;
   font-size: 1.6rem;
 }
 
 .app-header .sub {
-  margin: 0.25rem 0 0;
+  margin: 0;
+  font-size: 0.95rem;
   opacity: 0.9;
 }
 
@@ -88,117 +72,116 @@ body.sin-scroll {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  justify-content: flex-end;
 }
 
-/* ===========================
-   BOTONES
-   =========================== */
+/* =========================================
+   BOTONES GENERALES
+========================================= */
+
+.btn,
+button {
+  font-family: inherit;
+}
 
 .btn {
-  border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.45rem 0.9rem;
   border-radius: 999px;
-  padding: 0.45rem 0.95rem;
-  background: #fff;
-  color: #8b1538;
-  font-weight: 600;
-  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
-  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+  border: none;
+  background: #e74c3c;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.1s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
 }
 
 .btn.small {
-  padding: 0.3rem 0.8rem;
-  font-size: 0.85rem;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.btn:hover {
+  background: #c0392b;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+}
+
+.btn:active {
+  transform: translateY(0);
+  box-shadow: none;
 }
 
 .btn.secondary {
-  background: #f2f2f7;
-  color: #333;
+  background: #34495e;
+}
+
+.btn.secondary:hover {
+  background: #2c3e50;
 }
 
 .btn.danger {
-  background: #c62828;
-  color: #fff;
+  background: #c0392b;
 }
 
-.btn:disabled {
-  opacity: 0.6;
-  cursor: default;
+.btn.danger:hover {
+  background: #992d22;
 }
 
-.btn:hover:not(:disabled),
-.btn:focus-visible:not(:disabled) {
-  background: #ffe8f0;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+/* Botón favorito */
+.btn-fav {
+  background: transparent;
+  color: #f1c40f;
+  border: none;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0.1rem 0.5rem;
 }
 
-/* ===========================
-   CONTENEDOR PRINCIPAL
-   =========================== */
+.btn-fav:hover {
+  transform: scale(1.1);
+}
+
+/* =========================================
+   LAYOUT GENERAL
+========================================= */
 
 main {
+  padding: 1.25rem;
   max-width: 1200px;
-  margin: 1rem auto 2.5rem;
-  padding: 0 1rem;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
+/* Paneles (tarjetas grandes) */
 .panel {
   background: #fff;
-  border-radius: 1rem;
-  padding: 1rem 1.2rem 1.5rem;
+  border-radius: 0.9rem;
+  padding: 1rem 1.1rem;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
-  margin-bottom: 1rem;
 }
 
-/* Panel superior de lista de la compra */
-.lista-superior {
-  border-left: 4px solid #8b1538;
-}
-
-/* Títulos de sección */
-.panel h2 {
+/* Lista de la compra arriba */
+.lista-superior h2 {
   margin-top: 0;
-  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
 }
 
-/* ===========================
-   LISTA DE LA COMPRA
-   =========================== */
-
-#lista-compra {
-  margin: 0.6rem 0 0.8rem;
-}
-
-.lista-vacia {
-  margin: 0;
-  font-size: 0.95rem;
-  color: #555;
-}
-
-.lista-compra-ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.lista-compra-item {
-  padding: 0.15rem 0;
-  font-size: 0.95rem;
-}
-
-.lista-compra-item input[type="checkbox"] {
-  margin-right: 0.4rem;
-}
-
-/* ===========================
+/* =========================================
    BUSCADOR + FILTROS
-   =========================== */
+========================================= */
 
 .top-panel {
   display: flex;
-  justify-content: space-between;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
+  gap: 0.75rem;
   margin-bottom: 0.75rem;
 }
 
@@ -208,152 +191,203 @@ main {
 
 .buscador {
   flex: 1;
-  padding: 0.4rem 0.75rem;
+  min-width: 180px;
+  padding: 0.4rem 0.7rem;
   border-radius: 999px;
   border: 1px solid #ccc;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
 }
 
-.buscador:focus-visible {
-  outline: 2px solid #8b1538;
-  outline-offset: 2px;
+.buscador:focus {
+  outline: 2px solid #e74c3c;
+  outline-offset: 1px;
+  border-color: #e74c3c;
 }
 
+/* Filtros */
 .filtros {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 0.9rem;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
 }
 
 .filtros button {
   border-radius: 999px;
   border: none;
-  padding: 0.35rem 0.9rem;
-  background: #f2f2f7;
-  font-size: 0.9rem;
+  padding: 0.35rem 0.8rem;
+  font-size: 0.85rem;
+  cursor: pointer;
+  background: #ecf0f1;
+  color: #333;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+}
+
+.filtros button:hover {
+  background: #d0d7dd;
+  transform: translateY(-1px);
 }
 
 .filtros button.active {
-  background: #8b1538;
+  background: #e74c3c;
   color: #fff;
 }
 
-#btn-favs.secondary.active {
-  background: #ffcc00;
-  color: #222;
-}
-
-/* ===========================
+/* =========================================
    GRID DE RECETAS
-   =========================== */
+========================================= */
 
 .grid-recetas {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.85rem;
 }
 
-/* En pantallas grandes, forzamos 3 columnas cuando hay espacio */
-@media (min-width: 1024px) {
-  .grid-recetas {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-}
-
-/* Mensaje sin resultados */
-.sin-resultados {
-  margin: 1rem 0;
-  font-size: 0.95rem;
-}
-
-/* ===========================
-   TARJETAS DE RECETA
-   =========================== */
-
-.card {
-  position: relative;
+/* Tarjeta de receta */
+.receta-card {
+  background: #fff;
+  border-radius: 0.9rem;
+  padding: 0.8rem 0.85rem 0.9rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   display: flex;
   flex-direction: column;
-  background: #fafafa;
-  border-radius: 0.9rem;
-  padding: 0.7rem;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  transition: transform 0.12s, box-shadow 0.12s;
+  gap: 0.45rem;
+  border-left: 4px solid transparent;
 }
 
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+.receta-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
 }
 
-.card-img-wrapper {
-  border-radius: 0.7rem;
-  overflow: hidden;
-  margin-bottom: 0.5rem;
-  max-height: 160px;
-}
-
-.card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.card h3 {
-  margin: 0.3rem 0;
-  font-size: 1.05rem;
-}
-
-.card .meta {
+.receta-header h3 {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 1rem;
+}
+
+.receta-meta {
+  margin: 0;
+  font-size: 0.8rem;
   color: #666;
 }
 
-.card .desc {
-  margin: 0.4rem 0 0.5rem;
-  font-size: 0.9rem;
+.receta-meta span + span::before {
+  content: "·";
+  margin: 0 0.25rem;
+}
+
+.receta-descripcion {
+  margin: 0;
+  font-size: 0.85rem;
   color: #444;
 }
 
-.card-acciones {
-  margin-top: auto;
+/* Botón "Ver receta" dentro de la tarjeta */
+.receta-card .btn.ver-receta {
+  margin-top: 0.3rem;
+  align-self: flex-start;
+}
+
+/* =========================================
+   COLORES POR TIPO DE PLATO
+========================================= */
+
+/* Aperitivos: naranja suave */
+.receta-card.cat-aperitivo {
+  border-left-color: #e67e22;
+  background: linear-gradient(
+    to right,
+    rgba(230, 126, 34, 0.06),
+    #ffffff
+  );
+}
+
+/* Primeros: azul */
+.receta-card.cat-primero {
+  border-left-color: #2980b9;
+  background: linear-gradient(
+    to right,
+    rgba(41, 128, 185, 0.06),
+    #ffffff
+  );
+}
+
+/* Segundos: verde */
+.receta-card.cat-segundo {
+  border-left-color: #27ae60;
+  background: linear-gradient(
+    to right,
+    rgba(39, 174, 96, 0.06),
+    #ffffff
+  );
+}
+
+/* Postres: morado */
+.receta-card.cat-postre {
+  border-left-color: #8e44ad;
+  background: linear-gradient(
+    to right,
+    rgba(142, 68, 173, 0.06),
+    #ffffff
+  );
+}
+
+/* =========================================
+   LISTA DE LA COMPRA
+========================================= */
+
+.lista-compra {
+  list-style: none;
+  margin: 0 0 0.75rem 0;
+  padding: 0;
+}
+
+.lista-compra li {
   display: flex;
-  justify-content: flex-end;
-}
-
-/* Estrella de favoritos en la tarjeta */
-.fav-toggle {
-  position: absolute;
-  top: 0.4rem;
-  right: 0.4rem;
-  width: 2rem;
-  height: 2rem;
-  border-radius: 999px;
-  border: none;
-  background: rgba(255, 255, 255, 0.94);
-  font-size: 1.1rem;
-  line-height: 1;
-  display: inline-flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  color: #bbb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+  gap: 0.75rem;
+  padding: 0.35rem 0;
+  border-bottom: 1px solid #eee;
 }
 
-.fav-toggle.is-fav {
-  color: #ffb300;
+.lista-compra li:last-child {
+  border-bottom: none;
 }
 
-.fav-toggle:focus-visible {
-  outline: 2px solid #8b1538;
-  outline-offset: 2px;
+.lista-compra .nombre {
+  font-size: 0.9rem;
 }
 
-/* ===========================
-   MODAL
-   =========================== */
+.lista-compra .controles {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.lista-compra .controles button {
+  border: none;
+  border-radius: 999px;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background: #ecf0f1;
+}
+
+.lista-compra .controles button:hover {
+  background: #d0d7dd;
+}
+
+.lista-compra .controles .cantidad {
+  min-width: 1.5rem;
+  text-align: center;
+}
+
+/* =========================================
+   MODAL (DETALLE DE RECETA)
+========================================= */
 
 .modal {
   position: fixed;
@@ -369,102 +403,107 @@ main {
 .modal .fondo {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.55);
+  background: rgba(0, 0, 0, 0.45);
 }
 
 .modal .dialogo {
   position: relative;
-  max-width: 900px;
-  margin: 2rem auto;
+  max-width: 720px;
+  max-height: 90vh;
+  margin: 5vh auto;
   background: #fff;
   border-radius: 1rem;
-  padding: 1.2rem 1.2rem 1.4rem;
-  max-height: calc(100vh - 4rem);
+  padding: 1.1rem 1.2rem;
   overflow-y: auto;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
   outline: none;
 }
 
-/* Botón X */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.modal-header h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.25rem;
+}
+
+.modal-header .receta-meta {
+  font-size: 0.8rem;
+}
+
+/* Botón cerrar modal (X) */
 .cerrar {
   position: absolute;
-  top: 0.4rem;
-  right: 0.6rem;
-  border: none;
+  top: 0.5rem;
+  right: 0.55rem;
   background: transparent;
-  font-size: 1.3rem;
-  line-height: 1;
+  border: none;
+  font-size: 1.4rem;
+  cursor: pointer;
+  color: #999;
 }
 
-/* Cabecera modal */
-.modal-header h2 {
-  margin: 0 0 0.3rem;
-}
-
-.modal-meta {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #666;
-}
-
-/* Cuerpo del modal */
-.modal-body {
-  margin-top: 0.7rem;
-}
-
-.modal-imagen {
-  margin: 0 0 0.8rem;
-}
-
-.modal-descripcion {
-  margin: 0 0 1rem;
-}
-
-/* Bloques internos: ingredientes, pasos, voz */
-.modal-bloque {
-  margin-bottom: 1rem;
-  padding: 0.75rem;
-  background: #fafafa;
-  border-radius: 0.7rem;
-}
-
-.modal-bloque h3 {
-  margin-top: 0;
-  margin-bottom: 0.4rem;
-  font-size: 1rem;
+.cerrar:hover {
+  color: #555;
 }
 
 /* Ingredientes y pasos */
+
 .lista-ingredientes,
 .lista-pasos {
-  margin: 0.3rem 1rem;
-  padding-left: 1rem;
-  font-size: 0.95rem;
+  margin: 0.35rem 0 0.9rem 0;
+  padding-left: 1.1rem;
 }
 
-/* Bloque de voz */
-.voz-bloque .ayuda-voz {
+.lista-ingredientes li,
+.lista-pasos li {
+  margin-bottom: 0.25rem;
   font-size: 0.9rem;
-  margin: 0 0 0.7rem;
 }
+
+.lista-ingredientes .btn-ingrediente {
+  border-radius: 999px;
+  border: none;
+  background: #ecf0f1;
+  padding: 0.1rem 0.65rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.lista-ingredientes .btn-ingrediente:hover {
+  background: #d0d7dd;
+}
+
+/* Sección de voz en el modal */
 
 .voz-controles {
-  display: flex;
-  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid #eee;
 }
 
-.modal-footer {
+.voz-botones {
   display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  margin-top: 0.8rem;
   flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0.4rem 0;
 }
 
-/* ===========================
-   ACCESIBILIDAD VISUAL
-   =========================== */
+.voz-ayuda {
+  font-size: 0.8rem;
+  color: #555;
+}
 
-/* Alto contraste activado desde el botón */
+/* =========================================
+   ACCESIBILIDAD: ALTO CONTRASTE + TEXTO GRANDE
+========================================= */
+
+/* Alto contraste */
 body.alto-contraste {
   background: #000;
   color: #fff;
@@ -472,51 +511,55 @@ body.alto-contraste {
 
 body.alto-contraste .app-header {
   background: #000;
-  border-bottom: 2px solid #fff;
+  background-image: none;
 }
 
-body.alto-contraste .panel {
-  background: #111;
+body.alto-contraste .panel,
+body.alto-contraste .receta-card,
+body.alto-contraste .modal .dialogo {
+  background: #000;
   color: #fff;
   box-shadow: none;
-  border: 1px solid #444;
+  border: 1px solid #fff;
 }
 
-body.alto-contraste .card {
-  background: #111;
-  border: 1px solid #666;
-}
-
-body.alto-contraste .modal .dialogo {
-  background: #111;
+body.alto-contraste .buscador,
+body.alto-contraste .lista-compra .controles button,
+body.alto-contraste .lista-ingredientes .btn-ingrediente,
+body.alto-contraste .filtros button {
+  background: #000;
   color: #fff;
+  border: 1px solid #fff;
+}
+
+body.alto-contraste .filtros button.active {
+  background: #fff;
+  color: #000;
 }
 
 body.alto-contraste .btn {
   background: #fff;
   color: #000;
+  box-shadow: none;
 }
 
-body.alto-contraste .btn.secondary {
-  background: #333;
-  color: #fff;
+body.alto-contraste .btn:hover {
+  background: #ccc;
 }
 
-body.alto-contraste .btn.danger {
-  background: #ff1744;
-  color: #000;
+/* Texto grande */
+body.texto-grande {
+  font-size: 18px;
 }
 
-/* En alto contraste que todo texto importante tenga buen contraste */
-body.alto-contraste .desc,
-body.alto-contraste .modal-descripcion,
-body.alto-contraste .ayuda-voz {
-  color: #fff;
+body.texto-grande .receta-meta,
+body.texto-grande .voz-ayuda {
+  font-size: 0.95rem;
 }
 
-/* ===========================
+/* =========================================
    RESPONSIVE
-   =========================== */
+========================================= */
 
 @media (max-width: 768px) {
   .app-header {
@@ -524,28 +567,23 @@ body.alto-contraste .ayuda-voz {
     align-items: flex-start;
   }
 
+  .modal .dialogo {
+    margin: 3vh 0.75rem;
+    max-height: 94vh;
+  }
+}
+
+@media (max-width: 480px) {
+  main {
+    padding: 0.75rem;
+  }
+
   .top-panel {
     flex-direction: column;
     align-items: stretch;
   }
 
-  .voz-controles {
-    flex-direction: column;
+  .app-header h1 {
+    font-size: 1.3rem;
   }
-
-  .modal .dialogo {
-    margin: 1rem;
-    max-height: calc(100vh - 2rem);
-  }
-}
-
-/* Ajustes extra cuando texto grande está activo */
-body.texto-grande .card h3 {
-  font-size: 1.15rem;
-}
-
-body.texto-grande .card .desc,
-body.texto-grande .lista-ingredientes,
-body.texto-grande .lista-pasos {
-  font-size: 1rem;
 }
