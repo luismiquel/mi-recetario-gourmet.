@@ -302,7 +302,7 @@ function abrirModal(recetaId) {
   // CORRECCIÓN 1: Obtener la referencia al modalFooter justo después de inyectar el HTML
   modalFooter = modalDialogo.querySelector(".detalle-acciones"); 
   
-  // Establecer la receta en lectura (Crucial para el asistente de voz)
+  // CORRECCIÓN 2: Establecer la receta en lectura (Crucial para el asistente de voz)
   recetaEnLectura = receta; 
 
   // Foco para accesibilidad: establecer tabindex y enfocar
@@ -325,6 +325,8 @@ function cerrarModal() {
     elementoQueAbrioModal.focus();
     elementoQueAbrioModal = null; 
   }
+  // Limpiar la referencia de la receta al cerrar el modal
+  recetaEnLectura = null;
 }
 
 // ============================================
@@ -515,8 +517,8 @@ btnTexto.addEventListener("click", () => {
 // ============================================
 let reconocimiento = null;
 let reconocimientoActivo = false;
-// La recetaEnLectura se establece en abrirModal, ahora globalmente disponible
-// let recetaEnLectura = null; 
+// CORRECCIÓN: Declaración de la variable global para eliminar ReferenceError
+let recetaEnLectura = null; 
 let indicePaso = 0;
 let enPausa = false;
 
@@ -564,7 +566,6 @@ function leerTexto(texto, onEnd) {
 }
 
 function detenerAsistenteVoz() {
-    // Ya no limpiamos recetaEnLectura aquí. Lo hacemos en cerrarModal.
     indicePaso = 0;
     enPausa = false;
     reconocimientoActivo = false;
