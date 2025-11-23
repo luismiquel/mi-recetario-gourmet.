@@ -1,156 +1,551 @@
-*{box-sizing:border-box;}
-body{
-  margin:0;
-  font-family:system-ui;
-  background:#f4f4f6;
-  color:#111;
-  font-size:16px;
-}
-body.contraste{
-  background:#000;
-  color:#fff;
-}
-body.texto-grande{font-size:18px;}
-body.texto-xl{font-size:20px;}
+/* ===========================
+   ESTILOS BASE
+   =========================== */
 
-.skip-link{
-  position:absolute;
-  left:-999px;
-  top:0;
-  background:#000;
-  color:#fff;
-  padding:.5rem;
-  border-radius:.5rem;
-  z-index:999;
-}
-.skip-link:focus{left:.5rem;}
-
-.app-header{
-  background:#111827;
-  color:#fff;
-  padding:1rem;
-  display:flex;
-  justify-content:space-between;
-}
-.sub{margin:0; opacity:.7;}
-.herramientas{display:flex; gap:.5rem;}
-
-main{padding:1rem; max-width:1200px; margin:auto;}
-
-.panel{
-  background:#fff;
-  border-radius:.8rem;
-  padding:1rem;
-  margin-bottom:1rem;
-  border:1px solid #ddd;
-}
-.lista-superior{margin-bottom:1.5rem;}
-
-.top-panel{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
-.buscador{
-  padding:.4rem .7rem;
-  border:1px solid #ccc;
-  border-radius:1rem;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-.filtros{
-  margin:.8rem 0;
-  display:flex;
-  flex-wrap:wrap;
-  gap:.5rem;
-}
-.filtros button{
-  padding:.4rem .9rem;
-  border-radius:1rem;
-  border:1px solid #ccc;
-  background:#eee;
-}
-.filtros button.active{
-  background:#111827;
-  color:#fff;
+html {
+  scroll-behavior: smooth;
 }
 
-.grid-recetas{
-  display:grid;
-  gap:.8rem;
-}
-@media(min-width:768px){
-  .grid-recetas{grid-template-columns:repeat(3,1fr);}
-}
-
-.card{
-  background:#f8f8f8;
-  border:1px solid #ccc;
-  padding:.6rem;
-  border-radius:.7rem;
-  display:flex;
-  gap:.5rem;
-  cursor:pointer;
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  background: #f4f4f8;
+  color: #222;
 }
 
-.card img{
-  width:80px;
-  height:80px;
-  object-fit:cover;
-  border-radius:.5rem;
+/* Cuando activamos texto grande desde el botón */
+body.texto-grande {
+  font-size: 18px;
 }
 
-.btn{
-  padding:.4rem .8rem;
-  border-radius:1rem;
-  background:#eee;
-  border:1px solid #bbb;
-  cursor:pointer;
-}
-.btn.small{font-size:.8rem;}
-.btn.danger{
-  background:#ffdddd;
-  border-color:#ffbbbb;
-  color:#aa0000;
+img {
+  max-width: 100%;
+  display: block;
 }
 
-.modal{
-  position:fixed;
-  inset:0;
-  display:none;
-  justify-content:center;
-  align-items:center;
+button {
+  font: inherit;
+  cursor: pointer;
 }
-.modal.activo{display:flex;}
-.fondo{
-  position:absolute;
-  inset:0;
-  background:rgba(0,0,0,.55);
+
+/* Evitar scroll detrás del modal */
+body.sin-scroll {
+  overflow: hidden;
 }
-.dialogo{
-  position:relative;
-  background:#fff;
-  width:90%;
-  max-width:600px;
-  max-height:90vh;
-  overflow:auto;
-  border-radius:1rem;
-  padding:1rem;
-  z-index:10;
+
+/* ===========================
+   ENLACE SALTAR AL CONTENIDO
+   =========================== */
+
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 0;
+  background: #000;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  z-index: 1000;
 }
-.cerrar{
-  position:absolute;
-  right:.5rem;
-  top:.5rem;
-  padding:.2rem .5rem;
-  font-size:1.5rem;
+
+.skip-link:focus {
+  left: 0.5rem;
+  top: 0.5rem;
 }
-.imagen-modal{
-  width:100%;
-  height:200px;
-  object-fit:cover;
-  border-radius:.8rem;
-  background:#ddd;
+
+/* ===========================
+   CABECERA
+   =========================== */
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  background: #8b1538; /* tono navideño vino */
+  color: #fff;
+  gap: 1rem;
 }
-.pasos{
-  margin-top:.5rem;
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.app-header .sub {
+  margin: 0.25rem 0 0;
+  opacity: 0.9;
+}
+
+.herramientas {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ===========================
+   BOTONES
+   =========================== */
+
+.btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.45rem 0.95rem;
+  background: #fff;
+  color: #8b1538;
+  font-weight: 600;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
+  transition: background 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+
+.btn.small {
+  padding: 0.3rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.btn.secondary {
+  background: #f2f2f7;
+  color: #333;
+}
+
+.btn.danger {
+  background: #c62828;
+  color: #fff;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.btn:hover:not(:disabled),
+.btn:focus-visible:not(:disabled) {
+  background: #ffe8f0;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.18);
+}
+
+/* ===========================
+   CONTENEDOR PRINCIPAL
+   =========================== */
+
+main {
+  max-width: 1200px;
+  margin: 1rem auto 2.5rem;
+  padding: 0 1rem;
+}
+
+.panel {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1rem 1.2rem 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  margin-bottom: 1rem;
+}
+
+/* Panel superior de lista de la compra */
+.lista-superior {
+  border-left: 4px solid #8b1538;
+}
+
+/* Títulos de sección */
+.panel h2 {
+  margin-top: 0;
+  font-size: 1.3rem;
+}
+
+/* ===========================
+   LISTA DE LA COMPRA
+   =========================== */
+
+#lista-compra {
+  margin: 0.6rem 0 0.8rem;
+}
+
+.lista-vacia {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.lista-compra-ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.lista-compra-item {
+  padding: 0.15rem 0;
+  font-size: 0.95rem;
+}
+
+.lista-compra-item input[type="checkbox"] {
+  margin-right: 0.4rem;
+}
+
+/* ===========================
+   BUSCADOR + FILTROS
+   =========================== */
+
+.top-panel {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.top-panel h2 {
+  margin: 0;
+}
+
+.buscador {
+  flex: 1;
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #ccc;
+  font-size: 0.95rem;
+}
+
+.buscador:focus-visible {
+  outline: 2px solid #8b1538;
+  outline-offset: 2px;
+}
+
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.9rem;
+}
+
+.filtros button {
+  border-radius: 999px;
+  border: none;
+  padding: 0.35rem 0.9rem;
+  background: #f2f2f7;
+  font-size: 0.9rem;
+}
+
+.filtros button.active {
+  background: #8b1538;
+  color: #fff;
+}
+
+#btn-favs.secondary.active {
+  background: #ffcc00;
+  color: #222;
+}
+
+/* ===========================
+   GRID DE RECETAS
+   =========================== */
+
+.grid-recetas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+}
+
+/* En pantallas grandes, forzamos 3 columnas cuando hay espacio */
+@media (min-width: 1024px) {
+  .grid-recetas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Mensaje sin resultados */
+.sin-resultados {
+  margin: 1rem 0;
+  font-size: 0.95rem;
+}
+
+/* ===========================
+   TARJETAS DE RECETA
+   =========================== */
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #fafafa;
+  border-radius: 0.9rem;
+  padding: 0.7rem;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+}
+
+.card-img-wrapper {
+  border-radius: 0.7rem;
+  overflow: hidden;
+  margin-bottom: 0.5rem;
+  max-height: 160px;
+}
+
+.card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.card h3 {
+  margin: 0.3rem 0;
+  font-size: 1.05rem;
+}
+
+.card .meta {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.card .desc {
+  margin: 0.4rem 0 0.5rem;
+  font-size: 0.9rem;
+  color: #444;
+}
+
+.card-acciones {
+  margin-top: auto;
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* Estrella de favoritos en la tarjeta */
+.fav-toggle {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  border: none;
+  background: rgba(255, 255, 255, 0.94);
+  font-size: 1.1rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #bbb;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+}
+
+.fav-toggle.is-fav {
+  color: #ffb300;
+}
+
+.fav-toggle:focus-visible {
+  outline: 2px solid #8b1538;
+  outline-offset: 2px;
+}
+
+/* ===========================
+   MODAL
+   =========================== */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 999;
+}
+
+.modal.abierto {
+  display: block;
+}
+
+.modal .fondo {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.modal .dialogo {
+  position: relative;
+  max-width: 900px;
+  margin: 2rem auto;
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1.2rem 1.2rem 1.4rem;
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+  outline: none;
+}
+
+/* Botón X */
+.cerrar {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.6rem;
+  border: none;
+  background: transparent;
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+/* Cabecera modal */
+.modal-header h2 {
+  margin: 0 0 0.3rem;
+}
+
+.modal-meta {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Cuerpo del modal */
+.modal-body {
+  margin-top: 0.7rem;
+}
+
+.modal-imagen {
+  margin: 0 0 0.8rem;
+}
+
+.modal-descripcion {
+  margin: 0 0 1rem;
+}
+
+/* Bloques internos: ingredientes, pasos, voz */
+.modal-bloque {
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: #fafafa;
+  border-radius: 0.7rem;
+}
+
+.modal-bloque h3 {
+  margin-top: 0;
+  margin-bottom: 0.4rem;
+  font-size: 1rem;
+}
+
+/* Ingredientes y pasos */
+.lista-ingredientes,
+.lista-pasos {
+  margin: 0.3rem 1rem;
+  padding-left: 1rem;
+  font-size: 0.95rem;
+}
+
+/* Bloque de voz */
+.voz-bloque .ayuda-voz {
+  font-size: 0.9rem;
+  margin: 0 0 0.7rem;
+}
+
+.voz-controles {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.8rem;
+  flex-wrap: wrap;
+}
+
+/* ===========================
+   ACCESIBILIDAD VISUAL
+   =========================== */
+
+/* Alto contraste activado desde el botón */
+body.alto-contraste {
+  background: #000;
+  color: #fff;
+}
+
+body.alto-contraste .app-header {
+  background: #000;
+  border-bottom: 2px solid #fff;
+}
+
+body.alto-contraste .panel {
+  background: #111;
+  color: #fff;
+  box-shadow: none;
+  border: 1px solid #444;
+}
+
+body.alto-contraste .card {
+  background: #111;
+  border: 1px solid #666;
+}
+
+body.alto-contraste .modal .dialogo {
+  background: #111;
+  color: #fff;
+}
+
+body.alto-contraste .btn {
+  background: #fff;
+  color: #000;
+}
+
+body.alto-contraste .btn.secondary {
+  background: #333;
+  color: #fff;
+}
+
+body.alto-contraste .btn.danger {
+  background: #ff1744;
+  color: #000;
+}
+
+/* En alto contraste que todo texto importante tenga buen contraste */
+body.alto-contraste .desc,
+body.alto-contraste .modal-descripcion,
+body.alto-contraste .ayuda-voz {
+  color: #fff;
+}
+
+/* ===========================
+   RESPONSIVE
+   =========================== */
+
+@media (max-width: 768px) {
+  .app-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .top-panel {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .voz-controles {
+    flex-direction: column;
+  }
+
+  .modal .dialogo {
+    margin: 1rem;
+    max-height: calc(100vh - 2rem);
+  }
+}
+
+/* Ajustes extra cuando texto grande está activo */
+body.texto-grande .card h3 {
+  font-size: 1.15rem;
+}
+
+body.texto-grande .card .desc,
+body.texto-grande .lista-ingredientes,
+body.texto-grande .lista-pasos {
+  font-size: 1rem;
 }
