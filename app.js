@@ -172,6 +172,7 @@ function pintarRecetas() {
     const claseCat = getClaseCategoria(r.category);
     const etiquetaCat = getEtiquetaCategoria(r.category);
 
+    // Añadimos el data-id a los botones para que la delegación de eventos funcione
     const htmlString = `
       <article class="card-receta ${claseCat}" data-id="${r.id}">
         <header class="card-header">
@@ -180,6 +181,7 @@ function pintarRecetas() {
             class="btn-fav-toggle" 
             type="button" 
             aria-label="${esFav ? "Quitar de favoritos" : "Añadir a favoritos"}"
+            data-id="${r.id}"
           >
             ${esFav ? "★" : "☆"}
           </button>
@@ -194,7 +196,7 @@ function pintarRecetas() {
         </div>
 
         <footer class="card-footer">
-          <button class="btn ver-receta" type="button">
+          <button class="btn ver-receta" type="button" data-id="${r.id}">
             Ver receta
           </button>
         </footer>
@@ -269,6 +271,7 @@ function abrirModal(recetaId) {
           type="button" 
           class="btn btn-primario" 
           id="btn-add-lista"
+          data-id="${receta.id}"
         >
           Añadir ingredientes a la lista
         </button>
@@ -296,8 +299,11 @@ function abrirModal(recetaId) {
 
   modal.classList.add("abierto");
   
-  // CORRECCIÓN: Obtener la referencia al modalFooter justo después de inyectar el HTML
+  // CORRECCIÓN 1: Obtener la referencia al modalFooter justo después de inyectar el HTML
   modalFooter = modalDialogo.querySelector(".detalle-acciones"); 
+  
+  // Establecer la receta en lectura (Crucial para el asistente de voz)
+  recetaEnLectura = receta; 
 
   // Foco para accesibilidad: establecer tabindex y enfocar
   modalDialogo.setAttribute('tabindex', '-1'); 
@@ -306,7 +312,7 @@ function abrirModal(recetaId) {
   // Es crucial llamar a esta función aquí para que el feedback visual se inicialice
   actualizarFeedbackVoz("inactivo"); 
 
-  // NOTA: Se eliminan los addEventListener individuales aquí, 
+  // NOTA: Se eliminan los addEventListener individuales, 
   // ya que se usa la Delegación de Eventos en init().
 }
 
@@ -420,8 +426,7 @@ btnFavs.addEventListener("click", () => {
 listadoEl.addEventListener("click", (e) => {
   const btnFav = e.target.closest(".btn-fav-toggle");
   if (btnFav) {
-    const card = btnFav.closest(".card-receta");
-    const id = Number(card.dataset.id);
+    const id = Number(btnFav.dataset.id); // Usar data-id del botón
     toggleFavorito(id);
     pintarRecetas();
     sincronizarUIFiltros();
@@ -430,8 +435,7 @@ listadoEl.addEventListener("click", (e) => {
 
   const btnVer = e.target.closest(".ver-receta");
   if (btnVer) {
-    const card = btnVer.closest(".card-receta");
-    const id = Number(card.dataset.id);
+    const id = Number(btnVer.dataset.id); // Usar data-id del botón
     // Accesibilidad: Guardar el elemento que abrió el modal
     elementoQueAbrioModal = btnVer; 
     abrirModal(id);
@@ -441,14 +445,18 @@ listadoEl.addEventListener("click", (e) => {
 // Delegación de eventos para botones DENTRO del Modal (Mejora de memoria)
 modalDialogo.addEventListener("click", (e) => {
     const target = e.target;
-    const recetaId = recetaEnLectura ? recetaEnLectura.id : null; 
+    // Si no tenemos recetaEnLectura, no hacemos nada (seguridad)
+    if (!recetaEnLectura) return; 
 
-    if (target.id === "btn-add-lista" && recetaEnLectura) {
+    // Utilizamos la recetaEnLectura ya cargada para las acciones
+    const recetaId = recetaEnLectura.id;
+
+    if (target.id === "btn-add-lista") {
         agregarIngredientesALista(recetaEnLectura);
         return;
     }
     
-    if (target.id === "btn-fav-detalle" && recetaId !== null) {
+    if (target.id === "btn-fav-detalle") {
         toggleFavorito(recetaId);
         abrirModal(recetaId); // repinta estado del modal
         pintarRecetas();
@@ -456,7 +464,7 @@ modalDialogo.addEventListener("click", (e) => {
         return;
     }
     
-    if (target.id === "btn-voz" && recetaEnLectura) {
+    if (target.id === "btn-voz") {
         iniciarAsistenteVoz(recetaEnLectura);
         return;
     }
@@ -507,7 +515,8 @@ btnTexto.addEventListener("click", () => {
 // ============================================
 let reconocimiento = null;
 let reconocimientoActivo = false;
-let recetaEnLectura = null;
+// La recetaEnLectura se establece en abrirModal, ahora globalmente disponible
+// let recetaEnLectura = null; 
 let indicePaso = 0;
 let enPausa = false;
 
@@ -555,7 +564,7 @@ function leerTexto(texto, onEnd) {
 }
 
 function detenerAsistenteVoz() {
-    recetaEnLectura = null;
+    // Ya no limpiamos recetaEnLectura aquí. Lo hacemos en cerrarModal.
     indicePaso = 0;
     enPausa = false;
     reconocimientoActivo = false;
@@ -575,7 +584,7 @@ function detenerAsistenteVoz() {
 }
 
 function actualizarFeedbackVoz(estado) {
-    // CORRECCIÓN: Verifica si modalFooter es null ANTES de usarlo (es crucial)
+    // Verifica si modalFooter es null ANTES de usarlo
     if (!modalFooter) return; 
 
     // 1. Asegurarse de que el elemento existe en el modal
@@ -783,8 +792,7 @@ function iniciarAsistenteVoz(receta) {
     }
 
     detenerAsistenteVoz();
-    recetaEnLectura = receta;
-    indicePaso = 0;
+    // recetaEnLectura ya está cargada en abrirModal()
 
     const intro = `
       Vamos a cocinar la receta: ${receta.title}.
