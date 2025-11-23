@@ -7,16 +7,5 @@
   "orientation": "portrait",
   "background_color": "#f5f5f7",
   "theme_color": "#8c1e30",
-  "icons": [
-    {
-      "src": "/icons/icon-192x192.png", // <--- 🌟 ¡Aquí se declaran los iconos! 🌟
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/icons/icon-512x512.png", // <--- ¡Aquí se declaran los iconos! 🌟
-      "sizes": "512x512",
-      "type": "image/png"
-    }
-  ]
+  "icons": [] 
 }
