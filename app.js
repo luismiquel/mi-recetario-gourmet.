@@ -286,8 +286,9 @@ function abrirModal(recetaId) {
 
   btnFavDetalle.addEventListener("click", () => {
     toggleFavorito(receta.id);
-    abrirModal(receta.id); // repinta estado
+    abrirModal(receta.id); // repinta estado del modal
     pintarRecetas();       // actualiza tarjetas
+    sincronizarUIFiltros(); // por si está activado el filtro de favoritos
   });
 
   btnVoz.addEventListener("click", () => {
@@ -369,9 +370,25 @@ function toggleFavorito(id) {
   guardarFavoritos();
 }
 
+// ============================================
+// SINCRONIZAR UI DE FILTROS/FAVS
+// ============================================
+function sincronizarUIFiltros() {
+  // Filtros de categoría
+  filtroBtns.forEach((b) => {
+    b.classList.toggle("active", b.dataset.filtro === filtroActual);
+  });
+
+  // Botón de favoritos (solo favoritos)
+  if (btnFavs) {
+    btnFavs.classList.toggle("active", mostrarSoloFavs);
+  }
+}
+
+// Botón "Solo favoritos"
 btnFavs.addEventListener("click", () => {
   mostrarSoloFavs = !mostrarSoloFavs;
-  btnFavs.classList.toggle("active", mostrarSoloFavs);
+  sincronizarUIFiltros();
   pintarRecetas();
 });
 
@@ -383,6 +400,7 @@ listadoEl.addEventListener("click", (e) => {
     const id = Number(card.dataset.id);
     toggleFavorito(id);
     pintarRecetas();
+    sincronizarUIFiltros();
     return;
   }
 
@@ -399,9 +417,8 @@ listadoEl.addEventListener("click", (e) => {
 // ============================================
 filtroBtns.forEach((btn) => {
   btn.addEventListener("click", () => {
-    filtroBtns.forEach((b) => b.classList.remove("active"));
-    btn.classList.add("active");
     filtroActual = btn.dataset.filtro;
+    sincronizarUIFiltros();
     pintarRecetas();
   });
 });
@@ -579,6 +596,8 @@ function iniciarAsistenteVoz(receta) {
 // INICIALIZACIÓN
 // ============================================
 function init() {
+  // Sincronizar filtros y botón de favoritos con el estado inicial
+  sincronizarUIFiltros();
   pintarRecetas();
   pintarListaCompra();
 }
