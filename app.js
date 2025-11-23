@@ -1,218 +1,569 @@
-// app.js
-// ===============================================
-// LÓGICA PRINCIPAL DE LA APP GOURMET NAVIDEÑA
-// - Render de tarjetas
-// - Filtros, búsqueda, favoritos
-// - Lista de la compra avanzada
-// - Modal de receta
-// - Cocina guiada por voz + comandos
-// ===============================================
-
-// ---- ESTADO GLOBAL ---------------------------------
+// ============================================================
+// ESTADO GLOBAL
+// ============================================================
 const estado = {
-  filtro: "todas",            // todas | aperitivo | primero | segundo | postre | favoritos
+  filtro: "todas",
   busqueda: "",
-  favoritos: new Set(),
-  listaCompra: [],            // [{ clave, texto, cantidad }]
-  recetasSeleccionadas: new Set(), // ids para generar lista automática
+  verSoloFavoritos: false,
+  favoritos: [],
+  listaCompra: [],
   textoGrande: false,
   altoContraste: false,
-  recetaActual: null,         // receta activa en modal
-  pasoActual: 0,
-  reconocimientoActivo: false,
+  vozActiva: false,
+  pasoActual: null // { recetaId, indice }
 };
 
-const LS_KEYS = {
-  favs: "gourmet_favs_v1",
-  lista: "gourmet_lista_v1",
-  acces: "gourmet_acces_v1",
-  seleccion: "gourmet_recetas_sel_v1",
-};
+// Claves de localStorage
+const LS_FAVORITOS = "gourmet_favoritos";
+const LS_LISTA = "gourmet_lista";
+const LS_ACCES = "gourmet_accesibilidad";
 
-// ---- UTILIDADES ------------------------------------
-function normalizarTexto(t) {
-  return (t || "").toString().toLowerCase().trim();
-}
+// Referencias al DOM
+let listadoEl;
+let filtrosEl;
+let buscarEl;
+let modalEl;
+let modalContenidoEl;
+let modalCerrarEl;
+let listaCompraEl;
+let btnVaciar;
+let btnContraste;
+let btnTexto;
 
-function capitalize(t) {
-  t = (t || "").toString().trim();
-  if (!t) return "";
-  return t.charAt(0).toUpperCase() + t.slice(1);
-}
+// Voz
+let synth;
+let vozDisponible = false;
 
-// ---- LOCALSTORAGE ----------------------------------
+// ============================================================
+// UTILIDADES LOCALSTORAGE
+// ============================================================
 function cargarEstadoLocal() {
   try {
-    const favs = JSON.parse(localStorage.getItem(LS_KEYS.favs) || "[]");
-    estado.favoritos = new Set(favs.map(Number));
+    const favs = JSON.parse(localStorage.getItem(LS_FAVORITOS));
+    if (Array.isArray(favs)) estado.favoritos = favs;
 
-    const lista = JSON.parse(localStorage.getItem(LS_KEYS.lista) || "[]");
+    const lista = JSON.parse(localStorage.getItem(LS_LISTA));
     if (Array.isArray(lista)) estado.listaCompra = lista;
 
-    const sel = JSON.parse(localStorage.getItem(LS_KEYS.seleccion) || "[]");
-    estado.recetasSeleccionadas = new Set(sel.map(Number));
-
-    const acces = JSON.parse(localStorage.getItem(LS_KEYS.acces) || "{}");
+    const acces = JSON.parse(localStorage.getItem(LS_ACCES));
     if (acces && typeof acces === "object") {
       estado.textoGrande = !!acces.textoGrande;
       estado.altoContraste = !!acces.altoContraste;
     }
   } catch (e) {
-    console.warn("No se pudo cargar el estado guardado:", e);
+    console.warn("No se pudo cargar localStorage:", e);
   }
 }
 
 function guardarFavoritos() {
-  localStorage.setItem(LS_KEYS.favs, JSON.stringify([...estado.favoritos]));
+  localStorage.setItem(LS_FAVORITOS, JSON.stringify(estado.favoritos));
 }
 
 function guardarLista() {
-  localStorage.setItem(LS_KEYS.lista, JSON.stringify(estado.listaCompra));
-}
-
-function guardarSeleccion() {
-  localStorage.setItem(LS_KEYS.seleccion, JSON.stringify([...estado.recetasSeleccionadas]));
+  localStorage.setItem(LS_LISTA, JSON.stringify(estado.listaCompra));
 }
 
 function guardarAccesibilidad() {
   localStorage.setItem(
-    LS_KEYS.acces,
+    LS_ACCES,
     JSON.stringify({
       textoGrande: estado.textoGrande,
-      altoContraste: estado.altoContraste,
+      altoContraste: estado.altoContraste
     })
   );
 }
 
-// ---- VOZ (LECTURA) ---------------------------------
-const sintetizador = "speechSynthesis" in window ? window.speechSynthesis : null;
+// ============================================================
+// FILTRADO Y BÚSQUEDA
+// ============================================================
+function filtrarRecetas() {
+  let data = Array.isArray(RECETAS) ? RECETAS.slice() : [];
 
-function hablar(texto) {
-  if (!sintetizador) return;
-  if (!texto) return;
-
-  try {
-    if (sintetizador.speaking) sintetizador.cancel();
-    const u = new SpeechSynthesisUtterance(texto);
-    u.lang = "es-ES";
-    u.rate = 0.95;
-    u.pitch = 1;
-    sintetizador.speak(u);
-  } catch (e) {
-    console.warn("Error en síntesis de voz:", e);
+  if (estado.filtro !== "todas") {
+    data = data.filter((r) => r.category === estado.filtro);
   }
+
+  if (estado.verSoloFavoritos) {
+    data = data.filter((r) => estado.favoritos.includes(r.id));
+  }
+
+  if (estado.busqueda.trim() !== "") {
+    const q = estado.busqueda.toLowerCase();
+    data = data.filter(
+      (r) =>
+        r.title.toLowerCase().includes(q) ||
+        (r.description && r.description.toLowerCase().includes(q))
+    );
+  }
+
+  return data;
 }
 
-function pararVoz() {
-  if (sintetizador && sintetizador.speaking) {
-    sintetizador.cancel();
-  }
-}
+// ============================================================
+// RENDER LISTADO DE RECETAS
+// ============================================================
+function renderRecetas() {
+  if (!listadoEl) return;
 
-// ---- RECONOCIMIENTO DE VOZ (COMANDOS) --------------
-let reconocimiento = null;
+  const recetasFiltradas = filtrarRecetas();
 
-(function initReconocimiento() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (!SR) return;
-  reconocimiento = new SR();
-  reconocimiento.lang = "es-ES";
-  reconocimiento.interimResults = false;
-  reconocimiento.continuous = false;
-
-  reconocimiento.onresult = (event) => {
-    const texto = event.results[0][0].transcript.toLowerCase();
-    manejarComandoVoz(texto);
-  };
-
-  reconocimiento.onend = () => {
-    // Si sigue activo, reanudamos
-    if (estado.reconocimientoActivo) {
-      try {
-        reconocimiento.start();
-      } catch (e) {
-        console.warn("No se pudo reanudar reconocimiento:", e);
-      }
-    }
-  };
-})();
-
-function toggleReconocimiento() {
-  if (!reconocimiento) {
-    alert("Tu navegador no soporta comandos por voz.");
+  if (!recetasFiltradas.length) {
+    listadoEl.innerHTML =
+      '<p class="mensaje-vacio">No se han encontrado recetas con esos criterios.</p>';
     return;
   }
 
-  estado.reconocimientoActivo = !estado.reconocimientoActivo;
+  const html = recetasFiltradas
+    .map((r) => {
+      const esFav = estado.favoritos.includes(r.id);
+      const catTexto =
+        r.category === "aperitivo"
+          ? "Aperitivo"
+          : r.category === "primero"
+          ? "Primer plato"
+          : r.category === "segundo"
+          ? "Segundo plato"
+          : r.category === "postre"
+          ? "Postre"
+          : "Otros";
 
-  if (estado.reconocimientoActivo) {
-    try {
-      reconocimiento.start();
-    } catch (e) {
-      console.warn("Error al iniciar reconocimiento:", e);
+      const imgSrc = r.image && r.image.trim() !== "" ? r.image : "plato.jpg";
+      const altText = `Foto del plato: ${r.title}`;
+
+      return `
+        <article class="card" data-id="${r.id}">
+          <button class="card-imgBtn" data-accion="ver">
+            <img src="${imgSrc}" alt="${altText}" loading="lazy">
+          </button>
+
+          <div class="card-body">
+            <h3>${r.title}</h3>
+            <p class="card-meta">${catTexto} · ⏱ ${r.time} · ${r.difficulty}</p>
+            <p class="card-desc">${r.description || ""}</p>
+
+            <div class="card-actions">
+              <button class="btn primary" data-accion="ver">Ver receta</button>
+              <button class="btn" data-accion="lista">Añadir a lista</button>
+              <button class="btn icono ${esFav ? "fav" : ""}" data-accion="fav" aria-pressed="${esFav}">
+                ${esFav ? "★ Favorito" : "☆ Favorito"}
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+
+  listadoEl.innerHTML = html;
+}
+
+// ============================================================
+// LISTA DE LA COMPRA
+// ============================================================
+function normalizarIngrediente(txt) {
+  return txt.trim();
+}
+
+function agregarIngredientesDeReceta(receta) {
+  if (!receta || !Array.isArray(receta.ingredients)) return;
+
+  receta.ingredients.forEach((ing) => {
+    const limpio = normalizarIngrediente(ing);
+    if (!limpio) return;
+    if (!estado.listaCompra.includes(limpio)) {
+      estado.listaCompra.push(limpio);
     }
-    hablar(
-      "Comandos de voz activados. Puedes decir: siguiente, atrás, repetir, ingredientes, tiempo, empezar, cerrar receta o parar."
-    );
-  } else {
-    reconocimiento.stop();
-    hablar("Comandos de voz desactivados.");
+  });
+
+  guardarLista();
+  renderListaCompra();
+}
+
+function renderListaCompra() {
+  if (!listaCompraEl) return;
+
+  if (!estado.listaCompra.length) {
+    listaCompraEl.innerHTML =
+      '<p class="mensaje-vacio">No hay ingredientes en la lista.</p>';
+    return;
   }
 
-  const btn = document.getElementById("btn-voz-comandos");
-  if (btn) {
-    btn.textContent =
-      "Comandos por voz: " + (estado.reconocimientoActivo ? "ON" : "OFF");
+  const html = `
+    <ul class="lista-compra-ul">
+      ${estado.listaCompra
+        .map(
+          (item, idx) => `
+        <li data-idx="${idx}">
+          <label>
+            <input type="checkbox">
+            <span>${item}</span>
+          </label>
+          <button class="btn tiny" data-accion="quitar-item">Quitar</button>
+        </li>
+      `
+        )
+        .join("")}
+    </ul>
+  `;
+
+  listaCompraEl.innerHTML = html;
+}
+
+function generarListaDesdeRecetas() {
+  // Ahora mismo simplemente avisa; se podría complicar más (contar repeticiones, etc.)
+  alert(
+    "Para generar la lista completa, ve añadiendo las recetas que quieras con “Añadir a lista”."
+  );
+}
+
+// ============================================================
+// MODAL RECETA
+// ============================================================
+function encontrarRecetaPorId(id) {
+  return RECETAS.find((r) => r.id === id);
+}
+
+function abrirModal(recetaId) {
+  const receta = encontrarRecetaPorId(recetaId);
+  if (!receta || !modalEl || !modalContenidoEl) return;
+
+  const esFav = estado.favoritos.includes(receta.id);
+  const totalPasos = Array.isArray(receta.steps) ? receta.steps.length : 0;
+
+  const imgSrc = receta.image && receta.image.trim() !== "" ? receta.image : "plato.jpg";
+  const altText = `Foto del plato: ${receta.title}`;
+
+  const html = `
+    <header class="modal-header">
+      <div>
+        <h2>${receta.title}</h2>
+        <p class="card-meta">
+          ⏱ ${receta.time} · Dificultad: ${receta.difficulty} · Raciones: ${
+    receta.servings || 4
+  }
+        </p>
+      </div>
+      <button class="btn icono ${esFav ? "fav" : ""}" data-accion="fav-modal" data-id="${
+    receta.id
+  }">
+        ${esFav ? "★ Favorito" : "☆ Favorito"}
+      </button>
+    </header>
+
+    <div class="modal-content-grid">
+      <div class="modal-img">
+        <img src="${imgSrc}" alt="${altText}">
+      </div>
+
+      <div class="modal-info">
+        <section>
+          <h3>Descripción</h3>
+          <p>${receta.description || ""}</p>
+        </section>
+
+        <section>
+          <h3>Ingredientes</h3>
+          <ul class="lista-ingredientes">
+            ${receta.ingredients
+              .map(
+                (ing, idx) => `
+              <li data-idx="${idx}">
+                <span>${ing}</span>
+                <button class="btn tiny" data-accion="add-ingrediente">
+                  Añadir a la lista
+                </button>
+              </li>
+            `
+              )
+              .join("")}
+          </ul>
+          <button class="btn" data-accion="add-todos-ingredientes">
+            Añadir TODOS a la lista de la compra
+          </button>
+        </section>
+
+        <section>
+          <h3>Pasos de la receta</h3>
+          <ol class="lista-pasos">
+            ${receta.steps
+              .map(
+                (paso, i) => `
+              <li data-step="${i + 1}">${paso}</li>
+            `
+              )
+              .join("")}
+          </ol>
+
+          <div class="voz-controles">
+            <h4>Cocina guiada por voz</h4>
+            <p class="nota-voz">
+              La voz leerá <strong>un paso cada vez</strong> y te dirá el número de paso.
+            </p>
+            <button class="btn" data-accion="iniciar-voz" data-id="${receta.id}">
+              Iniciar desde el paso 1
+            </button>
+            <button class="btn secondary" data-accion="siguiente-paso" disabled>
+              Siguiente paso
+            </button>
+            <button class="btn danger" data-accion="parar-voz" disabled>
+              Parar voz
+            </button>
+            <p class="estado-voz" aria-live="polite"></p>
+          </div>
+        </section>
+      </div>
+    </div>
+  `;
+
+  modalContenidoEl.innerHTML = html;
+  modalEl.classList.add("visible");
+  modalEl.querySelector(".dialogo").focus();
+
+  estado.pasoActual = null;
+  detenerVoz();
+}
+
+function cerrarModal() {
+  if (!modalEl) return;
+  detenerVoz();
+  modalEl.classList.remove("visible");
+}
+
+// ============================================================
+// VOZ
+// ============================================================
+function inicializarVoz() {
+  if ("speechSynthesis" in window) {
+    synth = window.speechSynthesis;
+    vozDisponible = true;
+  } else {
+    vozDisponible = false;
   }
 }
 
-function manejarComandoVoz(frase) {
-  if (!frase) return;
-  const t = frase.toLowerCase();
+function hablar(texto, lang = "es-ES") {
+  if (!vozDisponible || !texto) return;
+  detenerVoz();
+  const utter = new SpeechSynthesisUtterance(texto);
+  utter.lang = lang;
+  synth.speak(utter);
+}
 
-  if (t.includes("siguiente")) {
+function detenerVoz() {
+  if (!vozDisponible || !synth) return;
+  if (synth.speaking || synth.pending) {
+    synth.cancel();
+  }
+}
+
+// Cocina guiada: un paso cada vez
+function iniciarCocinaGuiada(recetaId) {
+  const receta = encontrarRecetaPorId(recetaId);
+  if (!receta || !Array.isArray(receta.steps) || !receta.steps.length) return;
+
+  estado.pasoActual = {
+    recetaId,
+    indice: 0
+  };
+
+  const total = receta.steps.length;
+  const pasoTexto = receta.steps[0];
+  const mensaje = `Paso 1 de ${total}. ${pasoTexto}`;
+  hablar(mensaje);
+
+  actualizarControlesVoz(true, false, `Leyendo paso 1 de ${total}.`);
+}
+
+function siguientePaso() {
+  if (!estado.pasoActual) return;
+  const { recetaId, indice } = estado.pasoActual;
+  const receta = encontrarRecetaPorId(recetaId);
+  if (!receta || !receta.steps || !receta.steps.length) return;
+
+  const total = receta.steps.length;
+  const nuevoIndice = indice + 1;
+
+  if (nuevoIndice >= total) {
+    hablar("Has terminado la receta. ¡Buen provecho!");
+    estado.pasoActual = null;
+    actualizarControlesVoz(false, false, "Receta terminada.");
+    return;
+  }
+
+  estado.pasoActual.indice = nuevoIndice;
+  const pasoTexto = receta.steps[nuevoIndice];
+  const mensaje = `Paso ${nuevoIndice + 1} de ${total}. ${pasoTexto}`;
+  hablar(mensaje);
+  actualizarControlesVoz(true, true, `Leyendo paso ${nuevoIndice + 1} de ${total}.`);
+}
+
+function pararCocinaGuiada() {
+  detenerVoz();
+  estado.pasoActual = null;
+  actualizarControlesVoz(false, false, "Voz detenida.");
+}
+
+// Actualiza botones y texto de estado dentro del modal
+function actualizarControlesVoz(hayPaso, puedeSiguiente, mensaje) {
+  if (!modalContenidoEl) return;
+  const btnIniciar = modalContenidoEl.querySelector('button[data-accion="iniciar-voz"]');
+  const btnSiguiente = modalContenidoEl.querySelector(
+    'button[data-accion="siguiente-paso"]'
+  );
+  const btnParar = modalContenidoEl.querySelector('button[data-accion="parar-voz"]');
+  const estadoVoz = modalContenidoEl.querySelector(".estado-voz");
+
+  if (btnIniciar) btnIniciar.disabled = !!hayPaso;
+  if (btnSiguiente) btnSiguiente.disabled = !puedeSiguiente && !hayPaso;
+  if (btnParar) btnParar.disabled = !hayPaso;
+
+  if (estadoVoz && mensaje) {
+    estadoVoz.textContent = mensaje;
+  }
+}
+
+// ============================================================
+// EVENTOS LISTADO
+// ============================================================
+function onClickListado(e) {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+
+  const accion = btn.dataset.accion;
+  if (!accion) return;
+
+  const card = btn.closest(".card");
+  if (!card) return;
+
+  const id = parseInt(card.dataset.id, 10);
+  const receta = encontrarRecetaPorId(id);
+
+  if (!receta) return;
+
+  switch (accion) {
+    case "ver":
+      abrirModal(id);
+      break;
+    case "fav":
+      toggleFavorito(id);
+      break;
+    case "lista":
+      agregarIngredientesDeReceta(receta);
+      break;
+  }
+}
+
+function toggleFavorito(id) {
+  const idx = estado.favoritos.indexOf(id);
+  if (idx === -1) {
+    estado.favoritos.push(id);
+  } else {
+    estado.favoritos.splice(idx, 1);
+  }
+  guardarFavoritos();
+  renderRecetas();
+}
+
+// ============================================================
+// EVENTOS MODAL
+// ============================================================
+function onClickModalContenido(e) {
+  const btn = e.target.closest("button");
+  if (!btn) return;
+
+  const accion = btn.dataset.accion;
+
+  // Favorito desde modal
+  if (accion === "fav-modal") {
+    const id = parseInt(btn.dataset.id, 10);
+    toggleFavorito(id);
+    abrirModal(id); // Re-render modal para actualizar el texto del botón
+    return;
+  }
+
+  // Añadir un ingrediente concreto
+  if (accion === "add-ingrediente") {
+    const li = btn.closest("li");
+    if (!li) return;
+    const span = li.querySelector("span");
+    if (!span) return;
+    const texto = normalizarIngrediente(span.textContent);
+    if (texto && !estado.listaCompra.includes(texto)) {
+      estado.listaCompra.push(texto);
+      guardarLista();
+      renderListaCompra();
+    }
+    return;
+  }
+
+  // Añadir TODOS los ingredientes de la receta
+  if (accion === "add-todos-ingredientes") {
+    const encabezado = modalContenidoEl.querySelector(".modal-header h2");
+    if (!encabezado) return;
+    const titulo = encabezado.textContent.trim();
+    const receta = RECETAS.find((r) => r.title === titulo);
+    if (!receta) return;
+    agregarIngredientesDeReceta(receta);
+    return;
+  }
+
+  // Voz: iniciar, siguiente, parar
+  if (accion === "iniciar-voz") {
+    const id = parseInt(btn.dataset.id, 10);
+    if (!vozDisponible) {
+      alert("Tu navegador no soporta síntesis de voz.");
+      return;
+    }
+    iniciarCocinaGuiada(id);
+    return;
+  }
+
+  if (accion === "siguiente-paso") {
+    if (!vozDisponible) return;
     siguientePaso();
-  } else if (t.includes("atrás") || t.includes("atras") || t.includes("anterior")) {
-    pasoAnterior();
-  } else if (t.includes("repetir")) {
-    repetirPaso();
-  } else if (t.includes("ingrediente")) {
-    leerIngredientes();
-  } else if (t.includes("tiempo") || t.includes("minuto")) {
-    const r = estado.recetaActual;
-    if (r && r.time) {
-      hablar("El tiempo aproximado para esta receta es " + r.time);
-    } else {
-      hablar("El tiempo de esta receta no está indicado.");
-    }
-  } else if (t.includes("empezar") || t.includes("iniciar")) {
-    empezarPasos();
-  } else if (t.includes("cerrar") || t.includes("salir")) {
-    cerrarModal();
-  } else if (t.includes("parar") || t.includes("silencio")) {
-    pararVoz();
-  } else {
-    hablar("No he entendido el comando.");
+    return;
+  }
+
+  if (accion === "parar-voz") {
+    if (!vozDisponible) return;
+    pararCocinaGuiada();
+    return;
   }
 }
 
-// ---- DOM PRINCIPAL ---------------------------------
-let listadoEl,
-  filtrosEl,
-  buscarEl,
-  modalEl,
-  modalContenidoEl,
-  modalCerrarEl,
-  listaCompraEl,
-  btnVaciar,
-  btnContraste,
-  btnTexto;
+// ============================================================
+// EVENTOS FILTROS + BÚSQUEDA
+// ============================================================
+function onClickFiltros(e) {
+  const btn = e.target.closest("button");
+  if (!btn) return;
 
+  const filtro = btn.dataset.filtro;
+  const esFavs = btn.id === "btn-favs";
+
+  if (esFavs) {
+    estado.verSoloFavoritos = !estado.verSoloFavoritos;
+    btn.classList.toggle("active", estado.verSoloFavoritos);
+  } else if (filtro) {
+    estado.filtro = filtro;
+
+    const todosBotones = filtrosEl.querySelectorAll("button[data-filtro]");
+    todosBotones.forEach((b) => b.classList.remove("active"));
+    btn.classList.add("active");
+  }
+
+  renderRecetas();
+}
+
+// ============================================================
+// INICIALIZACIÓN
+// ============================================================
 document.addEventListener("DOMContentLoaded", () => {
-  // Cargar estado previo
+  // 1. Estado previo
   cargarEstadoLocal();
+  inicializarVoz();
 
-  // Cache de nodos
+  // 2. Cache de nodos
   listadoEl = document.getElementById("listado");
   filtrosEl = document.querySelector(".filtros");
   buscarEl = document.getElementById("buscar");
@@ -224,27 +575,33 @@ document.addEventListener("DOMContentLoaded", () => {
   btnContraste = document.getElementById("btn-contraste");
   btnTexto = document.getElementById("btn-texto");
 
-  // Botón "Generar lista final" (lo creamos por JS arriba de la lista)
+  // 3. Botón "Generar lista final"
   const panelLista = document.querySelector(".lista-superior");
   if (panelLista) {
     const btnGenerar = document.createElement("button");
     btnGenerar.id = "btn-generar-lista";
     btnGenerar.className = "btn";
     btnGenerar.textContent = "Generar lista final";
-    panelLista.insertBefore(btnGenerar, btnVaciar);
+
+    if (btnVaciar && btnVaciar.parentNode === panelLista) {
+      panelLista.insertBefore(btnGenerar, btnVaciar);
+    } else {
+      panelLista.appendChild(btnGenerar);
+    }
+
     btnGenerar.addEventListener("click", generarListaDesdeRecetas);
   }
 
-  // Aplicar accesibilidad guardada
+  // 4. Accesibilidad guardada
   if (estado.textoGrande) document.body.classList.add("texto-grande");
   if (estado.altoContraste) document.body.classList.add("alto-contraste");
 
-  // Eventos de filtros
+  // 5. Eventos de filtros
   if (filtrosEl) {
     filtrosEl.addEventListener("click", onClickFiltros);
   }
 
-  // Búsqueda
+  // 6. Búsqueda
   if (buscarEl) {
     buscarEl.addEventListener("input", (e) => {
       estado.busqueda = e.target.value;
@@ -252,13 +609,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Listado (delegación eventos)
+  // 7. Listado (delegación)
   if (listadoEl) {
     listadoEl.addEventListener("click", onClickListado);
-    listadoEl.addEventListener("change", onChangeListado);
   }
 
-  // Modal
+  // 8. Modal
   if (modalCerrarEl) {
     modalCerrarEl.addEventListener("click", cerrarModal);
   }
@@ -275,12 +631,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Clicks dentro del contenido del modal
   if (modalContenidoEl) {
     modalContenidoEl.addEventListener("click", onClickModalContenido);
   }
 
-  // Lista de la compra
+  // 9. Lista de la compra
   if (btnVaciar) {
     btnVaciar.addEventListener("click", () => {
       estado.listaCompra = [];
@@ -289,7 +644,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Accesibilidad botones header
+  // 10. Accesibilidad (botones header)
   if (btnContraste) {
     btnContraste.addEventListener("click", () => {
       estado.altoContraste = !estado.altoContraste;
@@ -306,485 +661,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Render inicial
+  // 11. Render inicial
   renderRecetas();
   renderListaCompra();
 });
-
-// ---- RENDER DE RECETAS -----------------------------
-function filtrarRecetasBase() {
-  let lista = Array.isArray(RECETAS) ? [...RECETAS] : [];
-
-  // Filtro categoría / favoritos
-  if (estado.filtro === "favoritos") {
-    lista = lista.filter((r) => estado.favoritos.has(r.id));
-  } else if (
-    ["aperitivo", "primero", "segundo", "postre"].includes(estado.filtro)
-  ) {
-    lista = lista.filter((r) => r.category === estado.filtro);
-  }
-
-  // Búsqueda
-  const q = normalizarTexto(estado.busqueda);
-  if (q) {
-    lista = lista.filter((r) => {
-      const enTitulo = normalizarTexto(r.title).includes(q);
-      const enDesc = normalizarTexto(r.description).includes(q);
-      const enIng = Array.isArray(r.ingredients)
-        ? normalizarTexto(r.ingredients.join(" ")).includes(q)
-        : false;
-      return enTitulo || enDesc || enIng;
-    });
-  }
-
-  return lista;
-}
-
-function textoCategoria(cat) {
-  switch (cat) {
-    case "aperitivo":
-      return "Aperitivo";
-    case "primero":
-      return "Primer plato";
-    case "segundo":
-      return "Segundo plato";
-    case "postre":
-      return "Postre";
-    default:
-      return "Otros";
-  }
-}
-
-function renderRecetas() {
-  if (!listadoEl) return;
-
-  const recetasFiltradas = filtrarRecetasBase();
-
-  if (!recetasFiltradas.length) {
-    listadoEl.innerHTML =
-      '<p class="empty">No hay recetas que coincidan con la búsqueda o filtro.</p>';
-    return;
-  }
-
-  const html = recetasFiltradas
-    .map((r) => {
-      const esFav = estado.favoritos.has(r.id);
-      const seleccionada = estado.recetasSeleccionadas.has(r.id);
-
-      return `
-      <article class="card" data-id="${r.id}">
-        <button class="fav ${esFav ? "on" : ""}" aria-label="${
-        esFav ? "Quitar de favoritos" : "Añadir a favoritos"
-      }">
-          ★
-        </button>
-        <div class="card-img" aria-hidden="true">
-          ${
-            r.image
-              ? `<img src="${r.image}" alt="Foto del plato ${r.title}">`
-              : `<div class="img-placeholder">🍽️</div>`
-          }
-        </div>
-        <h3>${r.title}</h3>
-        <p class="meta">
-          <span>${textoCategoria(r.category)}</span> ·
-          <span>${r.time || "Tiempo no indicado"}</span> ·
-          <span>${r.difficulty || "Dificultad media"}</span>
-        </p>
-        <p class="desc">${r.description || ""}</p>
-        <div class="card-actions">
-          <label class="chk-receta-label">
-            <input type="checkbox" class="chk-receta" data-id="${r.id}" ${
-        seleccionada ? "checked" : ""
-      }>
-            Añadir a lista
-          </label>
-          <button class="btn ver" data-accion="abrir">Ver receta</button>
-        </div>
-      </article>
-    `;
-    })
-    .join("");
-
-  listadoEl.innerHTML = html;
-}
-
-// ---- EVENTOS LISTADO --------------------------------
-function onClickListado(e) {
-  const card = e.target.closest(".card");
-  if (!card) return;
-  const id = Number(card.dataset.id);
-  if (!id) return;
-
-  if (e.target.classList.contains("fav")) {
-    toggleFavorito(id);
-    renderRecetas();
-    return;
-  }
-
-  if (e.target.dataset.accion === "abrir") {
-    abrirModalReceta(id);
-  }
-}
-
-function onChangeListado(e) {
-  if (e.target.classList.contains("chk-receta")) {
-    const id = Number(e.target.dataset.id);
-    if (!id) return;
-
-    if (e.target.checked) {
-      estado.recetasSeleccionadas.add(id);
-    } else {
-      estado.recetasSeleccionadas.delete(id);
-    }
-    guardarSeleccion();
-  }
-}
-
-// ---- FAVORITOS --------------------------------------
-function toggleFavorito(id) {
-  if (estado.favoritos.has(id)) {
-    estado.favoritos.delete(id);
-  } else {
-    estado.favoritos.add(id);
-  }
-  guardarFavoritos();
-}
-
-// ---- FILTROS ----------------------------------------
-function onClickFiltros(e) {
-  const btn = e.target.closest("button");
-  if (!btn) return;
-
-  if (btn.id === "btn-favs") {
-    estado.filtro = "favoritos";
-  } else {
-    const filtro = btn.dataset.filtro;
-    if (!filtro) return;
-    estado.filtro = filtro;
-  }
-
-  // marcar activo
-  const todosBtns = filtrosEl.querySelectorAll("button");
-  todosBtns.forEach((b) => b.classList.remove("active"));
-  btn.classList.add("active");
-
-  renderRecetas();
-}
-
-// ---- MODAL RECETA -----------------------------------
-function abrirModalReceta(id) {
-  const receta = RECETAS.find((r) => r.id === id);
-  if (!receta || !modalEl || !modalContenidoEl) return;
-
-  estado.recetaActual = receta;
-  estado.pasoActual = 0;
-
-  const ingHTML = Array.isArray(receta.ingredients)
-    ? receta.ingredients
-        .map(
-          (ing) => `
-      <li>
-        <button type="button" class="link-ingrediente">
-          ${ing}
-        </button>
-      </li>`
-        )
-        .join("")
-    : "<li>No especificados</li>";
-
-  const pasosHTML = Array.isArray(receta.steps)
-    ? receta.steps
-        .map((p, i) => `<li data-paso="${i}">${p}</li>`)
-        .join("")
-    : "<li>Ver instrucciones en la descripción.</li>";
-
-  const esFav = estado.favoritos.has(receta.id);
-
-  modalContenidoEl.innerHTML = `
-    <h2>${receta.title}</h2>
-    <p class="modal-meta">
-      <span>${textoCategoria(receta.category)}</span> ·
-      <span>${receta.time || "Tiempo no indicado"}</span> ·
-      <span>${receta.difficulty || "Dificultad media"}</span>
-    </p>
-
-    <div class="modal-body">
-      <section>
-        <h3>Ingredientes</h3>
-        <ul class="lista-ingredientes">
-          ${ingHTML}
-        </ul>
-        <button class="btn small" id="btn-add-receta-lista">
-          Añadir todos los ingredientes a la lista
-        </button>
-      </section>
-
-      <section class="pasos">
-        <h3>Pasos</h3>
-        <ol class="lista-pasos">
-          ${pasosHTML}
-        </ol>
-      </section>
-
-      <section class="voz">
-        <h3>Cocina guiada por voz</h3>
-        <div class="voz-botones">
-          <button class="btn small" id="btn-voz-ingredientes">Leer ingredientes</button>
-          <button class="btn small" id="btn-voz-empezar">Empezar pasos</button>
-          <button class="btn small" id="btn-voz-siguiente">Siguiente paso</button>
-          <button class="btn small" id="btn-voz-repetir">Repetir paso</button>
-          <button class="btn small" id="btn-voz-parar">Parar voz</button>
-          <button class="btn small" id="btn-voz-comandos">
-            Comandos por voz: ${estado.reconocimientoActivo ? "ON" : "OFF"}
-          </button>
-        </div>
-        <p class="ayuda-voz">
-          Puedes decir: “siguiente”, “atrás”, “repetir”, “ingredientes”, “tiempo”, “empezar”, “cerrar receta”, “parar”.
-        </p>
-      </section>
-
-      <section>
-        <button class="btn secondary" id="btn-fav-modal">
-          ${esFav ? "Quitar de favoritos" : "Añadir a favoritos"}
-        </button>
-      </section>
-    </div>
-  `;
-
-  modalEl.classList.add("visible");
-  document.body.classList.add("sin-scroll");
-  const dialogo = modalEl.querySelector(".dialogo");
-  if (dialogo) dialogo.focus();
-}
-
-function cerrarModal() {
-  if (!modalEl) return;
-  modalEl.classList.remove("visible");
-  document.body.classList.remove("sin-scroll");
-  estado.recetaActual = null;
-  estado.pasoActual = 0;
-  pararVoz();
-}
-
-// Clicks dentro del modal
-function onClickModalContenido(e) {
-  const id = e.target.id;
-
-  if (id === "btn-add-receta-lista") {
-    agregarTodosIngredientesRecetaActual();
-    return;
-  }
-
-  if (id === "btn-fav-modal") {
-    if (estado.recetaActual) {
-      toggleFavorito(estado.recetaActual.id);
-      abrirModalReceta(estado.recetaActual.id); // refrescar texto botón
-    }
-    return;
-  }
-
-  if (id === "btn-voz-ingredientes") {
-    leerIngredientes();
-    return;
-  }
-  if (id === "btn-voz-empezar") {
-    empezarPasos();
-    return;
-  }
-  if (id === "btn-voz-siguiente") {
-    siguientePaso();
-    return;
-  }
-  if (id === "btn-voz-repetir") {
-    repetirPaso();
-    return;
-  }
-  if (id === "btn-voz-parar") {
-    pararVoz();
-    return;
-  }
-  if (id === "btn-voz-comandos") {
-    toggleReconocimiento();
-    return;
-  }
-
-  if (e.target.classList.contains("link-ingrediente")) {
-    const texto = e.target.textContent.trim();
-    if (texto) {
-      agregarIngredienteALista(texto);
-    }
-  }
-}
-
-// ---- COCINA GUIADA POR VOZ -------------------------
-function leerIngredientes() {
-  const r = estado.recetaActual;
-  if (!r) return;
-  if (!Array.isArray(r.ingredients) || !r.ingredients.length) {
-    hablar("Esta receta no tiene lista de ingredientes detallada.");
-    return;
-  }
-  hablar("Ingredientes para " + r.title + ": " + r.ingredients.join(", "));
-}
-
-function resaltarPasoActual() {
-  if (!modalContenidoEl) return;
-  const lista = modalContenidoEl.querySelectorAll(".lista-pasos li");
-  lista.forEach((li) => li.classList.remove("activo"));
-  if (lista[estado.pasoActual]) {
-    lista[estado.pasoActual].classList.add("activo");
-  }
-}
-
-function empezarPasos() {
-  const r = estado.recetaActual;
-  if (!r) return;
-
-  if (!Array.isArray(r.steps) || !r.steps.length) {
-    hablar("Esta receta no tiene pasos detallados. Consulta la descripción en pantalla.");
-    return;
-  }
-
-  estado.pasoActual = 0;
-  resaltarPasoActual();
-  hablar(
-    `Vamos a cocinar ${r.title}. Tiempo estimado: ${
-      r.time || "no indicado"
-    }. Paso 1: ${r.steps[0]}`
-  );
-}
-
-function siguientePaso() {
-  const r = estado.recetaActual;
-  if (!r || !Array.isArray(r.steps) || !r.steps.length) return;
-
-  if (estado.pasoActual < r.steps.length - 1) {
-    estado.pasoActual++;
-    resaltarPasoActual();
-    hablar(`Paso ${estado.pasoActual + 1}: ${r.steps[estado.pasoActual]}`);
-  } else {
-    resaltarPasoActual();
-    hablar("Has llegado al último paso de la receta.");
-  }
-}
-
-function pasoAnterior() {
-  const r = estado.recetaActual;
-  if (!r || !Array.isArray(r.steps) || !r.steps.length) return;
-
-  if (estado.pasoActual > 0) {
-    estado.pasoActual--;
-    resaltarPasoActual();
-    hablar(`Paso ${estado.pasoActual + 1}: ${r.steps[estado.pasoActual]}`);
-  } else {
-    hablar("Ya estás en el primer paso.");
-  }
-}
-
-function repetirPaso() {
-  const r = estado.recetaActual;
-  if (!r || !Array.isArray(r.steps) || !r.steps.length) return;
-
-  resaltarPasoActual();
-  hablar(`Repito el paso ${estado.pasoActual + 1}: ${r.steps[estado.pasoActual]}`);
-}
-
-// ---- LISTA DE LA COMPRA ----------------------------
-function agregarIngredienteALista(texto) {
-  const clave = normalizarTexto(texto);
-  if (!clave) return;
-
-  let item = estado.listaCompra.find((i) => i.clave === clave);
-  if (item) {
-    item.cantidad += 1;
-  } else {
-    item = { clave, texto: capitalize(texto), cantidad: 1 };
-    estado.listaCompra.push(item);
-  }
-
-  guardarLista();
-  renderListaCompra();
-}
-
-function agregarTodosIngredientesRecetaActual() {
-  const r = estado.recetaActual;
-  if (!r || !Array.isArray(r.ingredients)) return;
-
-  r.ingredients.forEach((ing) => agregarIngredienteALista(ing));
-  hablar("He añadido todos los ingredientes de esta receta a la lista de la compra.");
-}
-
-function generarListaDesdeRecetas() {
-  const ids = [...estado.recetasSeleccionadas];
-  if (!ids.length) {
-    alert('Marca al menos una receta con "Añadir a lista".');
-    return;
-  }
-
-  const mapa = new Map(); // clave -> { clave, texto, cantidad }
-
-  ids.forEach((id) => {
-    const r = RECETAS.find((rec) => rec.id === id);
-    if (!r || !Array.isArray(r.ingredients)) return;
-
-    r.ingredients.forEach((ing) => {
-      const clave = normalizarTexto(ing);
-      if (!clave) return;
-      const texto = capitalize(ing);
-      if (!mapa.has(clave)) {
-        mapa.set(clave, { clave, texto, cantidad: 1 });
-      } else {
-        mapa.get(clave).cantidad += 1;
-      }
-    });
-  });
-
-  estado.listaCompra = [...mapa.values()];
-  guardarLista();
-  renderListaCompra();
-  hablar(
-    `He generado la lista de la compra combinando ${ids.length} recetas seleccionadas.`
-  );
-}
-
-function renderListaCompra() {
-  if (!listaCompraEl) return;
-
-  if (!estado.listaCompra.length) {
-    listaCompraEl.innerHTML =
-      '<p class="empty">No hay ingredientes en la lista. Marca recetas y pulsa "Generar lista final", o añade desde una receta.</p>';
-    return;
-  }
-
-  const html = `
-    <ul class="lista-compra-ul">
-      ${estado.listaCompra
-        .map(
-          (item) => `
-        <li>
-          <span>${item.texto}${
-            item.cantidad > 1 ? ` (x${item.cantidad})` : ""
-          }</span>
-          <button class="btn small quitar-item" data-clave="${item.clave}">
-            Quitar
-          </button>
-        </li>`
-        )
-        .join("")}
-    </ul>
-  `;
-
-  listaCompraEl.innerHTML = html;
-
-  // Delegación para quitar items
-  listaCompraEl.querySelectorAll(".quitar-item").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const clave = btn.dataset.clave;
-      if (!clave) return;
-      estado.listaCompra = estado.listaCompra.filter((i) => i.clave !== clave);
-      guardarLista();
-      renderListaCompra();
-    });
-  });
-}
