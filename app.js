@@ -4,13 +4,20 @@
 // ============================================
 "use strict";
 
-// 1) COMPROBAR QUE RECETAS ESTÁ CARGADO DESDE recetas.js
-if (!Array.isArray(window.RECETAS)) {
-  console.error("❌ No se ha encontrado el array RECETAS. Revisa que recetas.js se carga ANTES que app.js");
-  window.RECETAS = []; // Evita que reviente la app aunque falten datos
-}
+// 1) CARGAR RECETAS DESDE recetas.js (const RECETAS)
+let TODAS_LAS_RECETAS = [];
 
-const TODAS_LAS_RECETAS = window.RECETAS;
+try {
+  // RECETAS viene de recetas.js (const RECETAS = recetas.map(...))
+  if (Array.isArray(RECETAS)) {
+    TODAS_LAS_RECETAS = RECETAS;
+  } else {
+    console.error("❌ RECETAS existe pero no es un array. Revisa recetas.js");
+  }
+} catch (e) {
+  console.error("❌ No se ha encontrado RECETAS. Asegúrate de que recetas.js se carga ANTES que app.js");
+  TODAS_LAS_RECETAS = [];
+}
 
 // 2) REFERENCIAS AL DOM
 const listadoEl = document.getElementById("listado");
@@ -279,9 +286,8 @@ function abrirModal(recetaId) {
 
   btnFavDetalle.addEventListener("click", () => {
     toggleFavorito(receta.id);
-    // Reabrir / repintar para actualizar estado
-    abrirModal(receta.id);
-    pintarRecetas();
+    abrirModal(receta.id); // repinta estado
+    pintarRecetas();       // actualiza tarjetas
   });
 
   btnVoz.addEventListener("click", () => {
@@ -478,7 +484,7 @@ function escucharComando() {
   if (!reconocimiento) {
     reconocimiento = crearReconocimiento();
   }
-  if (reconocimientoActivo) return; // EVITAR InvalidStateError
+  if (reconocimientoActivo) return; // evita InvalidStateError
 
   reconocimientoActivo = true;
 
@@ -511,7 +517,6 @@ function escucharComando() {
 
   reconocimiento.onend = () => {
     reconocimientoActivo = false;
-    // Si seguimos en modo lectura, volvemos a escuchar
     if (recetaEnLectura) {
       setTimeout(() => escucharComando(), 400);
     }
