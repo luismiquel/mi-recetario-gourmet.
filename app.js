@@ -297,10 +297,10 @@ function abrirModal(recetaId) {
 
   modal.classList.add("abierto");
   
-  // CORRECCIÓN 1: Obtener la referencia al modalFooter
+  // Obtener la referencia al modalFooter
   modalFooter = modalDialogo.querySelector(".detalle-acciones"); 
   
-  // CORRECCIÓN 2: Establecer la receta en lectura (Crucial para el asistente de voz)
+  // Establecer la receta en lectura (CRÍTICO: disponible para el asistente)
   recetaEnLectura = receta; 
 
   // Foco para accesibilidad: establecer tabindex y enfocar
@@ -514,7 +514,7 @@ btnTexto.addEventListener("click", () => {
 // ============================================
 let reconocimiento = null;
 let reconocimientoActivo = false;
-// CORRECCIÓN CRÍTICA: Declaración de la variable global
+// Declaración de la variable global (CRÍTICA)
 let recetaEnLectura = null; 
 let indicePaso = 0;
 let enPausa = false;
