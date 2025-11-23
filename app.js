@@ -5,17 +5,18 @@
 "use strict";
 
 // 1) CARGAR RECETAS DESDE recetas.js (const RECETAS)
+// NOTA: Se asume que RECETAS está cargado globalmente desde 'recetas.js'
 let TODAS_LAS_RECETAS = [];
 
 try {
   // RECETAS viene de recetas.js (const RECETAS = recetas.map(...))
-  if (Array.isArray(RECETAS)) {
+  if (typeof RECETAS !== 'undefined' && Array.isArray(RECETAS)) {
     TODAS_LAS_RECETAS = RECETAS;
   } else {
-    console.error("❌ RECETAS existe pero no es un array. Revisa recetas.js");
+    console.error("❌ RECETAS no está definido o no es un array. Asegúrate de que recetas.js se carga ANTES que app.js");
   }
 } catch (e) {
-  console.error("❌ No se ha encontrado RECETAS. Asegúrate de que recetas.js se carga ANTES que app.js");
+  console.error("❌ Error al acceder a RECETAS. Detalles:", e);
   TODAS_LAS_RECETAS = [];
 }
 
@@ -200,9 +201,15 @@ function pintarRecetas() {
 // ============================================
 // MODAL – VER RECETA
 // ============================================
+// Variable global para el footer del modal (CORRECCIÓN: Se inicializa a null)
+let modalFooter = null;
+
 function abrirModal(recetaId) {
   const receta = TODAS_LAS_RECETAS.find((r) => r.id === recetaId);
   if (!receta) return;
+
+  // Detenemos el asistente si ya estaba activo para una receta anterior
+  detenerAsistenteVoz();
 
   const esFav = favoritos.has(receta.id);
   const etiquetaCat = getEtiquetaCategoria(receta.category);
@@ -275,8 +282,10 @@ function abrirModal(recetaId) {
   modal.classList.add("abierto");
   modalDialogo.focus();
 
+  // CORRECCIÓN: Obtener la referencia al modalFooter justo después de inyectar el HTML
+  modalFooter = modalDialogo.querySelector(".detalle-acciones"); 
+
   // Es crucial llamar a esta función aquí para que el feedback visual se inicialice
-  // y esté disponible para el asistente de voz.
   actualizarFeedbackVoz("inactivo"); 
 
   // Eventos de los botones dentro del modal
@@ -469,8 +478,7 @@ const tieneSpeechRecognition =
     "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
 const tieneSpeechSynthesis = "speechSynthesis" in window;
 
-// Referencia a la UI para feedback
-const modalFooter = modalDialogo.querySelector(".detalle-acciones");
+// Elemento para el feedback visual
 let feedbackVozEl = null; 
 
 function crearReconocimiento() {
@@ -499,7 +507,7 @@ function leerTexto(texto, onEnd) {
         msg.onend = onEnd;
     }
     
-    // Si estamos en pausa, la lectura se detiene, por lo que no es necesario hablar.
+    // Si estamos en pausa, la lectura se detiene.
     if (!enPausa) {
         window.speechSynthesis.speak(msg);
     } else if (onEnd) {
@@ -529,12 +537,17 @@ function detenerAsistenteVoz() {
 }
 
 function actualizarFeedbackVoz(estado) {
+    // CORRECCIÓN: Verifica si modalFooter es null ANTES de usarlo
+    if (!modalFooter) return; 
+
     // 1. Asegurarse de que el elemento existe en el modal
     if (!feedbackVozEl) {
         feedbackVozEl = document.createElement("div");
         feedbackVozEl.id = "feedback-voz-estado";
         feedbackVozEl.style.cssText = "margin-top: 10px; font-weight: bold; padding: 5px; border-radius: 5px; text-align: center;";
-        modalFooter.appendChild(feedbackVozEl);
+        
+        // Esto solo se ejecuta la primera vez que se abre el modal
+        modalFooter.appendChild(feedbackVozEl); 
     }
     
     // 2. Actualizar el contenido según el estado
@@ -637,7 +650,6 @@ function manejarComando(comando) {
         enPausa = true;
         leerTexto("Asistente pausado. Di reanudar para continuar.", () => {
             actualizarFeedbackVoz("pausado");
-            // No se llama a escucharComando() ya que estamos en pausa
         });
 
     } else if (t.includes("reanudar") || t.includes("continuar")) {
@@ -696,7 +708,7 @@ function escucharComando() {
 
     reconocimiento.onend = () => {
         reconocimientoActivo = false;
-        // La actualización de feedback se hace en manejarComando
+        // La actualización de feedback se gestiona dentro de manejarComando
     };
 
     reconocimiento.onerror = (ev) => {
