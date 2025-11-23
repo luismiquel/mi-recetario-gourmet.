@@ -249,8 +249,7 @@ function abrirModal(recetaId) {
         <p class="detalle-meta">
           ⏱️ ${receta.time} · 🎯 ${receta.difficulty} · 👥 ${receta.servings} raciones
         </p>
-        <button id="cerrar-btn-superior" class="cerrar" type="button" aria-label="Cerrar receta">×</button>
-      </header>
+        </header>
 
       <section>
         <h3>Descripción</h3>
@@ -318,12 +317,6 @@ function abrirModal(recetaId) {
 
   // Es crucial llamar a esta función aquí para que el feedback visual se inicialice
   actualizarFeedbackVoz("inactivo"); 
-
-  // 🌟 MEJORA: Añadir listener al nuevo botón de cerrar superior
-  const btnCerrarSuperior = document.getElementById('cerrar-btn-superior');
-  if (btnCerrarSuperior) {
-      btnCerrarSuperior.addEventListener('click', cerrarModal);
-  }
 }
 
 function cerrarModal() {
@@ -542,7 +535,20 @@ const tieneSpeechSynthesis = "speechSynthesis" in window;
 // Elemento para el feedback visual
 let feedbackVozEl = null; 
 
-// 🌟 MEJORA: Crear contexto de audio para el feedback auditivo (Solución para error 404)
+// 🌟 INICIALIZACIÓN PWA: REGISTRO DEL SERVICE WORKER 🌟
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/service-worker.js')
+      .then(registration => {
+        console.log('ServiceWorker registrado con éxito:', registration.scope);
+      })
+      .catch(error => {
+        console.log('Fallo el registro de ServiceWorker:', error);
+      });
+  });
+}
+
+// 🌟 Feedback Auditivo: Creación del Contexto de Audio
 const AudioContextClass = window.AudioContext || window.webkitAudioContext;
 const audioContext = tieneSpeechRecognition && AudioContextClass ? new AudioContextClass() : null;
 
