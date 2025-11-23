@@ -13,9 +13,9 @@
     --color-texto-secundario: #5c6773;     /* Gris Pizarra */
 
     /* Sombreado y Formas */
-    --sombra-card: 0 6px 15px rgba(0, 0, 0, 0.08); /* Sombra suave y elevada */
-    --sombra-modal: 0 10px 30px rgba(0, 0, 0, 0.3);
-    --radio-suave: 0.75rem; /* Esquinas suaves */
+    --sombra-card: 0 6px 15px rgba(0, 0, 0, 0.08);
+    --sombra-modal: 0 10px 30px rgba(0, 0, 0, 0.4); /* Sombra más oscura para contraste */
+    --radio-suave: 0.75rem;
     
     /* Espaciado */
     --espacio-m: 1.25rem;
@@ -42,9 +42,8 @@ body {
   transition: background-color 0.3s, color 0.3s;
 }
 
-/* Evitar scroll de fondo */
 body.modal-abierto {
-  overflow: hidden;
+  overflow: hidden !important; /* CRÍTICO: Bloquea el scroll del fondo */
 }
 
 /* Enlaces de salto accesibles */
@@ -97,7 +96,6 @@ body.modal-abierto {
   justify-content: flex-end;
 }
 
-/* Botones con estilo premium y micro-animación */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -111,7 +109,6 @@ body.modal-abierto {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  /* Sombra de relieve sutil y sombra inferior (inset) */
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
 }
 
@@ -123,13 +120,11 @@ body.modal-abierto {
 .btn:hover {
   background: #6a1624; 
   transform: translateY(-2px);
-  /* Sombra más profunda en hover */
   box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25), inset 0 -3px 0 rgba(0, 0, 0, 0.1);
 }
 
 .btn:active {
   transform: translateY(0);
-  /* Sombra se aplana para simular el click */
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
 }
 
@@ -145,7 +140,6 @@ body.modal-abierto {
   background: #c0392b;
 }
 
-/* Botón favorito (Estrella) */
 .btn-fav {
   background: transparent;
   color: var(--color-navidad-acento);
@@ -158,7 +152,6 @@ body.modal-abierto {
 
 .btn-fav:hover {
   transform: scale(1.2);
-  /* Sutil glow dorado en hover */
   text-shadow: 0 0 5px rgba(255, 200, 0, 0.5); 
 }
 
@@ -237,7 +230,7 @@ main {
   background: #f0f3f5;
   color: var(--color-texto-secundario);
   font-weight: 500;
-  box-shadow: none; /* Quitamos la sombra para que solo brille el activo */
+  box-shadow: none;
 }
 
 .filtros button:hover {
@@ -250,7 +243,6 @@ main {
   color: var(--color-texto-principal);
   transform: none;
   font-weight: 600;
-  /* El efecto 'Glow' en el activo */
   box-shadow: 0 0 10px rgba(255, 200, 0, 0.7); 
 }
 
@@ -274,13 +266,11 @@ main {
   flex-direction: column;
   gap: 0.6rem;
   border-left: 6px solid transparent;
-  /* Micro-animación rica */
   transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-left-color 0.2s ease;
 }
 
 .receta-card:hover {
     transform: translateY(-5px); 
-    /* Sombra más amplia y sutil en hover */
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -290,13 +280,6 @@ main {
 .receta-card.cat-segundo { border-left-color: var(--color-navidad-principal); }
 .receta-card.cat-postre { border-left-color: #a29bfe; }
 
-.receta-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: var(--espacio-s);
-}
-
 .receta-header h3 {
   margin: 0;
   font-size: 1.15rem;
@@ -304,46 +287,62 @@ main {
   color: var(--color-texto-principal);
 }
 
-.receta-meta {
-  margin: 0;
-  font-size: 0.85rem;
-  color: var(--color-texto-secundario);
-}
-
-.receta-meta span + span::before {
-  content: "•"; 
-  margin: 0 0.4rem;
-}
-
-.receta-descripcion {
-  margin: 0;
-  font-size: 0.95rem;
-  color: var(--color-texto-secundario);
-  flex-grow: 1;
-}
-
-/* Botón "Ver receta" dentro de la tarjeta */
-.receta-card .btn.ver-receta {
-  margin-top: var(--espacio-s);
-  align-self: flex-end;
-  background: var(--color-navidad-principal);
-}
-
 /* =========================================
-   6. MODAL Y DETALLES DE RECETA
+   6. MODAL Y DETALLES DE RECETA (CRÍTICO)
 ========================================= */
 
 .modal {
-  z-index: 9999; 
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex; 
+    justify-content: center;
+    align-items: center; 
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s;
+    z-index: 9999; 
+    /* Aseguramos que el contenedor del modal no se scrollee */
+    overflow-y: hidden; 
+}
+
+.modal.abierto {
+    opacity: 1;
+    visibility: visible;
 }
 
 .modal .dialogo {
-  max-width: 750px;
-  max-height: 90vh;
-  background: var(--color-fondo-card);
-  border-radius: var(--radio-suave);
-  padding: 2rem;
-  box-shadow: var(--sombra-modal);
+    position: relative; 
+    max-width: 750px;
+    max-height: 90vh; 
+    background: var(--color-fondo-card);
+    border-radius: var(--radio-suave);
+    padding: 2rem;
+    box-shadow: var(--sombra-modal);
+    /* CRÍTICO: Permitir scroll INTERNO del modal */
+    overflow-y: auto; 
+    transform: scale(0.95);
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.modal.abierto .dialogo {
+    transform: scale(1);
+}
+
+/* Botón cerrar Superior (X) - Asegurar visibilidad */
+.cerrar {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 1.8rem;
+    color: #c0c0c0;
+    z-index: 20; /* Siempre encima del contenido */
+    background: none;
+    border: none;
+    cursor: pointer;
+    line-height: 1;
 }
 
 /* Detalle de Pasos (Look and Feel de Checklist) */
@@ -361,6 +360,15 @@ main {
     position: relative;
     border-bottom: 1px dotted #f0f0f0;
     padding-bottom: 0.5rem;
+    transition: background-color 0.3s;
+}
+
+/* Resaltado del paso actual que se está leyendo */
+.lista-pasos li.paso-activo {
+    background-color: #fff9e6; /* Fondo amarillo muy claro */
+    font-weight: 600;
+    color: var(--color-navidad-principal);
+    border-bottom-color: var(--color-navidad-acento);
 }
 
 .lista-pasos li::before {
@@ -371,7 +379,6 @@ main {
     top: 50%;
     transform: translateY(-50%);
     
-    /* Diseño del marcador */
     background: var(--color-navidad-principal);
     color: white;
     width: 25px;
@@ -405,7 +412,6 @@ main {
 }
 
 /* Sección de voz en el modal */
-
 .detalle-acciones {
   display: flex;
   flex-wrap: wrap;
@@ -417,13 +423,9 @@ main {
   align-items: center;
 }
 
-/* Estilo del botón de Voz y Feedback */
 .btn-voz {
     background: var(--color-texto-secundario);
     color: white;
-}
-.btn-voz:hover {
-    background: #47515b;
 }
 
 /* =========================================
