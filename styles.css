@@ -1,5 +1,28 @@
 /* =========================================
-   RESET BÁSICO
+   VARIABLES
+========================================= */
+:root {
+    /* Paleta Profesional */
+    --color-navidad-principal: #8c1e30; /* Borgoña oscuro, elegante */
+    --color-navidad-acento: #ffc800; /* Dorado sutil para acentos */
+    --color-fondo-claro: #f5f5f7; /* Fondo sutilmente grisáceo */
+    --color-fondo-card: #ffffff;
+    --color-texto-principal: #1a1a1a;
+    --color-texto-secundario: #5c6773;
+
+    /* Sombreado y Formas */
+    --sombra-card: 0 6px 15px rgba(0, 0, 0, 0.08); /* Sombra más suave y elevada */
+    --sombra-modal: 0 10px 30px rgba(0, 0, 0, 0.3);
+    --radio-suave: 0.75rem; /* Esquinas más redondeadas */
+    --radio-grande: 0.4rem;
+    
+    /* Espaciado */
+    --espacio-m: 1.25rem;
+    --espacio-s: 0.75rem;
+}
+
+/* =========================================
+   RESET Y BASE
 ========================================= */
 *,
 *::before,
@@ -14,16 +37,11 @@ body {
 }
 
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, sans-serif;
-  background: #f5f5f7;
-  color: #222;
-  line-height: 1.5;
-}
-
-/* Cuando el modal está abierto: evitar scroll de fondo */
-body.modal-abierto {
-  overflow: hidden;
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background: var(--color-fondo-claro);
+  color: var(--color-texto-principal);
+  line-height: 1.6;
+  transition: background-color 0.3s, color 0.3s;
 }
 
 /* Enlaces de salto accesibles */
@@ -31,13 +49,12 @@ body.modal-abierto {
   position: absolute;
   left: -999px;
   top: 10px;
-  background: #000;
+  background: var(--color-navidad-principal);
   color: #fff;
-  padding: 0.5rem 1rem;
+  padding: var(--espacio-s) var(--espacio-m);
   border-radius: 999px;
   z-index: 9999;
 }
-
 .skip-link:focus {
   left: 10px;
 }
@@ -50,27 +67,31 @@ body.modal-abierto {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 1.25rem;
-  background: #b30000;
-  background: linear-gradient(135deg, #b30000, #e74c3c);
+  padding: 1.75rem var(--espacio-m);
+  background: var(--color-navidad-principal);
+  /* Degradado sutil para dar profundidad */
+  background: linear-gradient(135deg, var(--color-navidad-principal) 0%, #a62b40 100%);
   color: #fff;
-  gap: 1rem;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  gap: var(--espacio-m);
 }
 
 .app-header h1 {
-  margin: 0 0 0.25rem;
-  font-size: 1.6rem;
+  margin: 0 0 0.15rem;
+  font-size: 1.8rem;
+  font-weight: 700;
 }
 
 .app-header .sub {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   opacity: 0.9;
+  font-weight: 300; /* Texto más ligero */
 }
 
 .herramientas {
   display: flex;
-  gap: 0.5rem;
+  gap: var(--espacio-s);
   flex-wrap: wrap;
   justify-content: flex-end;
 }
@@ -79,48 +100,44 @@ body.modal-abierto {
    BOTONES GENERALES
 ========================================= */
 
-.btn,
-button {
-  font-family: inherit;
-}
-
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.45rem 0.9rem;
-  border-radius: 999px;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radio-suave); /* Más redondeado */
   border: none;
-  background: #e74c3c;
+  background: var(--color-navidad-principal);
   color: #fff;
   font-size: 0.9rem;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.1s ease;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+  transition: all 0.2s ease;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15); /* Sombra más marcada */
 }
 
 .btn.small {
-  padding: 0.35rem 0.7rem;
+  padding: 0.4rem 0.8rem;
   font-size: 0.8rem;
 }
 
 .btn:hover {
-  background: #c0392b;
-  transform: translateY(-1px);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16);
+  background: #6a1624; /* Tono más oscuro de principal */
+  transform: translateY(-2px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
 .btn:active {
   transform: translateY(0);
-  box-shadow: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .btn.secondary {
-  background: #34495e;
+  background: var(--color-texto-secundario);
 }
 
 .btn.secondary:hover {
-  background: #2c3e50;
+  background: #47515b;
 }
 
 .btn.danger {
@@ -128,21 +145,22 @@ button {
 }
 
 .btn.danger:hover {
-  background: #992d22;
+  background: #a63023;
 }
 
 /* Botón favorito */
 .btn-fav {
   background: transparent;
-  color: #f1c40f;
+  color: var(--color-navidad-acento);
   border: none;
   cursor: pointer;
-  font-size: 1.2rem;
+  font-size: 1.5rem; /* Estrella más grande */
   padding: 0.1rem 0.5rem;
+  transition: transform 0.2s;
 }
 
 .btn-fav:hover {
-  transform: scale(1.1);
+  transform: scale(1.2);
 }
 
 /* =========================================
@@ -150,26 +168,31 @@ button {
 ========================================= */
 
 main {
-  padding: 1.25rem;
+  padding: var(--espacio-m);
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
+  gap: 2rem; /* Más espacio entre secciones */
 }
 
 /* Paneles (tarjetas grandes) */
 .panel {
-  background: #fff;
-  border-radius: 0.9rem;
-  padding: 1rem 1.1rem;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  background: var(--color-fondo-card);
+  border-radius: var(--radio-suave);
+  padding: 1.5rem; /* Más relleno */
+  box-shadow: var(--sombra-card);
 }
 
-/* Lista de la compra arriba */
-.lista-superior h2 {
-  margin-top: 0;
-  margin-bottom: 0.5rem;
+/* Encabezados de paneles */
+.panel h2 {
+    font-weight: 600;
+    color: var(--color-navidad-principal);
+    font-size: 1.4rem;
+    border-bottom: 2px solid #eee; /* Separador sutil */
+    padding-bottom: var(--espacio-s);
+    margin-bottom: var(--espacio-m);
+    margin-top: 0;
 }
 
 /* =========================================
@@ -181,56 +204,55 @@ main {
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.top-panel h2 {
-  margin: 0;
+  gap: var(--espacio-s);
+  margin-bottom: 0; /* Ya tenemos gap en main */
 }
 
 .buscador {
   flex: 1;
-  min-width: 180px;
-  padding: 0.4rem 0.7rem;
-  border-radius: 999px;
+  min-width: 250px;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radio-suave);
   border: 1px solid #ccc;
-  font-size: 0.9rem;
+  font-size: 1rem;
+  transition: all 0.2s;
 }
 
 .buscador:focus {
-  outline: 2px solid #e74c3c;
+  outline: 2px solid var(--color-navidad-acento);
   outline-offset: 1px;
-  border-color: #e74c3c;
+  border-color: var(--color-navidad-acento);
+  box-shadow: 0 0 5px rgba(255, 200, 0, 0.5);
 }
 
 /* Filtros */
 .filtros {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.4rem;
-  margin-bottom: 0.75rem;
+  gap: 0.6rem;
+  margin-bottom: var(--espacio-m);
 }
 
 .filtros button {
-  border-radius: 999px;
-  border: none;
-  padding: 0.35rem 0.8rem;
-  font-size: 0.85rem;
-  cursor: pointer;
-  background: #ecf0f1;
-  color: #333;
-  transition: background 0.2s ease, color 0.2s ease, transform 0.1s ease;
+  border-radius: var(--radio-suave);
+  padding: 0.4rem 1rem;
+  font-size: 0.9rem;
+  background: #f0f3f5; /* Fondo más claro */
+  color: var(--color-texto-secundario);
+  font-weight: 500;
 }
 
 .filtros button:hover {
-  background: #d0d7dd;
+  background: #e0e4e7;
   transform: translateY(-1px);
 }
 
 .filtros button.active {
-  background: #e74c3c;
-  color: #fff;
+  background: var(--color-navidad-acento);
+  color: var(--color-texto-principal);
+  transform: none;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(255, 200, 0, 0.3);
 }
 
 /* =========================================
@@ -239,99 +261,92 @@ main {
 
 .grid-recetas {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Tarjetas un poco más anchas */
+  gap: var(--espacio-m);
 }
 
 /* Tarjeta de receta */
 .receta-card {
-  background: #fff;
-  border-radius: 0.9rem;
-  padding: 0.8rem 0.85rem 0.9rem;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  background: var(--color-fondo-card);
+  border-radius: var(--radio-suave);
+  padding: 1.25rem;
+  box-shadow: var(--sombra-card);
   display: flex;
   flex-direction: column;
-  gap: 0.45rem;
-  border-left: 4px solid transparent;
+  gap: 0.6rem;
+  border-left: 6px solid transparent; /* Borde más ancho */
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.receta-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.12);
 }
 
 .receta-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 0.5rem;
+  gap: var(--espacio-s);
 }
 
 .receta-header h3 {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--color-texto-principal);
 }
 
 .receta-meta {
   margin: 0;
-  font-size: 0.8rem;
-  color: #666;
+  font-size: 0.85rem;
+  color: var(--color-texto-secundario);
 }
 
 .receta-meta span + span::before {
-  content: "·";
-  margin: 0 0.25rem;
+  content: "•"; /* Punto más moderno */
+  margin: 0 0.4rem;
 }
 
 .receta-descripcion {
   margin: 0;
-  font-size: 0.85rem;
-  color: #444;
+  font-size: 0.95rem;
+  color: var(--color-texto-secundario);
+  flex-grow: 1;
 }
 
 /* Botón "Ver receta" dentro de la tarjeta */
 .receta-card .btn.ver-receta {
-  margin-top: 0.3rem;
-  align-self: flex-start;
+  margin-top: var(--espacio-s);
+  align-self: flex-end; /* A la derecha */
+  background: var(--color-navidad-principal);
+}
+.receta-card .btn.ver-receta:hover {
+    background: #6a1624;
 }
 
 /* =========================================
-   COLORES POR TIPO DE PLATO
+   COLORES POR TIPO DE PLATO (Sofisticado)
 ========================================= */
 
-/* Aperitivos: naranja suave */
+/* Aperitivos: Naranja/Coral */
 .receta-card.cat-aperitivo {
-  border-left-color: #e67e22;
-  background: linear-gradient(
-    to right,
-    rgba(230, 126, 34, 0.06),
-    #ffffff
-  );
+  border-left-color: #ff7675; 
 }
 
-/* Primeros: azul */
+/* Primeros: Azul verdoso / Aguamarina */
 .receta-card.cat-primero {
-  border-left-color: #2980b9;
-  background: linear-gradient(
-    to right,
-    rgba(41, 128, 185, 0.06),
-    #ffffff
-  );
+  border-left-color: #00b894;
 }
 
-/* Segundos: verde */
+/* Segundos: Borgoña (usando el principal para enfatizar) */
 .receta-card.cat-segundo {
-  border-left-color: #27ae60;
-  background: linear-gradient(
-    to right,
-    rgba(39, 174, 96, 0.06),
-    #ffffff
-  );
+  border-left-color: var(--color-navidad-principal);
 }
 
-/* Postres: morado */
+/* Postres: Violeta Suave */
 .receta-card.cat-postre {
-  border-left-color: #8e44ad;
-  background: linear-gradient(
-    to right,
-    rgba(142, 68, 173, 0.06),
-    #ffffff
-  );
+  border-left-color: #a29bfe;
 }
 
 /* =========================================
@@ -340,7 +355,7 @@ main {
 
 .lista-compra {
   list-style: none;
-  margin: 0 0 0.75rem 0;
+  margin: 0 0 var(--espacio-s) 0;
   padding: 0;
 }
 
@@ -348,9 +363,9 @@ main {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 0.75rem;
-  padding: 0.35rem 0;
-  border-bottom: 1px solid #eee;
+  gap: var(--espacio-s);
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #f0f0f0; /* Línea más clara */
 }
 
 .lista-compra li:last-child {
@@ -358,31 +373,12 @@ main {
 }
 
 .lista-compra .nombre {
-  font-size: 0.9rem;
-}
-
-.lista-compra .controles {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+  font-size: 0.95rem;
 }
 
 .lista-compra .controles button {
-  border: none;
-  border-radius: 999px;
-  padding: 0.2rem 0.45rem;
-  font-size: 0.8rem;
-  cursor: pointer;
-  background: #ecf0f1;
-}
-
-.lista-compra .controles button:hover {
-  background: #d0d7dd;
-}
-
-.lista-compra .controles .cantidad {
-  min-width: 1.5rem;
-  text-align: center;
+    background: #e9ecef;
+    color: var(--color-texto-secundario);
 }
 
 /* =========================================
@@ -390,113 +386,78 @@ main {
 ========================================= */
 
 .modal {
-  position: fixed;
-  inset: 0;
-  display: none;
-  z-index: 999;
-}
-
-.modal.abierto {
-  display: block;
-}
-
-.modal .fondo {
-  position: absolute;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  /* ... estilos base ... */
+  z-index: 9999; /* Asegurar que esté siempre encima */
 }
 
 .modal .dialogo {
-  position: relative;
-  max-width: 720px;
+  max-width: 750px;
   max-height: 90vh;
-  margin: 5vh auto;
-  background: #fff;
-  border-radius: 1rem;
-  padding: 1.1rem 1.2rem;
-  overflow-y: auto;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
-  outline: none;
-}
-
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
+  background: var(--color-fondo-card);
+  border-radius: var(--radio-suave);
+  padding: 2rem;
+  box-shadow: var(--sombra-modal);
 }
 
 .modal-header h2 {
-  margin: 0 0 0.35rem;
-  font-size: 1.25rem;
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--color-navidad-principal);
 }
 
 .modal-header .receta-meta {
-  font-size: 0.8rem;
+  font-size: 0.9rem;
+  color: var(--color-texto-secundario);
 }
 
 /* Botón cerrar modal (X) */
 .cerrar {
-  position: absolute;
-  top: 0.5rem;
-  right: 0.55rem;
-  background: transparent;
-  border: none;
-  font-size: 1.4rem;
-  cursor: pointer;
-  color: #999;
-}
-
-.cerrar:hover {
-  color: #555;
+  top: 1rem;
+  right: 1rem;
+  font-size: 1.8rem;
+  color: #c0c0c0;
 }
 
 /* Ingredientes y pasos */
 
 .lista-ingredientes,
 .lista-pasos {
-  margin: 0.35rem 0 0.9rem 0;
-  padding-left: 1.1rem;
+  margin: 0.75rem 0 1.5rem 0;
+  padding-left: 1.5rem;
 }
 
 .lista-ingredientes li,
 .lista-pasos li {
-  margin-bottom: 0.25rem;
-  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
 }
 
 .lista-ingredientes .btn-ingrediente {
-  border-radius: 999px;
-  border: none;
-  background: #ecf0f1;
-  padding: 0.1rem 0.65rem;
-  cursor: pointer;
-  font-size: 0.85rem;
-}
-
-.lista-ingredientes .btn-ingrediente:hover {
-  background: #d0d7dd;
+    /* Botón más estilizado */
+    background: #e9ecef;
+    padding: 0.2rem 0.75rem;
+    border-radius: var(--radio-suave);
+    font-size: 0.9rem;
+    color: var(--color-texto-secundario);
 }
 
 /* Sección de voz en el modal */
 
 .voz-controles {
-  margin-top: 0.75rem;
-  padding-top: 0.6rem;
-  border-top: 1px solid #eee;
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e0e0e0;
 }
 
-.voz-botones {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
-  margin: 0.4rem 0;
+.voz-botones button {
+    background: var(--color-navidad-principal);
+    color: white;
 }
 
 .voz-ayuda {
-  font-size: 0.8rem;
-  color: #555;
+  font-size: 0.85rem;
+  color: var(--color-texto-secundario);
+  margin-top: 0.5rem;
 }
 
 /* =========================================
@@ -516,7 +477,8 @@ body.alto-contraste .app-header {
 
 body.alto-contraste .panel,
 body.alto-contraste .receta-card,
-body.alto-contraste .modal .dialogo {
+body.alto-contraste .modal .dialogo,
+body.alto-contraste .lista-compra .controles button {
   background: #000;
   color: #fff;
   box-shadow: none;
@@ -524,8 +486,6 @@ body.alto-contraste .modal .dialogo {
 }
 
 body.alto-contraste .buscador,
-body.alto-contraste .lista-compra .controles button,
-body.alto-contraste .lista-ingredientes .btn-ingrediente,
 body.alto-contraste .filtros button {
   background: #000;
   color: #fff;
@@ -535,9 +495,11 @@ body.alto-contraste .filtros button {
 body.alto-contraste .filtros button.active {
   background: #fff;
   color: #000;
+  border: 1px solid #000;
 }
 
-body.alto-contraste .btn {
+body.alto-contraste .btn,
+body.alto-contraste .btn-voz {
   background: #fff;
   color: #000;
   box-shadow: none;
@@ -546,15 +508,19 @@ body.alto-contraste .btn {
 body.alto-contraste .btn:hover {
   background: #ccc;
 }
+body.alto-contraste .btn-fav {
+    color: #fff; /* Estrella blanca para contraste */
+}
+
 
 /* Texto grande */
 body.texto-grande {
-  font-size: 18px;
+  font-size: 19px; /* Base ligeramente más grande */
 }
 
 body.texto-grande .receta-meta,
 body.texto-grande .voz-ayuda {
-  font-size: 0.95rem;
+  font-size: 1rem;
 }
 
 /* =========================================
@@ -568,14 +534,14 @@ body.texto-grande .voz-ayuda {
   }
 
   .modal .dialogo {
-    margin: 3vh 0.75rem;
+    margin: 3vh var(--espacio-m);
     max-height: 94vh;
   }
 }
 
 @media (max-width: 480px) {
   main {
-    padding: 0.75rem;
+    padding: var(--espacio-s);
   }
 
   .top-panel {
@@ -584,6 +550,11 @@ body.texto-grande .voz-ayuda {
   }
 
   .app-header h1 {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
+  }
+  
+  .grid-recetas {
+      /* Aseguramos que el grid funcione bien en móviles */
+      grid-template-columns: 1fr;
   }
 }
