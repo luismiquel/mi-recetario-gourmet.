@@ -6,8 +6,6 @@ const urlsToCache = [
   '/styles.css',
   '/manifest.json',
   '/recetas.js' 
-  
-  // ¡Iconos eliminados!
 ];
 
 // 1. Instalar el Service Worker y guardar archivos en caché
@@ -45,6 +43,7 @@ self.addEventListener('activate', event => {
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
+                    // Si el nombre de la caché no está en la lista blanca, la elimina.
                     if (cacheWhitelist.indexOf(cacheName) === -1) {
                         console.log('Service Worker: Eliminando caché antigua', cacheName);
                         return caches.delete(cacheName);
