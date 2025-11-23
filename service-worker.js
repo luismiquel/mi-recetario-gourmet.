@@ -5,7 +5,9 @@ const urlsToCache = [
   '/app.js',
   '/styles.css',
   '/manifest.json',
-  '/recetas.js', // Asegúrate de que este sea el nombre correcto del archivo de tus recetas
+  '/recetas.js', 
+  
+  // Rutas de los iconos (Asegúrate que la carpeta 'icons' exista)
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png'
 ];
