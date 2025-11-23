@@ -249,7 +249,7 @@ function abrirModal(recetaId) {
         <p class="detalle-meta">
           ⏱️ ${receta.time} · 🎯 ${receta.difficulty} · 👥 ${receta.servings} raciones
         </p>
-        </header>
+      </header>
 
       <section>
         <h3>Descripción</h3>
@@ -538,6 +538,7 @@ let feedbackVozEl = null;
 // 🌟 INICIALIZACIÓN PWA: REGISTRO DEL SERVICE WORKER 🌟
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
+    // 🌟 REGISTRO DEL SERVICE WORKER 🌟
     navigator.serviceWorker.register('/service-worker.js')
       .then(registration => {
         console.log('ServiceWorker registrado con éxito:', registration.scope);
@@ -608,7 +609,7 @@ function leerTexto(texto, onEnd) {
     if (!enPausa) {
         window.speechSynthesis.speak(msg);
     } else if (onEnd) {
-        // Si estamos en pausa, simular el onEnd si hay callback
+        // Si estamos en pausa, simular el end si hay callback
         setTimeout(onEnd, 100); 
     }
 }
