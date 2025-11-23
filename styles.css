@@ -1,16 +1,16 @@
 /* =============================================================
-   styles.css: AJUSTE FINAL PARA VISIBILIDAD DE MODAL
+   styles.css: DISEÑO PROFESIONAL Y DINÁMICO (VERSIÓN FINAL)
    ============================================================= */
 
 /* 1. VARIABLES Y RESET BÁSICO */
 :root {
     /* Paleta Profesional de Navidad */
-    --color-navidad-principal: #8c1e30;
-    --color-navidad-acento: #ffc800;
-    --color-fondo-claro: #f5f5f7;
-    --color-fondo-card: #ffffff;
-    --color-texto-principal: #1a1a1a;
-    --color-texto-secundario: #5c6773;
+    --color-navidad-principal: #8c1e30;    /* Borgoña Oscuro, Elegante */
+    --color-navidad-acento: #ffc800;       /* Dorado Sutil para Acentos */
+    --color-fondo-claro: #f5f5f7;          /* Fondo Platinado/Sutilmente Grisáceo */
+    --color-fondo-card: #ffffff;           /* Blanco Puro para Tarjetas */
+    --color-texto-principal: #1a1a1a;      /* Negro Profundo */
+    --color-texto-secundario: #5c6773;     /* Gris Pizarra */
 
     /* Sombreado y Formas */
     --sombra-card: 0 6px 15px rgba(0, 0, 0, 0.08);
@@ -20,7 +20,6 @@
     /* Espaciado */
     --espacio-m: 1.25rem;
     --espacio-s: 0.75rem;
-    --modal-padding-extra: 2.5rem; /* Espacio extra crítico */
 }
 
 *,
@@ -44,7 +43,7 @@ body {
 }
 
 body.modal-abierto {
-  overflow: hidden !important; 
+  overflow: hidden !important; /* CRÍTICO: Bloquea el scroll del fondo */
 }
 
 /* Enlaces de salto accesibles */
@@ -318,12 +317,11 @@ main {
 .modal .dialogo {
     position: relative; 
     max-width: 750px;
-    /* CRÍTICO: Dejamos un margen superior e inferior para que no toque los bordes */
+    /* CRÍTICO: Permitir margen vertical suficiente (max-height) */
     max-height: calc(100vh - 4rem); 
     background: var(--color-fondo-card);
     border-radius: var(--radio-suave);
     
-    /* Padding para el contenido */
     padding: 2rem; 
     box-shadow: var(--sombra-modal);
     
@@ -338,7 +336,6 @@ main {
 
 /* Ajuste del contenido para asegurar que el scroll interno funcione */
 .modal-header {
-    /* Mantenemos el header fuera del scroll si fuera necesario (aunque en este caso todo scrollea junto) */
     padding-bottom: 0.5rem;
     border-bottom: 1px solid #eee;
     margin-bottom: 1rem;
@@ -357,6 +354,11 @@ main {
     cursor: pointer;
     line-height: 1;
 }
+.cerrar:hover {
+    color: var(--color-navidad-principal);
+    transform: scale(1.1);
+}
+
 
 /* Detalle de Pasos (Look and Feel de Checklist) */
 .lista-pasos {
@@ -375,14 +377,17 @@ main {
     position: relative;
     border-bottom: 1px dotted #f0f0f0;
     padding-bottom: 0.5rem;
-    transition: background-color 0.3s;
+    transition: background-color 0.3s, font-weight 0.2s;
 }
 
+/* 🌟 Clase añadida por JavaScript para el paso en lectura 🌟 */
 .lista-pasos li.paso-activo {
-    background-color: #fff9e6;
-    font-weight: 600;
+    background-color: #fff9e6; /* Fondo amarillo muy claro */
+    font-weight: 700;
     color: var(--color-navidad-principal);
     border-bottom-color: var(--color-navidad-acento);
+    /* Sombra interna sutil para simular enfoque */
+    box-shadow: inset 5px 0 0 var(--color-navidad-acento); 
 }
 
 .lista-pasos li::before {
@@ -507,7 +512,6 @@ body.texto-grande .voz-ayuda {
 
 /* Responsive */
 @media (max-width: 768px) {
-  /* En móvil, el diálogo puede ocupar más espacio vertical */
   .modal .dialogo {
     margin: 2vh var(--espacio-s);
     max-height: 96vh;
