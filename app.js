@@ -1,619 +1,652 @@
-// app.js
-// ==========================================================
-//  LÓGICA PRINCIPAL DE LA APP DE RECETAS NAVIDEÑAS
-//  - Usa el array global RECETAS definido en recetas.js
-//  - Sin imágenes, solo texto claro
-//  - Modal + lista de la compra + favoritos + asistente de voz
-// ==========================================================
+// =============================================================
+// App Gourmet – Lógica principal
+// Depende de RECETAS definido en recetas.js
+// =============================================================
 
-document.addEventListener("DOMContentLoaded", () => {
-  // ------------------ COMPROBACIÓN DE DATOS ------------------
-  if (typeof RECETAS === "undefined" || !Array.isArray(RECETAS)) {
-    console.error(
-      "❌ No se ha encontrado el array RECETAS. Asegúrate de que recetas.js se carga ANTES que app.js"
-    );
+(function () {
+  // Comprobamos que RECETAS existe
+  if (!Array.isArray(window.RECETAS)) {
+    console.error("❌ No se ha encontrado el array RECETAS. Revisa que recetas.js se carga ANTES que app.js");
     return;
   }
 
-  // ------------------ REFERENCIAS AL DOM ---------------------
-  const body = document.body;
-  const inputBuscar = document.getElementById("buscar");
-  const contenedorListado = document.getElementById("listado");
-  const contenedorListaCompra = document.getElementById("lista-compra");
-  const btnVaciarLista = document.getElementById("btn-vaciar");
-  const btnFavs = document.getElementById("btn-favs");
-  const filtros = document.querySelectorAll(".filtros button[data-filtro]");
-  const btnContraste = document.getElementById("btn-contraste");
-  const btnTexto = document.getElementById("btn-texto");
-
-  const modal = document.getElementById("modal");
-  const modalFondo = modal.querySelector(".fondo");
-  const modalDialogo = modal.querySelector(".dialogo");
-  const modalCerrar = document.getElementById("cerrar");
-  const modalContenido = document.getElementById("contenido-modal");
-
-  // ------------------ ESTADO DE LA APP -----------------------
+  // -----------------------------
+  // ESTADO GLOBAL
+  // -----------------------------
   let filtroActual = "todas";
-  let mostrarSoloFavoritos = false;
   let textoBusqueda = "";
+  let mostrarFavoritosSolo = false;
 
-  // Favoritos en localStorage
-  const FAVORITOS_KEY = "navidad-favoritos";
-  let favoritos = new Set(
-    JSON.parse(localStorage.getItem(FAVORITOS_KEY) || "[]")
-  );
-
-  // Lista de la compra en localStorage
-  const LISTA_KEY = "navidad-lista-compra";
-  let listaCompra = JSON.parse(localStorage.getItem(LISTA_KEY) || "[]");
-
-  // Estado del modal / voz
   let recetaActual = null;
   let pasoActualIndex = 0;
 
-  // TTS (texto → voz)
-  const tieneVoz = "speechSynthesis" in window;
-  // Reconocimiento de voz
+  const LS_FAVS_KEY = "navidad_favoritos";
+  const LS_LISTA_KEY = "navidad_lista_compra";
+
+  let favoritos = new Set(cargarFavoritos());
+  let listaCompra = cargarListaCompra();
+
+  // Voz
+  const synth = window.speechSynthesis || null;
   const SpeechRecognition =
     window.SpeechRecognition || window.webkitSpeechRecognition || null;
   let reconocimiento = null;
   let reconocimientoActivo = false;
 
-  // ==========================================================
-  //  UTILIDADES
-  // ==========================================================
+  // -----------------------------
+  // UTILIDADES LOCALSTORAGE
+  // -----------------------------
+  function cargarFavoritos() {
+    try {
+      const data = localStorage.getItem(LS_FAVS_KEY);
+      if (!data) return [];
+      const arr = JSON.parse(data);
+      if (Array.isArray(arr)) return arr;
+      return [];
+    } catch (e) {
+      console.warn("No se pudieron cargar favoritos:", e);
+      return [];
+    }
+  }
 
   function guardarFavoritos() {
-    localStorage.setItem(FAVORITOS_KEY, JSON.stringify([...favoritos]));
+    try {
+      localStorage.setItem(LS_FAVS_KEY, JSON.stringify(Array.from(favoritos)));
+    } catch (e) {
+      console.warn("No se pudieron guardar favoritos:", e);
+    }
+  }
+
+  function cargarListaCompra() {
+    try {
+      const data = localStorage.getItem(LS_LISTA_KEY);
+      if (!data) return [];
+      const arr = JSON.parse(data);
+      if (Array.isArray(arr)) return arr;
+      return [];
+    } catch (e) {
+      console.warn("No se pudo cargar lista de la compra:", e);
+      return [];
+    }
   }
 
   function guardarListaCompra() {
-    localStorage.setItem(LISTA_KEY, JSON.stringify(listaCompra));
-  }
-
-  function normalizarTexto(t) {
-    return t
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "");
-  }
-
-  function categoriaLegible(cat) {
-    switch (cat) {
-      case "aperitivo":
-        return "Aperitivo";
-      case "primero":
-        return "Primer plato";
-      case "segundo":
-        return "Segundo plato";
-      case "postre":
-        return "Postre";
-      default:
-        return cat;
+    try {
+      localStorage.setItem(LS_LISTA_KEY, JSON.stringify(listaCompra));
+    } catch (e) {
+      console.warn("No se pudo guardar lista de la compra:", e);
     }
   }
 
-  function crearBadgeCategoria(cat) {
-    const span = document.createElement("span");
-    span.className = "badge categoria " + cat;
-    span.textContent = categoriaLegible(cat);
-    return span;
-  }
+  // -----------------------------
+  // DOM READY
+  // -----------------------------
+  document.addEventListener("DOMContentLoaded", () => {
+    const listadoEl = document.getElementById("listado");
+    const buscarEl = document.getElementById("buscar");
+    const navFiltros = document.querySelector(".filtros");
+    const btnFavs = document.getElementById("btn-favs");
+    const listaCompraEl = document.getElementById("lista-compra");
+    const btnVaciarLista = document.getElementById("btn-vaciar");
 
-  function crearBadgeDificultad(dif) {
-    const span = document.createElement("span");
-    span.className = "badge dificultad";
-    span.textContent = dif || "";
-    return span;
-  }
+    const btnContraste = document.getElementById("btn-contraste");
+    const btnTexto = document.getElementById("btn-texto");
 
-  function crearBadgeTiempo(tiempo) {
-    const span = document.createElement("span");
-    span.className = "badge tiempo";
-    span.textContent = tiempo || "";
-    return span;
-  }
+    const modalEl = document.getElementById("modal");
+    const modalFondo = modalEl.querySelector(".fondo");
+    const modalCerrar = document.getElementById("cerrar");
+    const contenidoModal = document.getElementById("contenido-modal");
 
-  // ==========================================================
-  //  RENDER LISTA DE LA COMPRA
-  // ==========================================================
-
-  function renderListaCompra() {
-    contenedorListaCompra.innerHTML = "";
-
-    if (!listaCompra.length) {
-      const p = document.createElement("p");
-      p.textContent = "Tu lista está vacía. Añade ingredientes desde una receta.";
-      p.className = "texto-suave";
-      contenedorListaCompra.appendChild(p);
+    if (!listadoEl || !buscarEl || !navFiltros || !btnFavs || !listaCompraEl) {
+      console.error("❌ Faltan elementos clave en el HTML");
       return;
     }
 
-    const ul = document.createElement("ul");
-    ul.className = "lista-compra-ul";
+    // --------- Eventos básicos ---------
+    buscarEl.addEventListener("input", (e) => {
+      textoBusqueda = e.target.value.toLowerCase().trim();
+      renderListado();
+    });
 
-    listaCompra.forEach((item, index) => {
-      const li = document.createElement("li");
-      li.className = "item-compra";
+    navFiltros.addEventListener("click", (e) => {
+      const btn = e.target.closest("button[data-filtro]");
+      if (!btn) return;
+      filtroActual = btn.getAttribute("data-filtro");
+      navFiltros.querySelectorAll("button[data-filtro]").forEach((b) =>
+        b.classList.remove("active")
+      );
+      btn.classList.add("active");
+      renderListado();
+    });
 
-      const span = document.createElement("span");
-      span.textContent = item;
+    btnFavs.addEventListener("click", () => {
+      mostrarFavoritosSolo = !mostrarFavoritosSolo;
+      btnFavs.classList.toggle("active", mostrarFavoritosSolo);
+      renderListado();
+    });
 
-      const btnEliminar = document.createElement("button");
-      btnEliminar.className = "btn small danger";
-      btnEliminar.textContent = "×";
-      btnEliminar.title = "Eliminar";
-      btnEliminar.addEventListener("click", () => {
-        listaCompra.splice(index, 1);
+    btnVaciarLista.addEventListener("click", () => {
+      if (!confirm("¿Vaciar la lista de la compra?")) return;
+      listaCompra = [];
+      guardarListaCompra();
+      renderListaCompra();
+    });
+
+    // Contraste y tamaño de texto (muy sencillo)
+    btnContraste.addEventListener("click", () => {
+      document.body.classList.toggle("alto-contraste");
+    });
+
+    btnTexto.addEventListener("click", () => {
+      document.body.classList.toggle("texto-grande");
+    });
+
+    // Modal
+    modalFondo.addEventListener("click", cerrarModal);
+    modalCerrar.addEventListener("click", cerrarModal);
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") cerrarModal();
+    });
+
+    // Render inicial
+    renderListado();
+    renderListaCompra();
+
+    // -----------------------------
+    // RENDER LISTADO DE RECETAS
+    // -----------------------------
+    function filtrarRecetas() {
+      return window.RECETAS.filter((r) => {
+        if (mostrarFavoritosSolo && !favoritos.has(r.id)) return false;
+
+        if (filtroActual !== "todas" && r.category !== filtroActual) {
+          return false;
+        }
+
+        if (textoBusqueda) {
+          const t = textoBusqueda;
+          const enTitulo = r.title.toLowerCase().includes(t);
+          const enDesc = r.description.toLowerCase().includes(t);
+          return enTitulo || enDesc;
+        }
+
+        return true;
+      });
+    }
+
+    function renderListado() {
+      const recetasFiltradas = filtrarRecetas();
+      listadoEl.innerHTML = "";
+
+      if (!recetasFiltradas.length) {
+        listadoEl.innerHTML = `<p>No se han encontrado recetas.</p>`;
+        return;
+      }
+
+      recetasFiltradas.forEach((r) => {
+        const card = document.createElement("article");
+        card.className = "receta-card";
+
+        // Clase por categoría para colorear con CSS
+        // cat-aperitivo, cat-primero, cat-segundo, cat-postre
+        card.classList.add(`cat-${r.category}`);
+
+        const esFav = favoritos.has(r.id);
+
+        card.innerHTML = `
+          <header class="receta-header">
+            <h3>${r.title}</h3>
+            <button class="btn-fav" data-id="${r.id}" aria-label="Marcar como favorito">
+              ${esFav ? "★" : "☆"}
+            </button>
+          </header>
+          <p class="receta-meta">
+            <span>${mapCatLabel(r.category)}</span> · 
+            <span>${r.time}</span> · 
+            <span>${r.difficulty}</span>
+          </p>
+          <p class="receta-descripcion">${r.description}</p>
+          <button class="btn ver-receta" data-id="${r.id}">Ver receta</button>
+        `;
+
+        listadoEl.appendChild(card);
+      });
+
+      // Eventos de botones dentro del listado
+      listadoEl.querySelectorAll(".btn-fav").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          const id = Number(btn.getAttribute("data-id"));
+          toggleFavorito(id);
+          renderListado();
+        });
+      });
+
+      listadoEl.querySelectorAll(".ver-receta").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const id = Number(btn.getAttribute("data-id"));
+          const rec = window.RECETAS.find((x) => x.id === id);
+          if (rec) {
+            abrirModal(rec);
+          }
+        });
+      });
+    }
+
+    function mapCatLabel(cat) {
+      switch (cat) {
+        case "aperitivo":
+          return "Aperitivo";
+        case "primero":
+          return "Primer plato";
+        case "segundo":
+          return "Segundo plato";
+        case "postre":
+          return "Postre";
+        default:
+          return "Otros";
+      }
+    }
+
+    function toggleFavorito(id) {
+      if (favoritos.has(id)) {
+        favoritos.delete(id);
+      } else {
+        favoritos.add(id);
+      }
+      guardarFavoritos();
+    }
+
+    // -----------------------------
+    // MODAL Y DETALLE DE RECETA
+    // -----------------------------
+    function abrirModal(receta) {
+      recetaActual = receta;
+      pasoActualIndex = 0;
+
+      const esFav = favoritos.has(receta.id);
+
+      const ingredientesHTML = receta.ingredients
+        .map(
+          (ing) => `
+          <li>
+            <button class="btn-ingrediente" data-ingrediente="${ing.replace(
+              /"/g,
+              "&quot;"
+            )}">
+              ${ing}
+            </button>
+          </li>`
+        )
+        .join("");
+
+      const pasosHTML = receta.steps
+        .map(
+          (p, i) => `
+          <li data-paso="${i}">
+            <strong>Paso ${i + 1}:</strong> ${p}
+          </li>`
+        )
+        .join("");
+
+      contenidoModal.innerHTML = `
+        <header class="modal-header">
+          <div>
+            <h2>${receta.title}</h2>
+            <p class="receta-meta">
+              <span>${mapCatLabel(receta.category)}</span> · 
+              <span>${receta.time}</span> · 
+              <span>${receta.difficulty}</span> · 
+              <span>${receta.servings} raciones</span>
+            </p>
+          </div>
+          <button class="btn-fav" id="modal-fav" data-id="${receta.id}">
+            ${esFav ? "★ Favorito" : "☆ Favorito"}
+          </button>
+        </header>
+
+        <section>
+          <h3>Ingredientes</h3>
+          <p>Pulsa en un ingrediente para añadirlo a la lista de la compra.</p>
+          <ul class="lista-ingredientes">
+            ${ingredientesHTML}
+          </ul>
+        </section>
+
+        <section>
+          <h3>Pasos</h3>
+          <ol class="lista-pasos">
+            ${pasosHTML}
+          </ol>
+        </section>
+
+        <section class="voz-controles">
+          <h3>Asistente de voz</h3>
+          <p>Botones:</p>
+          <div class="voz-botones">
+            <button id="btn-leer" class="btn">Leer receta</button>
+            <button id="btn-asistente" class="btn secondary">Asistente de voz</button>
+            <button id="btn-parar-voz" class="btn danger">Parar voz</button>
+          </div>
+          <p class="voz-ayuda">
+            Comandos por voz: <strong>siguiente</strong>, 
+            <strong>anterior</strong>, <strong>repetir</strong>, 
+            <strong>ingredientes</strong>, <strong>parar</strong>, 
+            <strong>cerrar</strong>.
+          </p>
+        </section>
+      `;
+
+      // Eventos dentro del modal
+      const modalFav = document.getElementById("modal-fav");
+      if (modalFav) {
+        modalFav.addEventListener("click", () => {
+          toggleFavorito(receta.id);
+          abrirModal(receta); // recargar contenido para actualizar texto
+          renderListado(); // actualizar iconos en listado
+        });
+      }
+
+      contenidoModal
+        .querySelectorAll(".btn-ingrediente")
+        .forEach((btnIng) => {
+          btnIng.addEventListener("click", () => {
+            const ing = btnIng.getAttribute("data-ingrediente");
+            agregarIngredienteLista(ing);
+          });
+        });
+
+      const btnLeer = document.getElementById("btn-leer");
+      const btnAsistente = document.getElementById("btn-asistente");
+      const btnPararVoz = document.getElementById("btn-parar-voz");
+
+      btnLeer?.addEventListener("click", () => {
+        leerRecetaCompleta();
+      });
+
+      btnAsistente?.addEventListener("click", () => {
+        iniciarAsistenteVoz();
+      });
+
+      btnPararVoz?.addEventListener("click", () => {
+        detenerHabla();
+        detenerReconocimiento();
+      });
+
+      modalEl.classList.add("abierto");
+      document.body.classList.add("modal-abierto");
+      modalEl.querySelector(".dialogo")?.focus();
+    }
+
+    function cerrarModal() {
+      detenerHabla();
+      detenerReconocimiento();
+      modalEl.classList.remove("abierto");
+      document.body.classList.remove("modal-abierto");
+      recetaActual = null;
+    }
+
+    // -----------------------------
+    // LISTA DE LA COMPRA
+    // -----------------------------
+    function agregarIngredienteLista(nombre) {
+      if (!nombre) return;
+      const existente = listaCompra.find(
+        (item) => item.nombre.toLowerCase() === nombre.toLowerCase()
+      );
+      if (existente) {
+        existente.cantidad += 1;
+      } else {
+        listaCompra.push({ nombre, cantidad: 1 });
+      }
+      guardarListaCompra();
+      renderListaCompra();
+    }
+
+    function eliminarIngredienteLista(nombre) {
+      listaCompra = listaCompra.filter(
+        (item) => item.nombre.toLowerCase() !== nombre.toLowerCase()
+      );
+      guardarListaCompra();
+      renderListaCompra();
+    }
+
+    function cambiarCantidadIngrediente(nombre, delta) {
+      const item = listaCompra.find(
+        (i) => i.nombre.toLowerCase() === nombre.toLowerCase()
+      );
+      if (!item) return;
+      item.cantidad += delta;
+      if (item.cantidad <= 0) {
+        eliminarIngredienteLista(nombre);
+      } else {
         guardarListaCompra();
         renderListaCompra();
-      });
-
-      li.appendChild(span);
-      li.appendChild(btnEliminar);
-      ul.appendChild(li);
-    });
-
-    contenedorListaCompra.appendChild(ul);
-  }
-
-  function anadirIngredientesLista(ingredientes) {
-    ingredientes.forEach((ing) => {
-      if (!listaCompra.includes(ing)) {
-        listaCompra.push(ing);
       }
-    });
-    guardarListaCompra();
-    renderListaCompra();
-  }
-
-  // ==========================================================
-  //  RENDER LISTADO DE RECETAS
-  // ==========================================================
-
-  function pasaFiltros(r) {
-    if (filtroActual !== "todas" && r.category !== filtroActual) return false;
-
-    if (mostrarSoloFavoritos && !favoritos.has(r.id)) return false;
-
-    if (textoBusqueda) {
-      const term = normalizarTexto(textoBusqueda);
-      const titulo = normalizarTexto(r.title || "");
-      const desc = normalizarTexto(r.description || "");
-      if (!titulo.includes(term) && !desc.includes(term)) return false;
     }
 
-    return true;
-  }
+    function renderListaCompra() {
+      listaCompraEl.innerHTML = "";
+      if (!listaCompra.length) {
+        listaCompraEl.innerHTML = "<p>Tu lista está vacía.</p>";
+        return;
+      }
 
-  function renderListado() {
-    contenedorListado.innerHTML = "";
+      const ul = document.createElement("ul");
+      ul.className = "lista-compra";
 
-    const recetasMostradas = RECETAS.filter(pasaFiltros);
+      listaCompra.forEach((item) => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <span class="nombre">${item.nombre}</span>
+          <div class="controles">
+            <button class="menos" data-nombre="${item.nombre}">-</button>
+            <span class="cantidad">${item.cantidad}</span>
+            <button class="mas" data-nombre="${item.nombre}">+</button>
+            <button class="eliminar" data-nombre="${item.nombre}">×</button>
+          </div>
+        `;
+        ul.appendChild(li);
+      });
 
-    if (!recetasMostradas.length) {
-      const p = document.createElement("p");
-      p.textContent = "No hay recetas que coincidan con el filtro actual.";
-      p.className = "texto-suave";
-      contenedorListado.appendChild(p);
-      return;
+      listaCompraEl.appendChild(ul);
+
+      listaCompraEl.querySelectorAll(".menos").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const n = btn.getAttribute("data-nombre");
+          cambiarCantidadIngrediente(n, -1);
+        });
+      });
+
+      listaCompraEl.querySelectorAll(".mas").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const n = btn.getAttribute("data-nombre");
+          cambiarCantidadIngrediente(n, +1);
+        });
+      });
+
+      listaCompraEl.querySelectorAll(".eliminar").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const n = btn.getAttribute("data-nombre");
+          eliminarIngredienteLista(n);
+        });
+      });
     }
 
-    recetasMostradas.forEach((receta) => {
-      const card = document.createElement("article");
-      card.className = "card-receta";
+    // -----------------------------
+    // VOZ: TEXT-TO-SPEECH
+    // -----------------------------
+    function hablar(texto) {
+      if (!synth) {
+        console.log("🔊", texto);
+        return;
+      }
+      const utter = new SpeechSynthesisUtterance(texto);
+      utter.lang = "es-ES";
+      utter.rate = 1;
+      synth.speak(utter);
+    }
 
-      const header = document.createElement("div");
-      header.className = "card-header";
+    function detenerHabla() {
+      if (synth && synth.speaking) {
+        synth.cancel();
+      }
+    }
 
-      const titulo = document.createElement("h3");
-      titulo.textContent = receta.title;
+    function leerRecetaCompleta() {
+      if (!recetaActual) return;
+      detenerHabla();
 
-      const meta = document.createElement("div");
-      meta.className = "card-meta";
-      meta.appendChild(crearBadgeCategoria(receta.category));
-      if (receta.time) meta.appendChild(crearBadgeTiempo(receta.time));
-      if (receta.difficulty)
-        meta.appendChild(crearBadgeDificultad(receta.difficulty));
+      let texto = `Receta: ${recetaActual.title}. `;
+      texto += `Tipo: ${mapCatLabel(recetaActual.category)}. `;
+      texto += `Tiempo aproximado: ${recetaActual.time}. `;
+      texto += `Dificultad: ${recetaActual.difficulty}. `;
+      texto += "Ingredientes: ";
+      texto += recetaActual.ingredients.join(", ") + ". ";
+      texto += "Pasos: ";
+      recetaActual.steps.forEach((p, i) => {
+        texto += `Paso ${i + 1}: ${p}. `;
+      });
 
-      header.appendChild(titulo);
-      header.appendChild(meta);
+      hablar(texto);
+    }
 
-      const desc = document.createElement("p");
-      desc.className = "card-desc";
-      desc.textContent = receta.description || "";
+    function leerIngredientes() {
+      if (!recetaActual) return;
+      detenerHabla();
+      const texto =
+        "Ingredientes: " + recetaActual.ingredients.join(", ") + ".";
+      hablar(texto);
+    }
 
-      const acciones = document.createElement("div");
-      acciones.className = "card-acciones";
+    function leerPasoActual() {
+      if (!recetaActual) return;
+      const total = recetaActual.steps.length;
+      if (total === 0) {
+        hablar("Esta receta no tiene pasos detallados.");
+        return;
+      }
+      if (pasoActualIndex < 0) pasoActualIndex = 0;
+      if (pasoActualIndex >= total) pasoActualIndex = total - 1;
 
-      const btnVer = document.createElement("button");
-      btnVer.className = "btn";
-      btnVer.textContent = "Ver receta";
-      btnVer.addEventListener("click", () => abrirModalReceta(receta));
+      const paso = recetaActual.steps[pasoActualIndex];
+      hablar(
+        `Paso ${pasoActualIndex + 1} de ${total}: ${paso}. Di siguiente, anterior, repetir, ingredientes, parar o cerrar.`
+      );
+    }
 
-      const btnFav = document.createElement("button");
-      btnFav.className = "btn secondary";
-      const esFav = favoritos.has(receta.id);
-      btnFav.textContent = esFav ? "★ Favorito" : "☆ Favorito";
-      btnFav.title = "Marcar como favorito";
-      btnFav.addEventListener("click", () => {
-        if (favoritos.has(receta.id)) {
-          favoritos.delete(receta.id);
-        } else {
-          favoritos.add(receta.id);
+    // -----------------------------
+    // VOZ: RECONOCIMIENTO DE COMANDOS
+    // -----------------------------
+    function detenerReconocimiento() {
+      if (reconocimiento) {
+        try {
+          reconocimiento.stop();
+        } catch (e) {
+          console.warn("Error al detener reconocimiento", e);
         }
-        guardarFavoritos();
-        renderListado();
-      });
-
-      const btnLista = document.createElement("button");
-      btnLista.className = "btn secondary";
-      btnLista.textContent = "Añadir ingredientes";
-      btnLista.addEventListener("click", () => {
-        anadirIngredientesLista(receta.ingredients || []);
-      });
-
-      acciones.appendChild(btnVer);
-      acciones.appendChild(btnFav);
-      acciones.appendChild(btnLista);
-
-      card.appendChild(header);
-      card.appendChild(desc);
-      card.appendChild(acciones);
-
-      contenedorListado.appendChild(card);
-    });
-  }
-
-  // ==========================================================
-  //  MODAL DE RECETA
-  // ==========================================================
-
-  function abrirModalReceta(receta) {
-    recetaActual = receta;
-    pasoActualIndex = 0;
-
-    // Limpiar contenido
-    modalContenido.innerHTML = "";
-
-    const titulo = document.createElement("h2");
-    titulo.textContent = receta.title;
-
-    const meta = document.createElement("div");
-    meta.className = "modal-meta";
-    meta.appendChild(crearBadgeCategoria(receta.category));
-    if (receta.time) meta.appendChild(crearBadgeTiempo(receta.time));
-    if (receta.difficulty)
-      meta.appendChild(crearBadgeDificultad(receta.difficulty));
-
-    const desc = document.createElement("p");
-    desc.className = "modal-desc";
-    desc.textContent = receta.description || "";
-
-    // Ingredientes
-    const hIng = document.createElement("h3");
-    hIng.textContent = "Ingredientes";
-
-    const ulIng = document.createElement("ul");
-    ulIng.className = "lista-ingredientes";
-    (receta.ingredients || []).forEach((ing) => {
-      const li = document.createElement("li");
-      li.textContent = ing;
-      ulIng.appendChild(li);
-    });
-
-    // Pasos
-    const hPasos = document.createElement("h3");
-    hPasos.textContent = "Pasos";
-
-    const olPasos = document.createElement("ol");
-    olPasos.className = "lista-pasos";
-    (receta.steps || []).forEach((p) => {
-      const li = document.createElement("li");
-      li.textContent = p;
-      olPasos.appendChild(li);
-    });
-
-    // Acciones en el modal
-    const accionesModal = document.createElement("div");
-    accionesModal.className = "modal-acciones";
-
-    const btnListaTodo = document.createElement("button");
-    btnListaTodo.className = "btn secondary";
-    btnListaTodo.textContent = "Añadir todos los ingredientes a la lista";
-    btnListaTodo.addEventListener("click", () => {
-      anadirIngredientesLista(receta.ingredients || []);
-    });
-
-    const btnLeer = document.createElement("button");
-    btnLeer.className = "btn";
-    btnLeer.textContent = "Leer receta";
-    btnLeer.addEventListener("click", () => {
-      iniciarLecturaReceta();
-    });
-
-    const btnAsistente = document.createElement("button");
-    btnAsistente.className = "btn secondary";
-    btnAsistente.textContent = "Asistente de voz";
-    btnAsistente.addEventListener("click", () => {
-      iniciarAsistenteVoz();
-    });
-
-    accionesModal.appendChild(btnListaTodo);
-    accionesModal.appendChild(btnLeer);
-    accionesModal.appendChild(btnAsistente);
-
-    // Montar en el modal
-    modalContenido.appendChild(titulo);
-    modalContenido.appendChild(meta);
-    modalContenido.appendChild(desc);
-    modalContenido.appendChild(hIng);
-    modalContenido.appendChild(ulIng);
-    modalContenido.appendChild(hPasos);
-    modalContenido.appendChild(olPasos);
-    modalContenido.appendChild(accionesModal);
-
-    // Mostrar modal
-    modal.classList.add("abierto");
-    modalDialogo.focus();
-  }
-
-  function cerrarModal() {
-    detenerHabla();
-    detenerReconocimiento();
-    modal.classList.remove("abierto");
-    recetaActual = null;
-    pasoActualIndex = 0;
-  }
-
-  modalCerrar.addEventListener("click", cerrarModal);
-  modalFondo.addEventListener("click", cerrarModal);
-
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modal.classList.contains("abierto")) {
-      cerrarModal();
-    }
-  });
-
-  // ==========================================================
-  //  TEXTO → VOZ (LECTOR)
-  // ==========================================================
-
-  function detenerHabla() {
-    if (tieneVoz) {
-      window.speechSynthesis.cancel();
-    }
-  }
-
-  function hablar(texto, finCallback) {
-    if (!tieneVoz) {
-      console.warn("Este navegador no soporta speechSynthesis");
-      return;
-    }
-    if (!texto) return;
-
-    detenerHabla();
-
-    const utter = new SpeechSynthesisUtterance(texto);
-    utter.lang = "es-ES";
-    utter.rate = 1;
-    utter.pitch = 1;
-
-    if (typeof finCallback === "function") {
-      utter.onend = finCallback;
-    }
-
-    window.speechSynthesis.speak(utter);
-  }
-
-  function iniciarLecturaReceta() {
-    if (!recetaActual) return;
-
-    detenerHabla();
-
-    let texto =
-      "Receta: " +
-      recetaActual.title +
-      ". " +
-      (recetaActual.description || "") +
-      ". Ingredientes: ";
-
-    (recetaActual.ingredients || []).forEach((ing) => {
-      texto += ing + ". ";
-    });
-
-    texto += "Pasos: ";
-
-    (recetaActual.steps || []).forEach((p, i) => {
-      texto += "Paso " + (i + 1) + ": " + p + ". ";
-    });
-
-    hablar(texto);
-  }
-
-  // ==========================================================
-  //  ASISTENTE DE VOZ (RECONOCIMIENTO DE COMANDOS)
-  // ==========================================================
-
-  function detenerReconocimiento() {
-    if (reconocimiento && reconocimientoActivo) {
-      try {
-        reconocimiento.stop();
-      } catch (e) {
-        console.warn("Error al detener reconocimiento", e);
       }
       reconocimientoActivo = false;
     }
-  }
 
-  function iniciarAsistenteVoz() {
-    if (!recetaActual) return;
+    function iniciarAsistenteVoz() {
+      if (!recetaActual) return;
 
-    if (!SpeechRecognition) {
-      hablar(
-        "Lo siento, tu navegador no soporta reconocimiento de voz. Solo puedo leer la receta."
-      );
-      return;
-    }
+      if (!SpeechRecognition) {
+        hablar(
+          "Lo siento, tu navegador no soporta reconocimiento de voz. Solo puedo leer la receta."
+        );
+        return;
+      }
 
-    detenerReconocimiento();
-    detenerHabla();
+      // Evitar el error de start cuando ya está iniciado
+      if (reconocimientoActivo) {
+        hablar(
+          "El asistente de voz ya está activo. Di: siguiente, anterior, repetir, ingredientes, parar o cerrar receta."
+        );
+        return;
+      }
 
-    if (!reconocimiento) {
-      reconocimiento = new SpeechRecognition();
-      reconocimiento.lang = "es-ES";
-      reconocimiento.continuous = true;
-      reconocimiento.interimResults = false;
-
-      reconocimiento.onresult = (event) => {
-        const last = event.results[event.results.length - 1];
-        if (!last || !last.isFinal) return;
-        const texto = last[0].transcript.toLowerCase().trim();
-        console.log("🎙️ Comando reconocido:", texto);
-        procesarComandoVoz(texto);
-      };
-
-      reconocimiento.onerror = (e) => {
-        console.warn("Error en reconocimiento de voz:", e.error);
-      };
-
-      reconocimiento.onend = () => {
-        reconocimientoActivo = false;
-      };
-    }
-
-    try {
-      reconocimiento.start();
-      reconocimientoActivo = true;
-      pasoActualIndex = 0;
-      hablar(
-        "Asistente de voz activado. Di: siguiente, anterior, repetir, ingredientes, parar o cerrar receta. Empezamos por el paso 1."
-      );
-      leerPasoActual();
-    } catch (e) {
-      console.warn("No se pudo iniciar el reconocimiento:", e);
-    }
-  }
-
-  function leerPasoActual() {
-    if (!recetaActual || !recetaActual.steps || !recetaActual.steps.length) {
-      hablar("Esta receta no tiene pasos definidos.");
-      return;
-    }
-    if (pasoActualIndex < 0) pasoActualIndex = 0;
-    if (pasoActualIndex >= recetaActual.steps.length)
-      pasoActualIndex = recetaActual.steps.length - 1;
-
-    const paso = recetaActual.steps[pasoActualIndex];
-    const texto =
-      "Paso " + (pasoActualIndex + 1) + " de " + recetaActual.steps.length + ": " + paso;
-    hablar(texto);
-  }
-
-  function procesarComandoVoz(texto) {
-    if (!recetaActual) return;
-
-    const t = texto;
-
-    if (t.includes("siguiente")) {
-      pasoActualIndex++;
-      leerPasoActual();
-      return;
-    }
-
-    if (t.includes("anterior") || t.includes("atrás") || t.includes("atras")) {
-      pasoActualIndex--;
-      leerPasoActual();
-      return;
-    }
-
-    if (t.includes("repetir") || t.includes("otra vez")) {
-      leerPasoActual();
-      return;
-    }
-
-    if (t.includes("ingrediente") || t.includes("lista")) {
-      let txt = "Ingredientes de la receta: ";
-      (recetaActual.ingredients || []).forEach((ing) => {
-        txt += ing + ". ";
-      });
-      hablar(txt);
-      return;
-    }
-
-    if (t.includes("parar") || t.includes("detener")) {
       detenerHabla();
-      detenerReconocimiento();
-      hablar("He parado la lectura y el asistente de voz.");
-      return;
+
+      if (!reconocimiento) {
+        reconocimiento = new SpeechRecognition();
+        reconocimiento.lang = "es-ES";
+        reconocimiento.continuous = true;
+        reconocimiento.interimResults = false;
+
+        reconocimiento.onresult = (event) => {
+          const last = event.results[event.results.length - 1];
+          if (!last || !last.isFinal) return;
+          const texto = last[0].transcript.toLowerCase().trim();
+          console.log("🎙️ Comando reconocido:", texto);
+          procesarComandoVoz(texto);
+        };
+
+        reconocimiento.onerror = (e) => {
+          console.warn("Error en reconocimiento de voz:", e.error);
+        };
+
+        reconocimiento.onend = () => {
+          reconocimientoActivo = false;
+        };
+      }
+
+      try {
+        reconocimiento.start();
+        reconocimientoActivo = true;
+        pasoActualIndex = 0;
+        hablar(
+          "Asistente de voz activado. Empezamos por el paso uno. Puedes decir: siguiente, anterior, repetir, ingredientes, parar o cerrar receta."
+        );
+        leerPasoActual();
+      } catch (e) {
+        console.warn("No se pudo iniciar el reconocimiento:", e);
+      }
     }
 
-    if (t.includes("cerrar")) {
-      hablar("Cierro la receta.");
-      detenerReconocimiento();
-      cerrarModal();
-      return;
+    function procesarComandoVoz(texto) {
+      // Solo miramos palabras clave, ignoramos el resto de la frase
+      const t = texto.normalize("NFD").replace(/[\u0300-\u036f]/g, ""); // quitar tildes
+
+      if (t.includes("siguiente")) {
+        pasoActualIndex++;
+        leerPasoActual();
+        return;
+      }
+
+      if (t.includes("anterior") || t.includes("atras")) {
+        pasoActualIndex--;
+        leerPasoActual();
+        return;
+      }
+
+      if (t.includes("repetir") || t.includes("otra vez")) {
+        leerPasoActual();
+        return;
+      }
+
+      if (t.includes("ingrediente")) {
+        leerIngredientes();
+        return;
+      }
+
+      if (t.includes("parar") || t.includes("detener")) {
+        hablar("Paro el asistente de voz.");
+        detenerHabla();
+        detenerReconocimiento();
+        return;
+      }
+
+      if (t.includes("cerrar") || t.includes("salir")) {
+        hablar("Cierro la receta.");
+        cerrarModal();
+        return;
+      }
+
+      // Si no reconoce nada útil:
+      hablar(
+        "No he entendido el comando. Recuerda que puedes decir: siguiente, anterior, repetir, ingredientes, parar o cerrar."
+      );
     }
-
-    // Si llega aquí, comando no reconocido
-    hablar(
-      "No he entendido el comando. Puedes decir: siguiente, anterior, repetir, ingredientes, parar o cerrar receta."
-    );
-  }
-
-  // ==========================================================
-  //  MANEJO DE FILTROS Y BUSCADOR
-  // ==========================================================
-
-  filtros.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      filtros.forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-      filtroActual = btn.dataset.filtro || "todas";
-      renderListado();
-    });
   });
-
-  btnFavs.addEventListener("click", () => {
-    mostrarSoloFavoritos = !mostrarSoloFavoritos;
-    btnFavs.classList.toggle("active", mostrarSoloFavoritos);
-    renderListado();
-  });
-
-  inputBuscar.addEventListener("input", (e) => {
-    textoBusqueda = e.target.value || "";
-    renderListado();
-  });
-
-  // ==========================================================
-  //  CONTRASTE Y TAMAÑO DE TEXTO
-  // ==========================================================
-
-  btnContraste.addEventListener("click", () => {
-    body.classList.toggle("alto-contraste");
-  });
-
-  btnTexto.addEventListener("click", () => {
-    body.classList.toggle("texto-grande");
-  });
-
-  // ==========================================================
-  //  BOTÓN VACIAR LISTA
-  // ==========================================================
-
-  btnVaciarLista.addEventListener("click", () => {
-    if (!listaCompra.length) return;
-    const confirmar = confirm("¿Seguro que quieres vaciar toda la lista?");
-    if (!confirmar) return;
-    listaCompra = [];
-    guardarListaCompra();
-    renderListaCompra();
-  });
-
-  // ==========================================================
-  //  INICIO
-  // ==========================================================
-
-  renderListaCompra();
-  renderListado();
-});
+})();
