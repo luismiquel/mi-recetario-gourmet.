@@ -317,7 +317,7 @@ main {
 .modal .dialogo {
     position: relative; 
     max-width: 750px;
-    /* CRÍTICO: Permitir margen vertical suficiente (max-height) */
+    /* CRÍTICO: Permitir margen vertical suficiente */
     max-height: calc(100vh - 4rem); 
     background: var(--color-fondo-card);
     border-radius: var(--radio-suave);
