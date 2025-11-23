@@ -41,7 +41,7 @@ const btnContraste = document.getElementById("btn-contraste");
 const btnTexto = document.getElementById("btn-texto");
 
 // 3) ESTADO DE LA APLICACIÓN
-let filtroActual = "todas";   // "todas" | "aperitivo" | "primero" | "segundo" | "postre"
+let filtroActual = "todas"; 	// "todas" | "aperitivo" | "primero" | "segundo" | "postre"
 let mostrarSoloFavs = false;
 let textoBusqueda = "";
 
@@ -275,6 +275,10 @@ function abrirModal(recetaId) {
   modal.classList.add("abierto");
   modalDialogo.focus();
 
+  // Es crucial llamar a esta función aquí para que el feedback visual se inicialice
+  // y esté disponible para el asistente de voz.
+  actualizarFeedbackVoz("inactivo"); 
+
   // Eventos de los botones dentro del modal
   const btnAddLista = document.getElementById("btn-add-lista");
   const btnFavDetalle = document.getElementById("btn-fav-detalle");
@@ -287,7 +291,7 @@ function abrirModal(recetaId) {
   btnFavDetalle.addEventListener("click", () => {
     toggleFavorito(receta.id);
     abrirModal(receta.id); // repinta estado del modal
-    pintarRecetas();       // actualiza tarjetas
+    pintarRecetas(); 	// actualiza tarjetas
     sincronizarUIFiltros(); // por si está activado el filtro de favoritos
   });
 
@@ -452,172 +456,313 @@ btnTexto.addEventListener("click", () => {
 });
 
 // ============================================
-// ASISTENTE DE VOZ
-// ============================================
-// ============================================
-// ASISTENTE DE VOZ (VERSIÓN MEJORADA)
+// ASISTENTE DE VOZ (VERSIÓN MEJORADA Y ROBUSTA)
 // ============================================
 let reconocimiento = null;
 let reconocimientoActivo = false;
 let recetaEnLectura = null;
 let indicePaso = 0;
+let enPausa = false;
 
+// Comprobación de APIs
 const tieneSpeechRecognition =
-  "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
+    "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
+const tieneSpeechSynthesis = "speechSynthesis" in window;
+
+// Referencia a la UI para feedback
+const modalFooter = modalDialogo.querySelector(".detalle-acciones");
+let feedbackVozEl = null; 
 
 function crearReconocimiento() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const recog = new SR();
-  recog.lang = "es-ES";
-  recog.continuous = false;       // un comando cada vez
-  recog.interimResults = false;
-  return recog;
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recog = new SR();
+    recog.lang = "es-ES";
+    recog.continuous = false; // Queremos un solo comando por activación
+    recog.interimResults = false;
+    return recog;
 }
 
-// IMPORTANTE: ya NO cancelamos antes de hablar
-// para que se puedan encadenar varios textos seguidos.
+// ------------------------------------------------------------
+// CONTROL DE VOZ
+// ------------------------------------------------------------
+
 function leerTexto(texto, onEnd) {
-  if (!("speechSynthesis" in window)) {
-    if (onEnd) onEnd();
-    return;
-  }
-  const msg = new SpeechSynthesisUtterance(texto);
-  msg.lang = "es-ES";
-  if (onEnd) {
-    msg.onend = onEnd;
-  }
-  window.speechSynthesis.speak(msg);
+    if (!tieneSpeechSynthesis) {
+        if (onEnd) onEnd();
+        return;
+    }
+    const msg = new SpeechSynthesisUtterance(texto);
+    msg.lang = "es-ES";
+    msg.rate = 0.95; // Un poco más lento para mejor comprensión
+    
+    if (onEnd) {
+        msg.onend = onEnd;
+    }
+    
+    // Si estamos en pausa, la lectura se detiene, por lo que no es necesario hablar.
+    if (!enPausa) {
+        window.speechSynthesis.speak(msg);
+    } else if (onEnd) {
+        // Si estamos en pausa, simular el onEnd si hay callback
+        setTimeout(onEnd, 100); 
+    }
 }
 
 function detenerAsistenteVoz() {
-  recetaEnLectura = null;
-  indicePaso = 0;
-  reconocimientoActivo = false;
+    recetaEnLectura = null;
+    indicePaso = 0;
+    enPausa = false;
+    reconocimientoActivo = false;
 
-  if (reconocimiento) {
-    try {
-      reconocimiento.onresult = null;
-      reconocimiento.onend = null;
-      reconocimiento.onerror = null;
-      reconocimiento.abort();
-    } catch (e) {}
-  }
-  if ("speechSynthesis" in window) {
-    window.speechSynthesis.cancel();
-  }
+    if (reconocimiento) {
+        try {
+            reconocimiento.onresult = null;
+            reconocimiento.onend = null;
+            reconocimiento.onerror = null;
+            reconocimiento.abort();
+        } catch (e) {}
+    }
+    if (tieneSpeechSynthesis) {
+        window.speechSynthesis.cancel();
+    }
+    actualizarFeedbackVoz("inactivo");
 }
 
-function escucharComando() {
-  if (!tieneSpeechRecognition) return;
-  if (!reconocimiento) {
-    reconocimiento = crearReconocimiento();
-  }
-  if (reconocimientoActivo) return;
+function actualizarFeedbackVoz(estado) {
+    // 1. Asegurarse de que el elemento existe en el modal
+    if (!feedbackVozEl) {
+        feedbackVozEl = document.createElement("div");
+        feedbackVozEl.id = "feedback-voz-estado";
+        feedbackVozEl.style.cssText = "margin-top: 10px; font-weight: bold; padding: 5px; border-radius: 5px; text-align: center;";
+        modalFooter.appendChild(feedbackVozEl);
+    }
+    
+    // 2. Actualizar el contenido según el estado
+    switch (estado) {
+        case "escuchando":
+            feedbackVozEl.textContent = "🎙️ ESCUCHANDO... Di un comando.";
+            feedbackVozEl.style.backgroundColor = "#ffc107"; // Amarillo
+            feedbackVozEl.style.color = "#333";
+            break;
+        case "procesando":
+            feedbackVozEl.textContent = "⚙️ PROCESANDO...";
+            feedbackVozEl.style.backgroundColor = "#17a2b8"; // Azul
+            feedbackVozEl.style.color = "#fff";
+            break;
+        case "inactivo":
+            feedbackVozEl.textContent = "Asistente inactivo. Pulsa 🎙️ para empezar.";
+            feedbackVozEl.style.backgroundColor = "transparent";
+            feedbackVozEl.style.color = "#888";
+            break;
+        case "pausado":
+             feedbackVozEl.textContent = "⏸️ Asistente en PAUSA. Di reanudar para continuar.";
+             feedbackVozEl.style.backgroundColor = "#dc3545"; // Rojo
+             feedbackVozEl.style.color = "#fff";
+            break;
+        default:
+            break;
+    }
+}
 
-  reconocimientoActivo = true;
+// ------------------------------------------------------------
+// NAVEGACIÓN DE PASOS
+// ------------------------------------------------------------
 
-  reconocimiento.onresult = (ev) => {
-    const texto = (ev.results[0][0].transcript || "").toLowerCase().trim();
-    console.log("🎙️ Comando reconocido:", texto);
+function leerPasoActual() {
+    if (!recetaEnLectura || enPausa) return;
+    
+    const totalPasos = recetaEnLectura.steps.length;
 
-    if (!recetaEnLectura) return;
+    // Caso: Final de la receta
+    if (indicePaso >= totalPasos) {
+        leerTexto("Has llegado al final de la receta. ¡Buen trabajo! Asistente detenido.", () => {
+            detenerAsistenteVoz();
+        });
+        return;
+    }
 
-    if (texto.includes("siguiente")) {
-      indicePaso++;
-      if (indicePaso >= recetaEnLectura.steps.length) {
-        leerTexto("Has llegado al final de la receta.");
+    // Caso: Lectura de paso normal
+    const textoPaso = recetaEnLectura.steps[indicePaso];
+    const textoAlerter = totalPasos > 1
+        ? `Paso ${indicePaso + 1} de ${totalPasos}: `
+        : "Instrucción única: ";
+    
+    // Lectura del paso
+    leerTexto(textoAlerter + textoPaso, () => {
+        if (!enPausa && tieneSpeechRecognition) {
+            // Instrucciones de control (solo después de un paso para recordarlas)
+            if (indicePaso === 0) {
+                 leerTexto("Puedes decir: siguiente, anterior, repetir, ayuda o parar.", () => {
+                     escucharComando();
+                 });
+            } else {
+                 escucharComando(); // Continuar la escucha
+            }
+        }
+    });
+}
+
+// ------------------------------------------------------------
+// MANEJO DE COMANDOS
+// ------------------------------------------------------------
+
+function manejarComando(comando) {
+    actualizarFeedbackVoz("procesando");
+    
+    // Cancelar cualquier lectura de voz pendiente para reaccionar al comando
+    if (window.speechSynthesis.speaking) {
+         window.speechSynthesis.cancel();
+    }
+
+    const t = comando; // El comando ya viene en minúsculas y limpio
+
+    if (t.includes("siguiente")) {
+        indicePaso++;
+        leerPasoActual();
+
+    } else if (t.includes("anterior") || t.includes("atrás")) {
+        if (indicePaso > 0) {
+            indicePaso--;
+            leerPasoActual();
+        } else {
+            leerTexto("Ya estás en el primer paso. Di siguiente para avanzar.", () => {
+                escucharComando();
+            });
+        }
+
+    } else if (t.includes("repetir") || t.includes("otra vez")) {
+        leerPasoActual(); // Se mantiene el índice
+
+    } else if (t.includes("pausar") || t.includes("descanso")) {
+        enPausa = true;
+        leerTexto("Asistente pausado. Di reanudar para continuar.", () => {
+            actualizarFeedbackVoz("pausado");
+            // No se llama a escucharComando() ya que estamos en pausa
+        });
+
+    } else if (t.includes("reanudar") || t.includes("continuar")) {
+        if (enPausa) {
+            enPausa = false;
+            leerTexto("Reanudando. Paso actual:", () => {
+                 leerPasoActual(); // Continúa desde donde se quedó
+            });
+        } else {
+            leerTexto("El asistente no estaba pausado.", () => {
+                 escucharComando();
+            });
+        }
+
+    } else if (t.includes("ayuda") || t.includes("qué puedo decir")) {
+        leerTexto("Puedes decir: siguiente, anterior, repetir, pausar, reanudar o parar.", () => {
+            escucharComando();
+        });
+
+    } else if (t.includes("parar") || t.includes("stop") || t.includes("terminar")) {
+        leerTexto("Asistente de voz detenido. ¡Adiós!");
         detenerAsistenteVoz();
         return;
-      }
-      leerTexto(`Paso ${indicePaso + 1}: ${recetaEnLectura.steps[indicePaso]}`, () => {
-        // esperamos al siguiente comando
-        if (tieneSpeechRecognition && recetaEnLectura) {
-          escucharComando();
-        }
-      });
-
-    } else if (texto.includes("repetir") || texto.includes("otra vez")) {
-      if (indicePaso < recetaEnLectura.steps.length) {
-        leerTexto(`Repito el paso ${indicePaso + 1}: ${recetaEnLectura.steps[indicePaso]}`, () => {
-          if (tieneSpeechRecognition && recetaEnLectura) {
-            escucharComando();
-          }
-        });
-      }
-
-    } else if (texto.includes("parar") || texto.includes("stop") || texto.includes("terminar")) {
-      leerTexto("Asistente de voz detenido.");
-      detenerAsistenteVoz();
-      return;
 
     } else {
-      leerTexto("No he entendido el comando. Puedes decir siguiente, repetir o parar.", () => {
-        if (tieneSpeechRecognition && recetaEnLectura) {
-          escucharComando();
-        }
-      });
+        leerTexto("No he entendido el comando. Di ayuda para conocer las opciones.", () => {
+            escucharComando();
+        });
     }
-  };
-
-  reconocimiento.onend = () => {
-    reconocimientoActivo = false;
-    // Ya relanzamos el reconocimiento SOLO desde los callbacks de leerTexto,
-    // no aquí, para evitar bucles raros.
-  };
-
-  reconocimiento.onerror = () => {
-    reconocimientoActivo = false;
-  };
-
-  try {
-    reconocimiento.start();
-  } catch (e) {
-    console.warn("No se pudo iniciar el reconocimiento:", e);
-    reconocimientoActivo = false;
-  }
 }
+
+
+function escucharComando() {
+    if (!tieneSpeechRecognition || !recetaEnLectura || enPausa) {
+        reconocimientoActivo = false;
+        return;
+    }
+    if (!reconocimiento) {
+        reconocimiento = crearReconocimiento();
+    }
+    if (reconocimientoActivo) return;
+
+    reconocimientoActivo = true;
+    actualizarFeedbackVoz("escuchando");
+
+    // Limpiamos los listeners para evitar duplicados
+    reconocimiento.onresult = null;
+    reconocimiento.onend = null;
+    reconocimiento.onerror = null;
+
+    reconocimiento.onresult = (ev) => {
+        const comando = (ev.results[0][0].transcript || "").toLowerCase().trim();
+        console.log("🎙️ Comando reconocido:", comando);
+        manejarComando(comando);
+    };
+
+    reconocimiento.onend = () => {
+        reconocimientoActivo = false;
+        // La actualización de feedback se hace en manejarComando
+    };
+
+    reconocimiento.onerror = (ev) => {
+        console.error("Error en reconocimiento:", ev.error);
+        reconocimientoActivo = false;
+        if (ev.error === "no-speech" || ev.error === "audio-capture") {
+            // Si no hubo habla o micrófono no disponible, volvemos a intentar escuchar
+            escucharComando(); 
+        } else {
+             actualizarFeedbackVoz("inactivo");
+        }
+    };
+
+    try {
+        reconocimiento.start();
+    } catch (e) {
+        console.warn("No se pudo iniciar el reconocimiento (probablemente ya activo):", e);
+        reconocimientoActivo = false;
+        actualizarFeedbackVoz("inactivo");
+    }
+}
+
+// ------------------------------------------------------------
+// INICIO DEL ASISTENTE
+// ------------------------------------------------------------
 
 function iniciarAsistenteVoz(receta) {
-  if (!("speechSynthesis" in window)) {
-    alert("Tu navegador no soporta síntesis de voz.");
-    return;
-  }
-  if (!tieneSpeechRecognition) {
-    alert("Tu navegador no soporta reconocimiento de voz. Puedes escuchar la receta, pero no usar comandos.");
-  }
-
-  detenerAsistenteVoz();
-  recetaEnLectura = receta;
-  indicePaso = 0;
-
-  const intro = `
-    Vamos a cocinar la receta: ${receta.title}.
-    Tiempo aproximado: ${receta.time}.
-    Dificultad: ${receta.difficulty}.
-  `;
-
-  const textoIngredientes = receta.ingredients && receta.ingredients.length
-    ? "Ingredientes: " + receta.ingredients.join(". ")
-    : "Esta receta no tiene ingredientes detallados.";
-
-  // Cadena: intro -> ingredientes -> paso 1 -> instrucciones de comando -> escuchar
-  leerTexto(intro, () => {
-    leerTexto(textoIngredientes, () => {
-      if (!receta.steps.length) {
-        leerTexto("Esta receta no tiene pasos detallados.");
+    if (!tieneSpeechSynthesis) {
+        alert("Tu navegador no soporta síntesis de voz. No se puede usar el Asistente.");
         return;
-      }
-      const primerPaso = `Empezamos. Paso 1: ${receta.steps[0]}`;
-      leerTexto(primerPaso, () => {
-        if (tieneSpeechRecognition) {
-          leerTexto("Cuando quieras pasar al siguiente paso, di: siguiente. También puedes decir repetir o parar.", () => {
-            escucharComando();
-          });
-        }
-      });
+    }
+    if (!tieneSpeechRecognition) {
+        alert("Tu navegador no soporta reconocimiento de voz. Puedes escuchar la receta, pero tendrás que pulsar Siguiente/Anterior en pantalla.");
+    }
+
+    detenerAsistenteVoz();
+    recetaEnLectura = receta;
+    indicePaso = 0;
+
+    const intro = `
+      Vamos a cocinar la receta: ${receta.title}.
+      Tiempo estimado: ${receta.time}.
+      Dificultad: ${receta.difficulty}.
+    `;
+
+    const textoIngredientes = receta.ingredients && receta.ingredients.length
+        ? "Ingredientes que necesitarás: " + receta.ingredients.join(". ")
+        : "Esta receta no tiene ingredientes detallados.";
+
+    // Cadena de lectura: intro -> ingredientes -> Paso 1
+    leerTexto(intro, () => {
+        leerTexto(textoIngredientes, () => {
+            if (!receta.steps.length) {
+                leerTexto("Esta receta no tiene pasos detallados.");
+                detenerAsistenteVoz();
+                return;
+            }
+            // Llama a leerPasoActual que se encarga de leer el paso 0
+            leerPasoActual();
+        });
     });
-  });
 }
+// ============================================
+// FIN ASISTENTE DE VOZ
+// ============================================
+
 
 // ============================================
 // INICIALIZACIÓN
