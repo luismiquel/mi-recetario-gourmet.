@@ -5,17 +5,17 @@ const urlsToCache = [
   '/app.js',
   '/styles.css',
   '/manifest.json',
-  '/recetas.js', // Asegúrate de tener este archivo con tus 160 recetas
+  '/recetas.js', // Asegúrate de que este sea el nombre correcto del archivo de tus recetas
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png'
 ];
 
-// Instalar el Service Worker y guardar archivos en caché
+// 1. Instalar el Service Worker y guardar archivos en caché
 self.addEventListener('install', event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
-        console.log('Cache abierta y pre-cache completada.');
+        console.log('Service Worker: Cache abierta y pre-cache completada.');
         return cache.addAll(urlsToCache).catch(err => {
             console.error('Fallo al añadir a caché:', err);
         });
@@ -23,7 +23,7 @@ self.addEventListener('install', event => {
   );
 });
 
-// Estrategia Cache-First: responder con la caché si es posible
+// 2. Estrategia Cache-First: responder con la caché si es posible
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
@@ -38,14 +38,16 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// Activar: Limpiar cachés antiguas si el número de versión (v1, v2, etc.) cambia
+// 3. Activar: Limpiar cachés antiguas
 self.addEventListener('activate', event => {
     const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
+                    // Si el nombre de la caché no está en la lista blanca, la elimina.
                     if (cacheWhitelist.indexOf(cacheName) === -1) {
+                        console.log('Service Worker: Eliminando caché antigua', cacheName);
                         return caches.delete(cacheName);
                     }
                 })
