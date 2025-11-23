@@ -5,11 +5,9 @@ const urlsToCache = [
   '/app.js',
   '/styles.css',
   '/manifest.json',
-  '/recetas.js', 
+  '/recetas.js' 
   
-  // 🌟 Rutas de los iconos incluidos para la PWA 🌟
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png'
+  // ¡Iconos eliminados!
 ];
 
 // 1. Instalar el Service Worker y guardar archivos en caché
@@ -18,7 +16,6 @@ self.addEventListener('install', event => {
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Service Worker: Cache abierta y pre-cache completada.');
-        // Intenta añadir todos los archivos; si alguno falla, registra el error pero continúa
         return cache.addAll(urlsToCache).catch(err => {
             console.error('Fallo al añadir a caché:', err);
         });
@@ -27,7 +24,6 @@ self.addEventListener('install', event => {
 });
 
 // 2. Estrategia Cache-First: responder con la caché si es posible
-// Esto asegura una carga rápida y el soporte offline.
 self.addEventListener('fetch', event => {
   event.respondWith(
     caches.match(event.request)
@@ -43,14 +39,12 @@ self.addEventListener('fetch', event => {
 });
 
 // 3. Activar: Limpiar cachés antiguas
-// Esto sucede cuando cambias CACHE_NAME (ej. a 'recetas-navidad-cache-v2')
 self.addEventListener('activate', event => {
     const cacheWhitelist = [CACHE_NAME];
     event.waitUntil(
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames.map(cacheName => {
-                    // Si el nombre de la caché no está en la lista blanca (es antiguo), lo elimina.
                     if (cacheWhitelist.indexOf(cacheName) === -1) {
                         console.log('Service Worker: Eliminando caché antigua', cacheName);
                         return caches.delete(cacheName);
