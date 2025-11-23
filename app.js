@@ -454,6 +454,9 @@ btnTexto.addEventListener("click", () => {
 // ============================================
 // ASISTENTE DE VOZ
 // ============================================
+// ============================================
+// ASISTENTE DE VOZ (VERSIÓN MEJORADA)
+// ============================================
 let reconocimiento = null;
 let reconocimientoActivo = false;
 let recetaEnLectura = null;
@@ -466,16 +469,23 @@ function crearReconocimiento() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recog = new SR();
   recog.lang = "es-ES";
-  recog.continuous = false;
+  recog.continuous = false;       // un comando cada vez
   recog.interimResults = false;
   return recog;
 }
 
-function leerTexto(texto) {
-  if (!("speechSynthesis" in window)) return;
+// IMPORTANTE: ya NO cancelamos antes de hablar
+// para que se puedan encadenar varios textos seguidos.
+function leerTexto(texto, onEnd) {
+  if (!("speechSynthesis" in window)) {
+    if (onEnd) onEnd();
+    return;
+  }
   const msg = new SpeechSynthesisUtterance(texto);
   msg.lang = "es-ES";
-  window.speechSynthesis.cancel();
+  if (onEnd) {
+    msg.onend = onEnd;
+  }
   window.speechSynthesis.speak(msg);
 }
 
@@ -483,6 +493,7 @@ function detenerAsistenteVoz() {
   recetaEnLectura = null;
   indicePaso = 0;
   reconocimientoActivo = false;
+
   if (reconocimiento) {
     try {
       reconocimiento.onresult = null;
@@ -501,7 +512,7 @@ function escucharComando() {
   if (!reconocimiento) {
     reconocimiento = crearReconocimiento();
   }
-  if (reconocimientoActivo) return; // evita InvalidStateError
+  if (reconocimientoActivo) return;
 
   reconocimientoActivo = true;
 
@@ -518,25 +529,40 @@ function escucharComando() {
         detenerAsistenteVoz();
         return;
       }
-      leerTexto(`Paso ${indicePaso + 1}: ${recetaEnLectura.steps[indicePaso]}`);
+      leerTexto(`Paso ${indicePaso + 1}: ${recetaEnLectura.steps[indicePaso]}`, () => {
+        // esperamos al siguiente comando
+        if (tieneSpeechRecognition && recetaEnLectura) {
+          escucharComando();
+        }
+      });
+
     } else if (texto.includes("repetir") || texto.includes("otra vez")) {
       if (indicePaso < recetaEnLectura.steps.length) {
-        leerTexto(`Repito el paso ${indicePaso + 1}: ${recetaEnLectura.steps[indicePaso]}`);
+        leerTexto(`Repito el paso ${indicePaso + 1}: ${recetaEnLectura.steps[indicePaso]}`, () => {
+          if (tieneSpeechRecognition && recetaEnLectura) {
+            escucharComando();
+          }
+        });
       }
+
     } else if (texto.includes("parar") || texto.includes("stop") || texto.includes("terminar")) {
       leerTexto("Asistente de voz detenido.");
       detenerAsistenteVoz();
       return;
+
     } else {
-      leerTexto("No he entendido el comando. Puedes decir siguiente, repetir o parar.");
+      leerTexto("No he entendido el comando. Puedes decir siguiente, repetir o parar.", () => {
+        if (tieneSpeechRecognition && recetaEnLectura) {
+          escucharComando();
+        }
+      });
     }
   };
 
   reconocimiento.onend = () => {
     reconocimientoActivo = false;
-    if (recetaEnLectura) {
-      setTimeout(() => escucharComando(), 400);
-    }
+    // Ya relanzamos el reconocimiento SOLO desde los callbacks de leerTexto,
+    // no aquí, para evitar bucles raros.
   };
 
   reconocimiento.onerror = () => {
@@ -568,28 +594,29 @@ function iniciarAsistenteVoz(receta) {
     Vamos a cocinar la receta: ${receta.title}.
     Tiempo aproximado: ${receta.time}.
     Dificultad: ${receta.difficulty}.
-    Empezamos con los ingredientes.
   `;
-  leerTexto(intro);
 
-  setTimeout(() => {
-    leerTexto("Ingredientes:");
-    receta.ingredients.forEach((ing) => {
-      leerTexto(ing);
-    });
+  const textoIngredientes = receta.ingredients && receta.ingredients.length
+    ? "Ingredientes: " + receta.ingredients.join(". ")
+    : "Esta receta no tiene ingredientes detallados.";
 
-    setTimeout(() => {
+  // Cadena: intro -> ingredientes -> paso 1 -> instrucciones de comando -> escuchar
+  leerTexto(intro, () => {
+    leerTexto(textoIngredientes, () => {
       if (!receta.steps.length) {
         leerTexto("Esta receta no tiene pasos detallados.");
         return;
       }
-      leerTexto(`Paso 1: ${receta.steps[0]}`);
-      if (tieneSpeechRecognition) {
-        leerTexto("Cuando quieras pasar al siguiente paso, di: siguiente. También puedes decir repetir o parar.");
-        escucharComando();
-      }
-    }, 1000);
-  }, 1500);
+      const primerPaso = `Empezamos. Paso 1: ${receta.steps[0]}`;
+      leerTexto(primerPaso, () => {
+        if (tieneSpeechRecognition) {
+          leerTexto("Cuando quieras pasar al siguiente paso, di: siguiente. También puedes decir repetir o parar.", () => {
+            escucharComando();
+          });
+        }
+      });
+    });
+  });
 }
 
 // ============================================
