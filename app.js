@@ -46,6 +46,9 @@ let filtroActual = "todas"; 	// "todas" | "aperitivo" | "primero" | "segundo" | 
 let mostrarSoloFavs = false;
 let textoBusqueda = "";
 
+// Para gestionar el foco de accesibilidad
+let elementoQueAbrioModal = null; 
+
 // Favoritos (localStorage)
 const KEY_FAVS = "recetario_navidad_favs";
 let favoritos = new Set(cargarFavoritos());
@@ -116,7 +119,7 @@ function obtenerRecetasFiltradas() {
 }
 
 // ============================================
-// PINTAR TARJETAS DE RECETA
+// PINTAR TARJETAS DE RECETA (OPTIMIZADO CON DocumentFragment)
 // ============================================
 function getEtiquetaCategoria(cat) {
   switch (cat) {
@@ -160,12 +163,16 @@ function pintarRecetas() {
     return;
   }
 
-  const html = recetas.map((r) => {
+  // Optimización: Limpiar y usar DocumentFragment para mejor rendimiento
+  listadoEl.innerHTML = '';
+  const fragment = document.createDocumentFragment();
+
+  recetas.forEach((r) => {
     const esFav = favoritos.has(r.id);
     const claseCat = getClaseCategoria(r.category);
     const etiquetaCat = getEtiquetaCategoria(r.category);
 
-    return `
+    const htmlString = `
       <article class="card-receta ${claseCat}" data-id="${r.id}">
         <header class="card-header">
           <span class="badge-categoria">${etiquetaCat}</span>
@@ -193,15 +200,21 @@ function pintarRecetas() {
         </footer>
       </article>
     `;
-  }).join("");
 
-  listadoEl.innerHTML = html;
+    // Crear el nodo y añadirlo al fragmento
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = htmlString.trim();
+    fragment.appendChild(tempDiv.firstChild);
+  });
+  
+  // Inserción única al DOM
+  listadoEl.appendChild(fragment);
 }
 
 // ============================================
 // MODAL – VER RECETA
 // ============================================
-// Variable global para el footer del modal (CORRECCIÓN: Se inicializa a null)
+// Variable global para el footer del modal (Se inicializa a null)
 let modalFooter = null;
 
 function abrirModal(recetaId) {
@@ -264,6 +277,7 @@ function abrirModal(recetaId) {
           type="button" 
           class="btn ${esFav ? "btn-fav-on" : "btn-fav-off"}" 
           id="btn-fav-detalle"
+          data-id="${receta.id}"
         >
           ${esFav ? "★ En favoritos" : "☆ Añadir a favoritos"}
         </button>
@@ -272,6 +286,7 @@ function abrirModal(recetaId) {
           type="button" 
           class="btn btn-voz" 
           id="btn-voz"
+          data-id="${receta.id}"
         >
           🎙️ Asistente de voz
         </button>
@@ -280,38 +295,30 @@ function abrirModal(recetaId) {
   `;
 
   modal.classList.add("abierto");
-  modalDialogo.focus();
-
+  
   // CORRECCIÓN: Obtener la referencia al modalFooter justo después de inyectar el HTML
   modalFooter = modalDialogo.querySelector(".detalle-acciones"); 
+
+  // Foco para accesibilidad: establecer tabindex y enfocar
+  modalDialogo.setAttribute('tabindex', '-1'); 
+  modalDialogo.focus();
 
   // Es crucial llamar a esta función aquí para que el feedback visual se inicialice
   actualizarFeedbackVoz("inactivo"); 
 
-  // Eventos de los botones dentro del modal
-  const btnAddLista = document.getElementById("btn-add-lista");
-  const btnFavDetalle = document.getElementById("btn-fav-detalle");
-  const btnVoz = document.getElementById("btn-voz");
-
-  btnAddLista.addEventListener("click", () => {
-    agregarIngredientesALista(receta);
-  });
-
-  btnFavDetalle.addEventListener("click", () => {
-    toggleFavorito(receta.id);
-    abrirModal(receta.id); // repinta estado del modal
-    pintarRecetas(); 	// actualiza tarjetas
-    sincronizarUIFiltros(); // por si está activado el filtro de favoritos
-  });
-
-  btnVoz.addEventListener("click", () => {
-    iniciarAsistenteVoz(receta);
-  });
+  // NOTA: Se eliminan los addEventListener individuales aquí, 
+  // ya que se usa la Delegación de Eventos en init().
 }
 
 function cerrarModal() {
   modal.classList.remove("abierto");
   detenerAsistenteVoz();
+  
+  // Accesibilidad: devolver el foco al elemento que abrió el modal
+  if (elementoQueAbrioModal) {
+    elementoQueAbrioModal.focus();
+    elementoQueAbrioModal = null; 
+  }
 }
 
 // ============================================
@@ -405,7 +412,11 @@ btnFavs.addEventListener("click", () => {
   pintarRecetas();
 });
 
-// Delegación para estrella de fav en tarjetas
+// ============================================
+// DELEGACIÓN DE EVENTOS (MEJORAS)
+// ============================================
+
+// Delegación para estrella de fav y "Ver Receta" en tarjetas
 listadoEl.addEventListener("click", (e) => {
   const btnFav = e.target.closest(".btn-fav-toggle");
   if (btnFav) {
@@ -421,9 +432,36 @@ listadoEl.addEventListener("click", (e) => {
   if (btnVer) {
     const card = btnVer.closest(".card-receta");
     const id = Number(card.dataset.id);
+    // Accesibilidad: Guardar el elemento que abrió el modal
+    elementoQueAbrioModal = btnVer; 
     abrirModal(id);
   }
 });
+
+// Delegación de eventos para botones DENTRO del Modal (Mejora de memoria)
+modalDialogo.addEventListener("click", (e) => {
+    const target = e.target;
+    const recetaId = recetaEnLectura ? recetaEnLectura.id : null; 
+
+    if (target.id === "btn-add-lista" && recetaEnLectura) {
+        agregarIngredientesALista(recetaEnLectura);
+        return;
+    }
+    
+    if (target.id === "btn-fav-detalle" && recetaId !== null) {
+        toggleFavorito(recetaId);
+        abrirModal(recetaId); // repinta estado del modal
+        pintarRecetas();
+        sincronizarUIFiltros();
+        return;
+    }
+    
+    if (target.id === "btn-voz" && recetaEnLectura) {
+        iniciarAsistenteVoz(recetaEnLectura);
+        return;
+    }
+});
+
 
 // ============================================
 // FILTROS Y BÚSQUEDA
@@ -537,7 +575,7 @@ function detenerAsistenteVoz() {
 }
 
 function actualizarFeedbackVoz(estado) {
-    // CORRECCIÓN: Verifica si modalFooter es null ANTES de usarlo
+    // CORRECCIÓN: Verifica si modalFooter es null ANTES de usarlo (es crucial)
     if (!modalFooter) return; 
 
     // 1. Asegurarse de que el elemento existe en el modal
