@@ -249,6 +249,7 @@ function abrirModal(recetaId) {
         <p class="detalle-meta">
           ⏱️ ${receta.time} · 🎯 ${receta.difficulty} · 👥 ${receta.servings} raciones
         </p>
+        <button id="cerrar-btn-superior" class="cerrar" type="button" aria-label="Cerrar receta">×</button>
       </header>
 
       <section>
@@ -302,6 +303,8 @@ function abrirModal(recetaId) {
   `;
 
   modal.classList.add("abierto");
+  // 🌟 MEJORA: Añadir clase para bloquear scroll de fondo del body
+  document.body.classList.add('modal-abierto'); 
   
   // Obtener la referencia al modalFooter
   modalFooter = modalDialogo.querySelector(".detalle-acciones"); 
@@ -316,11 +319,18 @@ function abrirModal(recetaId) {
   // Es crucial llamar a esta función aquí para que el feedback visual se inicialice
   actualizarFeedbackVoz("inactivo"); 
 
-  // NOTA: La Delegación de Eventos se gestiona en init().
+  // 🌟 MEJORA: Añadir listener al nuevo botón de cerrar superior
+  const btnCerrarSuperior = document.getElementById('cerrar-btn-superior');
+  if (btnCerrarSuperior) {
+      btnCerrarSuperior.addEventListener('click', cerrarModal);
+  }
 }
 
 function cerrarModal() {
   modal.classList.remove("abierto");
+  // 🌟 MEJORA: Quitar clase para desbloquear scroll de fondo del body
+  document.body.classList.remove('modal-abierto'); 
+  
   detenerAsistenteVoz();
   
   // Accesibilidad: devolver el foco al elemento que abrió el modal
@@ -532,8 +542,10 @@ const tieneSpeechSynthesis = "speechSynthesis" in window;
 // Elemento para el feedback visual
 let feedbackVozEl = null; 
 
-// 🌟 MEJORA: Crear contexto de audio para el feedback auditivo
-const audioContext = tieneSpeechRecognition && typeof AudioContext !== 'undefined' ? new AudioContext() : null;
+// 🌟 MEJORA: Crear contexto de audio para el feedback auditivo (Solución para error 404)
+const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+const audioContext = tieneSpeechRecognition && AudioContextClass ? new AudioContextClass() : null;
+
 
 function crearReconocimiento() {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -551,6 +563,11 @@ function crearReconocimiento() {
 /** 🌟 MEJORA: Genera un 'ding' auditivo para feedback de escucha */
 function emitirFeedbackAuditivo() {
     if (!audioContext) return;
+    
+    // Si el contexto está suspendido (por las reglas de autoplay del navegador), lo reanuda
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
     
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -629,12 +646,12 @@ function actualizarFeedbackVoz(estado) {
     switch (estado) {
         case "escuchando":
             feedbackVozEl.textContent = "🎙️ ESCUCHANDO... Di un comando.";
-            feedbackVozEl.style.backgroundColor = "#ffc107"; 
+            feedbackVozEl.style.backgroundColor = "#ffc107"; // Amarillo
             feedbackVozEl.style.color = "#333";
             break;
         case "procesando":
             feedbackVozEl.textContent = "⚙️ PROCESANDO...";
-            feedbackVozEl.style.backgroundColor = "#17a2b8"; 
+            feedbackVozEl.style.backgroundColor = "#17a2b8"; // Azul
             feedbackVozEl.style.color = "#fff";
             break;
         case "inactivo":
@@ -644,7 +661,7 @@ function actualizarFeedbackVoz(estado) {
             break;
         case "pausado":
              feedbackVozEl.textContent = "⏸️ Asistente en PAUSA. Di reanudar para continuar.";
-             feedbackVozEl.style.backgroundColor = "#dc3545"; 
+             feedbackVozEl.style.backgroundColor = "#dc3545"; // Rojo
              feedbackVozEl.style.color = "#fff";
             break;
         default:
