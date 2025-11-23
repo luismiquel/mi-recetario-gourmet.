@@ -5,11 +5,9 @@
 "use strict";
 
 // 1) CARGAR RECETAS DESDE recetas.js (const RECETAS)
-// NOTA: Se asume que RECETAS está cargado globalmente desde 'recetas.js'
 let TODAS_LAS_RECETAS = [];
 
 try {
-  // RECETAS viene de recetas.js (const RECETAS = recetas.map(...))
   if (typeof RECETAS !== 'undefined' && Array.isArray(RECETAS)) {
     TODAS_LAS_RECETAS = RECETAS;
   } else {
@@ -299,7 +297,7 @@ function abrirModal(recetaId) {
 
   modal.classList.add("abierto");
   
-  // CORRECCIÓN 1: Obtener la referencia al modalFooter justo después de inyectar el HTML
+  // CORRECCIÓN 1: Obtener la referencia al modalFooter
   modalFooter = modalDialogo.querySelector(".detalle-acciones"); 
   
   // CORRECCIÓN 2: Establecer la receta en lectura (Crucial para el asistente de voz)
@@ -312,8 +310,7 @@ function abrirModal(recetaId) {
   // Es crucial llamar a esta función aquí para que el feedback visual se inicialice
   actualizarFeedbackVoz("inactivo"); 
 
-  // NOTA: Se eliminan los addEventListener individuales, 
-  // ya que se usa la Delegación de Eventos en init().
+  // NOTA: La Delegación de Eventos se gestiona en init().
 }
 
 function cerrarModal() {
@@ -421,7 +418,7 @@ btnFavs.addEventListener("click", () => {
 });
 
 // ============================================
-// DELEGACIÓN DE EVENTOS (MEJORAS)
+// DELEGACIÓN DE EVENTOS
 // ============================================
 
 // Delegación para estrella de fav y "Ver Receta" en tarjetas
@@ -444,7 +441,7 @@ listadoEl.addEventListener("click", (e) => {
   }
 });
 
-// Delegación de eventos para botones DENTRO del Modal (Mejora de memoria)
+// Delegación de eventos para botones DENTRO del Modal
 modalDialogo.addEventListener("click", (e) => {
     const target = e.target;
     // Si no tenemos recetaEnLectura, no hacemos nada (seguridad)
@@ -513,11 +510,11 @@ btnTexto.addEventListener("click", () => {
 });
 
 // ============================================
-// ASISTENTE DE VOZ (VERSIÓN MEJORADA Y ROBUSTA)
+// ASISTENTE DE VOZ (VERSIÓN FINAL)
 // ============================================
 let reconocimiento = null;
 let reconocimientoActivo = false;
-// CORRECCIÓN: Declaración de la variable global para eliminar ReferenceError
+// CORRECCIÓN CRÍTICA: Declaración de la variable global
 let recetaEnLectura = null; 
 let indicePaso = 0;
 let enPausa = false;
