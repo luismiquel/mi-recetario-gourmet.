@@ -1,7 +1,7 @@
 /**
  * =============================================================
  * app.js: LÓGICA COMPLETA DEL RECETARIO GOURMET (VERSIÓN FINAL)
- * Incluye: Datos fusionados, Scroll fijo y Asistente de Voz estable.
+ * Incluye: Datos fusionados, Scroll fijo y Asistente de Voz estable (300ms fix).
  * =============================================================
  */
 
@@ -1387,7 +1387,7 @@ const recetas = [
     categoria: 'postre',
     img: 'placeholder.jpg',
     descripcion: 'Postre aireado y ligero, a base de chocolate negro y huevos.',
-    ingredientes: 'Chocolate negro, huevos, azúcar, mantequilla.',
+    ingredientes: 'Chocolate negro, mantequilla, huevos, azúcar, mantequilla.',
     instrucciones: 'Derrite el chocolate. Incorpora las yemas y el azúcar. Monta las claras a punto de nieve e incorpóralas con movimientos envolventes. Refrigera.',
     tiempo: '20 min (+ refrigeración)',
     dificultad: 'Media'
@@ -1765,6 +1765,17 @@ const recetas = [
     instrucciones: 'Tritura el turrón con la leche. Mezcla con la nata y congela en la heladera, o congela y bate cada hora si no tienes.',
     tiempo: '30 min (+ congelación)',
     dificultad: 'Media'
+  },
+  {
+    id: 159,
+    titulo: 'Trufas de chocolate',
+    categoria: 'postre',
+    img: 'placeholder.jpg',
+    descripcion: 'Bombones de *ganache* de chocolate, cubiertos de cacao en polvo.',
+    ingredientes: 'Chocolate negro, nata para montar, mantequilla, cacao en polvo, ron (opcional).',
+    instrucciones: 'Calienta la nata y viértela sobre el chocolate. Enfría el *ganache*. Forma las trufas y reboza en cacao.',
+    tiempo: '20 min (+ refrigeración)',
+    dificultad: 'Fácil'
   },
   {
     id: 160,
@@ -2686,12 +2697,12 @@ function escucharComando() {
     };
 
     try {
-        // CORRECCIÓN FINAL: Añadir retraso para evitar InvalidStateError
+        // CORRECCIÓN FINAL: Añadir retraso de 300ms para evitar InvalidStateError
         setTimeout(() => {
             if (reconocimiento) { 
                 reconocimiento.start();
             }
-        }, 100); 
+        }, 300); 
 
     } catch (e) {
         console.warn("No se pudo iniciar el reconocimiento (probablemente ya activo):", e);
