@@ -1,7 +1,7 @@
 /**
  * =============================================================
  * app.js: LÓGICA COMPLETA DEL RECETARIO GOURMET (VERSIÓN FINAL)
- * Incluye: Datos fusionados, Scroll fijo y Asistente de Voz estable (2000ms fix).
+ * CORRECCIÓN FINAL: ASR Estable (2000ms de retraso en caso de error).
  * =============================================================
  */
 
@@ -577,7 +577,7 @@ const recetas = [
     img: 'placeholder.jpg',
     descripcion: 'Pasta rellena con una salsa simple de mantequilla, salvia y nueces.',
     ingredientes: 'Raviolis de calabaza (frescos o secos), mantequilla, hojas de salvia, nueces picadas, queso *parmesano*.',
-    instrucciones: 'Cuece la pasta. Derrite la mantequilla, fríe la salvia. Mezcla la pasta con la salsa y las nueces. Espolvorea *parmesano*.',
+    instrucciones: 'Cuece los *raviolis*. Derrite la mantequilla, fríe la salvia. Mezcla la pasta con la salsa y las nueces. Espolvorea *parmesano*.',
     tiempo: '20 min',
     dificultad: 'Muy Fácil'
   },
@@ -720,7 +720,7 @@ const recetas = [
     img: 'placeholder.jpg',
     descripcion: 'Guiso marinero de alubias con el sabor de las almejas y un sofrito de marisco.',
     ingredientes: 'Alubias cocidas, almejas, vino blanco, ajo, cebolla, perejil, caldo de pescado.',
-    instrucciones: 'Sofríe el ajo, cebolla y el perejil. Añade las alubias y el caldo. Cocina las almejas aparte y añádelas al final.',
+    instrucciones: 'Sofríe el ajo y la cebolla. Añade las alubias y el caldo. Cocina las almejas aparte y añádelas al final.',
     tiempo: '40 min',
     dificultad: 'Media'
   },
@@ -1453,8 +1453,8 @@ const recetas = [
     categoria: 'postre',
     img: 'placeholder.jpg',
     descripcion: 'Bizcocho de chocolate con el centro líquido, servido caliente.',
-    ingredientes: 'Chocolate negro, mantequilla, huevos, azúcar, harina.',
-    instrucciones: 'Prepara la masa y hornea en moldes pequeños el tiempo justo para que el centro quede líquido.',
+    ingredientes: 'Chocolate negro, mantequilla, huevos, azúcar, mantequilla.',
+    instrucciones: 'Derrite el chocolate. Incorpora las yemas y el azúcar. Monta las claras a punto de nieve e incorpóralas con movimientos envolventes. Refrigera.',
     tiempo: '25 min',
     dificultad: 'Media'
   },
@@ -2510,7 +2510,6 @@ function actualizarFeedbackVoz(estado) {
         case "procesando":
             feedbackVozEl.textContent = "⚙️ PROCESANDO...";
             feedbackVozEl.style.backgroundColor = "#17a2b8"; // Azul
-            feedbackVozEl.style.color = "#fff";
             break;
         case "inactivo":
             feedbackVozEl.textContent = "Asistente inactivo. Pulsa 🎙️ para empezar.";
@@ -2697,12 +2696,12 @@ function escucharComando() {
     };
 
     try {
-        // CORRECCIÓN FINAL: Añadir retraso de 500ms antes de iniciar para dar tiempo a la TTS.
+        // CORRECCIÓN FINAL: Retraso de 500ms para evitar InvalidStateError al inicio de la sesión
         setTimeout(() => {
             if (reconocimiento) { 
                 reconocimiento.start();
             }
-        }, 500); // <-- Retraso de 500ms 
+        }, 500); // <-- Retraso de 500ms
 
     } catch (e) {
         console.warn("No se pudo iniciar el reconocimiento (probablemente ya activo):", e);
