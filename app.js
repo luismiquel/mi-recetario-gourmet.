@@ -1,7 +1,7 @@
 /**
  * =============================================================
  * app.js: LÓGICA COMPLETA DEL RECETARIO GOURMET (VERSIÓN FINAL)
- * Incluye: Datos fusionados, Scroll fijo y Asistente de Voz estable (500ms fix).
+ * Incluye: Datos fusionados, Scroll fijo y Asistente de Voz estable (2000ms fix).
  * =============================================================
  */
 
@@ -1833,7 +1833,7 @@ const RECETAS = recetas.map((r) => {
 });
 
 // ============================================
-// LÓGICA PRINCIPAL Y ESTADO
+// LÓGICA PRINCIPAL
 // ============================================
 let TODAS_LAS_RECETAS = [];
 
@@ -2689,20 +2689,20 @@ function escucharComando() {
         actualizarFeedbackVoz("inactivo");
 
         if (ev.error === "no-speech" || ev.error === "audio-capture") {
-            // Reintentar la escucha si fue por falta de voz o error de audio
-            escucharComando(); 
+            // 🚨 CORRECCIÓN FINAL ASR: Retrasar el reintento para romper el bucle InvalidStateError
+            setTimeout(escucharComando, 2000); // <-- 2000ms de retraso
         } else {
              leerTexto("Ha ocurrido un error grave en el micrófono. Por favor, revisa los permisos del navegador.");
         }
     };
 
     try {
-        // CORRECCIÓN FINAL: Añadir retraso de 500ms para evitar InvalidStateError
+        // CORRECCIÓN FINAL: Añadir retraso de 500ms antes de iniciar para dar tiempo a la TTS.
         setTimeout(() => {
             if (reconocimiento) { 
                 reconocimiento.start();
             }
-        }, 500); // <-- Retraso de 500ms para estabilizar ASR
+        }, 500); // <-- Retraso de 500ms 
 
     } catch (e) {
         console.warn("No se pudo iniciar el reconocimiento (probablemente ya activo):", e);
