@@ -11,7 +11,7 @@
 // 1. DATA (RECETAS Y ADAPTADOR)
 // =============================================================
 
-// 🚨 IMPORTANTE: PEGA AQUÍ TUS 160 RECETAS NAVIDEÑAS
+// 🚨 TUS 160 RECETAS NAVIDEÑAS COMPLETAS 🚨
 const recetas = [
   // =============================================================
   // 🧀 40 APERITIVOS (Índices 0 - 39)
@@ -1833,7 +1833,7 @@ const RECETAS = recetas.map((r) => {
 });
 
 // ============================================
-// LÓGICA PRINCIPAL
+// LÓGICA PRINCIPAL Y ESTADO
 // ============================================
 let TODAS_LAS_RECETAS = [];
 
@@ -2702,7 +2702,7 @@ function escucharComando() {
             if (reconocimiento) { 
                 reconocimiento.start();
             }
-        }, 500); // <-- Retraso de 500ms (0.5 segundos)
+        }, 500); // <-- Retraso de 500ms para estabilizar ASR
 
     } catch (e) {
         console.warn("No se pudo iniciar el reconocimiento (probablemente ya activo):", e);
