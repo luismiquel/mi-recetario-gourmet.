@@ -1,11 +1,22 @@
 {
-  "name": "Recetario Navideño Voz",
-  "short_name": "Recetas Voz",
-  "description": "Recetario Navideño con control de voz para accesibilidad.",
-  "start_url": "/index.html",
-  "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#f5f5f7",
-  "theme_color": "#8c1e30",
-  "icons": [] 
+  "name": "Recetario Navideño Voz",
+  "short_name": "Recetas Voz",
+  "description": "Recetario Navideño con control de voz para accesibilidad.",
+  "start_url": "/index.html",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f5f5f7",
+  "theme_color": "#8c1e30",
+  "icons": [
+    {
+      "src": "/icon-192x192.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "/icon-512x512.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ] 
 }
