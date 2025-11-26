@@ -1,7 +1,7 @@
 /**
  * =============================================================
  * app.js: LÓGICA COMPLETA DEL RECETARIO GOURMET (VERSIÓN FINAL)
- * Incluye: Datos fusionados, Scroll fijo y Asistente de Voz estable (300ms fix).
+ * Incluye: Datos fusionados, Scroll fijo y Asistente de Voz estable (500ms fix).
  * =============================================================
  */
 
@@ -2697,12 +2697,12 @@ function escucharComando() {
     };
 
     try {
-        // CORRECCIÓN FINAL: Añadir retraso de 300ms para evitar InvalidStateError
+        // CORRECCIÓN FINAL: Añadir retraso de 500ms para evitar InvalidStateError
         setTimeout(() => {
             if (reconocimiento) { 
                 reconocimiento.start();
             }
-        }, 300); 
+        }, 500); // <-- Retraso de 500ms (0.5 segundos)
 
     } catch (e) {
         console.warn("No se pudo iniciar el reconocimiento (probablemente ya activo):", e);
