@@ -1,14 +1,14 @@
 /**
  * =============================================================
- * app.js: VERSIÓN DEFINITIVA - FIX INVALID STATE ERROR
- * Estrategia: Reinicio controlado exclusivamente en 'onend'.
+ * app.js: LÓGICA COMPLETA DEL RECETARIO GOURMET (VERSIÓN FINAL)
+ * Incluye: Datos fusionados, Scroll fijo y Asistente con Escucha Segura.
  * =============================================================
  */
 
 "use strict";
 
 // =============================================================
-// 1. DATA (160 RECETAS NAVIDEÑAS)
+// 1. DATA (160 RECETAS NAVIDEÑAS COMPLETAS)
 // =============================================================
 
 const recetas = [
@@ -691,7 +691,7 @@ const recetas = [
     titulo: 'Crema queso azul',
     categoria: 'primero',
     img: 'placeholder.jpg',
-    descripcion: 'Intensa, con crujiente.',
+    descripcion: 'Intenso, con crujiente.',
     ingredientes: 'Queso azul, nata, caldo, cebolla, crujiente.',
     instrucciones: 'Sofríe cebolla. Añade caldo y queso. Tritura y añade nata.',
     tiempo: '30 min',
@@ -1781,6 +1781,11 @@ const recetas = [
   }
 ];
 
+// =============================================================
+// 2. LÓGICA DE LA APLICACIÓN
+// =============================================================
+let TODAS_LAS_RECETAS = [];
+
 // 🔁 ADAPTADOR DE DATOS
 function mapCategoria(cat) {
   switch (cat) {
@@ -1792,7 +1797,8 @@ function mapCategoria(cat) {
   }
 }
 
-const RECETAS = recetas.map((r) => {
+// Procesa y normaliza las recetas
+TODAS_LAS_RECETAS = recetas.map((r) => {
   const ingredientesArray = r.ingredientes ? r.ingredientes.split(",").map(t => t.trim()).filter(Boolean) : [];
   const pasosArray = r.instrucciones ? r.instrucciones.split(".").map(t => t.trim()).filter(Boolean) : [];
   return {
@@ -1808,11 +1814,6 @@ const RECETAS = recetas.map((r) => {
     steps: pasosArray,
   };
 });
-
-// =============================================================
-// 2. LÓGICA DE LA APLICACIÓN
-// =============================================================
-let TODAS_LAS_RECETAS = RECETAS;
 
 // Referencias DOM
 const listadoEl = document.getElementById("listado");
@@ -1837,22 +1838,110 @@ let elementoQueAbrioModal = null;
 let favoritos = new Set(JSON.parse(localStorage.getItem("recetario_favs") || "[]"));
 let listaCompra = new Set(JSON.parse(localStorage.getItem("recetario_lista") || "[]"));
 
-// =============================================================
-// ASISTENTE DE VOZ (NUEVA VERSIÓN ANTI-BUCLE)
-// =============================================================
-let reconocimiento = null;
-let reconocimientoActivo = false;
+// Estado Voz
 let recetaEnLectura = null;
 let indicePaso = 0;
 let enPausa = false;
+let reconocimiento = null;
+let reconocimientoActivo = false;
 let feedbackVozEl = null;
 let modalFooter = null;
 
 // Soporte APIs
 const tieneSpeechRecognition = "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
 const tieneSpeechSynthesis = "speechSynthesis" in window;
-const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-const audioContext = (tieneSpeechRecognition && AudioContextClass) ? new AudioContextClass() : null;
+
+// --- FUNCIONES PRINCIPALES ---
+
+function pintarRecetas() {
+  const filtradas = TODAS_LAS_RECETAS.filter(r => {
+    if (filtroActual !== "todas" && r.category !== filtroActual) return false;
+    if (mostrarSoloFavs && !favoritos.has(r.id)) return false;
+    if (textoBusqueda && !r.title.toLowerCase().includes(textoBusqueda.toLowerCase())) return false;
+    return true;
+  });
+
+  listadoEl.innerHTML = "";
+  if (!filtradas.length) {
+    listadoEl.innerHTML = `<p class="sin-resultados">No hay recetas.</p>`;
+    return;
+  }
+
+  const fragment = document.createDocumentFragment();
+  filtradas.forEach(r => {
+    const esFav = favoritos.has(r.id);
+    const div = document.createElement("article");
+    div.className = `receta-card cat-${r.category}`;
+    div.innerHTML = `
+      <header class="card-header">
+        <span class="badge-categoria">${r.category.toUpperCase()}</span>
+        <button class="btn-fav-toggle">${esFav ? "★" : "☆"}</button>
+      </header>
+      <h3 class="card-titulo">${r.title}</h3>
+      <p class="card-descripcion">${r.description}</p>
+      <div class="card-meta"><span>⏱️ ${r.time}</span><span>🎯 ${r.difficulty}</span></div>
+      <footer class="card-footer"><button class="btn ver-receta">Ver receta</button></footer>
+    `;
+    
+    div.querySelector(".btn-fav-toggle").onclick = (e) => {
+      e.stopPropagation();
+      toggleFavorito(r.id);
+    };
+    div.querySelector(".ver-receta").onclick = () => abrirModal(r.id);
+    fragment.appendChild(div);
+  });
+  listadoEl.appendChild(fragment);
+}
+
+function toggleFavorito(id) {
+  if (favoritos.has(id)) favoritos.delete(id);
+  else favoritos.add(id);
+  localStorage.setItem("recetario_favs", JSON.stringify([...favoritos]));
+  pintarRecetas();
+}
+
+// --- MODAL ---
+
+function abrirModal(id) {
+  const r = TODAS_LAS_RECETAS.find(x => x.id === id);
+  if (!r) return;
+
+  detenerAsistenteVoz(); // Resetea voz al abrir nueva receta
+  recetaEnLectura = r;
+
+  // Clase de color dinámica
+  modalDialogo.className = `dialogo modal-${r.category}`;
+  
+  const ings = r.ingredients.map(i => `<li>${i}</li>`).join("");
+  const pasos = r.steps.map((p, i) => `<li data-paso="${i}">${p}</li>`).join("");
+  
+  modalContenido.innerHTML = `
+    <article class="detalle-receta">
+      <header class="modal-header"><h2>${r.title}</h2></header>
+      <section><h3>Ingredientes</h3><ul class="lista-ingredientes">${ings}</ul></section>
+      <section><h3>Pasos</h3><ol class="lista-pasos" id="lista-pasos-lectura">${pasos}</ol></section>
+      <footer class="detalle-acciones">
+         <button class="btn btn-primario" onclick="agregarIngredientes('${r.id}')">Añadir Ingredientes</button>
+         <button class="btn btn-voz" onclick="iniciarAsistenteVoz()">🎙️ Iniciar Voz</button>
+      </footer>
+    </article>
+  `;
+
+  modalFooter = modalDialogo.querySelector(".detalle-acciones");
+  modal.classList.add("abierto");
+  document.body.classList.add("modal-abierto");
+  modalDialogo.focus();
+}
+
+function cerrarModal() {
+  detenerAsistenteVoz();
+  modal.classList.remove("abierto");
+  document.body.classList.remove("modal-abierto");
+}
+
+// =============================================================
+// ASISTENTE DE VOZ (NUEVA VERSIÓN ANTI-BUCLE)
+// =============================================================
 
 function crearReconocimiento() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1861,19 +1950,6 @@ function crearReconocimiento() {
   recog.continuous = false;       // un comando cada vez
   recog.interimResults = false;  // solo resultados finales
   return recog;
-}
-
-function emitirFeedbackAuditivo() {
-  if (!audioContext) return;
-  if (audioContext.state === 'suspended') audioContext.resume();
-  const osc = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-  osc.connect(gain);
-  gain.connect(audioContext.destination);
-  osc.frequency.setValueAtTime(440, audioContext.currentTime);
-  gain.gain.setValueAtTime(0.1, audioContext.currentTime);
-  osc.start();
-  osc.stop(audioContext.currentTime + 0.2);
 }
 
 function actualizarFeedbackVoz(estado) {
@@ -2074,7 +2150,7 @@ function escucharComando() {
     return;
   }
 
-  // SIEMPRE creamos una nueva instancia limpia para evitar el InvalidStateError
+  // SIEMPRE creamos una nueva instancia limpia
   if (reconocimiento) {
       try { reconocimiento.abort(); } catch(e) {}
       reconocimiento = null;
@@ -2083,9 +2159,8 @@ function escucharComando() {
 
   reconocimientoActivo = true;
   actualizarFeedbackVoz("escuchando");
-  emitirFeedbackAuditivo();
 
-  // Limpieza de manejadores anteriores
+  // Limpieza de manejadores
   reconocimiento.onresult = null;
   reconocimiento.onend = null;
   reconocimiento.onerror = null;
@@ -2093,57 +2168,43 @@ function escucharComando() {
   reconocimiento.onresult = (ev) => {
     reconocimientoActivo = false;
     if (!ev.results || !ev.results[0] || !ev.results[0][0]) {
-      // Si no hay resultado, reintentamos una vez
-      escucharComando();
+      escucharComando(); // Reintentar si no hubo resultado válido
       return;
     }
     const comando = ev.results[0][0].transcript;
     manejarComando(comando);
   };
 
-  // Control estricto en onEnd para evitar bucles infinitos
   reconocimiento.onend = () => {
-     // No hacemos nada aquí para evitar conflictos con onError.
-     // La lógica de reinicio debe ser explícita.
+      reconocimientoActivo = false;
+      // Solo reiniciamos si estábamos escuchando y no hubo error explícito.
+      // Pero para evitar bucles, lo haremos SOLO si la bandera activo sigue true.
   };
 
   reconocimiento.onerror = (ev) => {
     console.error("Error en reconocimiento:", ev.error);
     reconocimientoActivo = false;
-    
-    if (ev.error === "not-allowed") {
-      leerTexto(
-        "No tengo permiso para usar el micrófono.",
-        () => actualizarFeedbackVoz("inactivo")
-      );
-      return;
-    }
-    
-    // Si es no-speech o aborted, esperamos un tiempo prudencial (2s) y reiniciamos
-    // Esto es CLAVE para evitar el InvalidStateError en bucle
-    if (ev.error === "no-speech" || ev.error === "aborted" || ev.error === "audio-capture") {
-       setTimeout(() => {
-           // Solo reiniciar si seguimos en la misma receta y no estamos en pausa
-           if (recetaEnLectura && !enPausa) {
-               escucharComando();
-           }
-       }, 2000); // 2 segundos de espera
-       return;
-    }
-    
     actualizarFeedbackVoz("inactivo");
+    
+    // 🚨 ERROR HANDLER BLINDADO:
+    // Si hay error de "no-speech", le decimos al usuario y PARAMOS. 
+    // NO reiniciamos automáticamente para evitar el bucle infinito InvalidStateError.
+    if (ev.error === "no-speech") {
+        leerTexto("No he oído nada. Pulsa el botón para intentarlo de nuevo.");
+    } else if (ev.error === "not-allowed") {
+        leerTexto("No tengo permiso para usar el micrófono.");
+    }
   };
 
   try {
-    // Retraso inicial para asegurar que TTS ha liberado audio
+    // Pequeño retraso para asegurar limpieza
     setTimeout(() => {
       if (reconocimiento) {
           try {
              reconocimiento.start();
           } catch(e) {
-             // Si falla el start, asumimos que es por estado invalido y esperamos
-             console.warn("Fallo al iniciar start, reintentando en 2s...", e);
-             setTimeout(escucharComando, 2000);
+             console.warn("Fallo al iniciar start:", e);
+             actualizarFeedbackVoz("inactivo");
           }
       }
     }, 500);
@@ -2168,7 +2229,7 @@ function iniciarAsistenteVoz(receta) {
   indicePaso = 0;
   enPausa = false;
 
-  // Clase de color dinámica al modal (aseguramos que se aplique si no estaba)
+  // Clase de color dinámica al modal
   if (modalDialogo) {
       modalDialogo.className = `dialogo modal-${receta.category}`;
   }
@@ -2200,92 +2261,6 @@ function iniciarAsistenteVoz(receta) {
 // =============================================================
 // 3. FUNCIONES UI (PINTAR, FAVORITOS, MODAL...)
 // =============================================================
-
-function pintarRecetas() {
-  const filtradas = TODAS_LAS_RECETAS.filter(r => {
-    if (filtroActual !== "todas" && r.category !== filtroActual) return false;
-    if (mostrarSoloFavs && !favoritos.has(r.id)) return false;
-    if (textoBusqueda && !r.title.toLowerCase().includes(textoBusqueda.toLowerCase())) return false;
-    return true;
-  });
-
-  listadoEl.innerHTML = "";
-  if (!filtradas.length) {
-    listadoEl.innerHTML = `<p class="sin-resultados">No hay recetas.</p>`;
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-  filtradas.forEach(r => {
-    const esFav = favoritos.has(r.id);
-    const div = document.createElement("article");
-    div.className = `receta-card cat-${r.category}`;
-    div.innerHTML = `
-      <header class="card-header">
-        <span class="badge-categoria">${r.category.toUpperCase()}</span>
-        <button class="btn-fav-toggle">${esFav ? "★" : "☆"}</button>
-      </header>
-      <h3 class="card-titulo">${r.title}</h3>
-      <p class="card-descripcion">${r.description}</p>
-      <div class="card-meta"><span>⏱️ ${r.time}</span><span>🎯 ${r.difficulty}</span></div>
-      <footer class="card-footer"><button class="btn ver-receta">Ver receta</button></footer>
-    `;
-    
-    div.querySelector(".btn-fav-toggle").onclick = (e) => {
-      e.stopPropagation();
-      toggleFavorito(r.id);
-    };
-    div.querySelector(".ver-receta").onclick = () => abrirModal(r.id);
-    fragment.appendChild(div);
-  });
-  listadoEl.appendChild(fragment);
-}
-
-function toggleFavorito(id) {
-  if (favoritos.has(id)) favoritos.delete(id);
-  else favoritos.add(id);
-  localStorage.setItem("recetario_favs", JSON.stringify([...favoritos]));
-  pintarRecetas();
-}
-
-function abrirModal(id) {
-  const r = TODAS_LAS_RECETAS.find(x => x.id === id);
-  if (!r) return;
-
-  detenerAsistenteVoz(); 
-  recetaEnLectura = r;
-
-  modalDialogo.className = `dialogo modal-${r.category}`;
-  
-  const ings = r.ingredients.map(i => `<li>${i}</li>`).join("");
-  const pasos = r.steps.map((p, i) => `<li data-paso="${i}">${p}</li>`).join("");
-
-  modalContenido.innerHTML = `
-    <article class="detalle-receta">
-      <header class="modal-header"><h2>${r.title}</h2></header>
-      <section><h3>Ingredientes</h3><ul class="lista-ingredientes">${ings}</ul></section>
-      <section><h3>Pasos</h3><ol class="lista-pasos" id="lista-pasos-lectura">${pasos}</ol></section>
-      <footer class="detalle-acciones">
-         <button class="btn btn-primario" onclick="agregarIngredientes('${r.id}')">Añadir Ingredientes</button>
-         <button class="btn btn-voz" id="btn-iniciar-voz">🎙️ Iniciar Voz</button>
-      </footer>
-    </article>
-  `;
-
-  // Asignar evento click al botón dinámico
-  modalContenido.querySelector("#btn-iniciar-voz").onclick = () => iniciarAsistenteVoz(r);
-
-  modalFooter = modalDialogo.querySelector(".detalle-acciones");
-  modal.classList.add("abierto");
-  document.body.classList.add("modal-abierto");
-  modalDialogo.focus();
-}
-
-function cerrarModal() {
-  detenerAsistenteVoz();
-  modal.classList.remove("abierto");
-  document.body.classList.remove("modal-abierto");
-}
 
 function agregarIngredientes(id) {
     const r = TODAS_LAS_RECETAS.find(x => x.id == id);
