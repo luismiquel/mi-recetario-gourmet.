@@ -1,16 +1,16 @@
 /* =============================================================
-   styles.css: DISEÑO PROFESIONAL Y DINÁMICO (VERSIÓN FINAL)
-   ============================================================= */
+    styles.css: DISEÑO PROFESIONAL Y DINÁMICO (VERSIÓN FINAL)
+    ============================================================= */
 
 /* 1. VARIABLES Y RESET BÁSICO */
 :root {
     /* Paleta Profesional de Navidad */
-    --color-navidad-principal: #8c1e30;    /* Borgoña Oscuro, Elegante */
-    --color-navidad-acento: #ffc800;       /* Dorado Sutil para Acentos */
-    --color-fondo-claro: #f5f5f7;          /* Fondo Platinado/Sutilmente Grisáceo */
-    --color-fondo-card: #ffffff;           /* Blanco Puro para Tarjetas */
-    --color-texto-principal: #1a1a1a;      /* Negro Profundo */
-    --color-texto-secundario: #5c6773;     /* Gris Pizarra */
+    --color-navidad-principal: #8c1e30;     /* Borgoña Oscuro, Elegante */
+    --color-navidad-acento: #ffc800;        /* Dorado Sutil para Acentos */
+    --color-fondo-claro: #f5f5f7;           /* Fondo Platinado/Sutilmente Grisáceo */
+    --color-fondo-card: #ffffff;            /* Blanco Puro para Tarjetas */
+    --color-texto-principal: #1a1a1a;       /* Negro Profundo */
+    --color-texto-secundario: #5c6773;      /* Gris Pizarra */
 
     /* Sombreado y Formas */
     --sombra-card: 0 6px 15px rgba(0, 0, 0, 0.08);
@@ -25,154 +25,155 @@
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 html,
 body {
-  margin: 0;
-  padding: 0;
+    margin: 0;
+    padding: 0;
 }
 
 body {
-  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  line-height: 1.6;
-  background: var(--color-fondo-claro);
-  color: var(--color-texto-principal);
-  transition: background-color 0.3s, color 0.3s;
+    font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.6;
+    background: var(--color-fondo-claro);
+    color: var(--color-texto-principal);
+    transition: background-color 0.3s, color 0.3s;
 }
 
+/* CRÍTICO: Bloquea el scroll del fondo al abrir el modal */
 body.modal-abierto {
-  overflow: hidden !important; /* CRÍTICO: Bloquea el scroll del fondo */
+    overflow: hidden !important; 
 }
 
 /* Enlaces de salto accesibles */
 .skip-link {
-  position: absolute;
-  left: -999px;
-  top: 10px;
-  background: var(--color-navidad-principal);
-  color: #fff;
-  padding: var(--espacio-s) var(--espacio-m);
-  border-radius: 999px;
-  z-index: 9999;
+    position: absolute;
+    left: -999px;
+    top: 10px;
+    background: var(--color-navidad-principal);
+    color: #fff;
+    padding: var(--espacio-s) var(--espacio-m);
+    border-radius: 999px;
+    z-index: 9999;
 }
 .skip-link:focus {
-  left: 10px;
+    left: 10px;
 }
 
 /* =========================================
-   2. CABECERA Y BOTONES GENERALES
+    2. CABECERA Y BOTONES GENERALES
 ========================================= */
 
 .app-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1.75rem var(--espacio-m);
-  background: linear-gradient(135deg, var(--color-navidad-principal) 0%, #a62b40 100%);
-  color: #fff;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-  gap: var(--espacio-m);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.75rem var(--espacio-m);
+    background: linear-gradient(135deg, var(--color-navidad-principal) 0%, #a62b40 100%);
+    color: #fff;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+    gap: var(--espacio-m);
 }
 
 .app-header h1 {
-  margin: 0 0 0.15rem;
-  font-size: 1.8rem;
-  font-weight: 700;
+    margin: 0 0 0.15rem;
+    font-size: 1.8rem;
+    font-weight: 700;
 }
 
 .app-header .sub {
-  margin: 0;
-  font-size: 0.9rem;
-  opacity: 0.9;
-  font-weight: 300;
+    margin: 0;
+    font-size: 0.9rem;
+    opacity: 0.9;
+    font-weight: 300;
 }
 
 .herramientas {
-  display: flex;
-  gap: var(--espacio-s);
-  flex-wrap: wrap;
-  justify-content: flex-end;
+    display: flex;
+    gap: var(--espacio-s);
+    flex-wrap: wrap;
+    justify-content: flex-end;
 }
 
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radio-suave);
-  border: none;
-  background: var(--color-navidad-principal);
-  color: #fff;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radio-suave);
+    border: none;
+    background: var(--color-navidad-principal);
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
 }
 
 .btn.small {
-  padding: 0.4rem 0.8rem;
-  font-size: 0.8rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
 }
 
 .btn:hover {
-  background: #6a1624; 
-  transform: translateY(-2px);
-  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25), inset 0 -3px 0 rgba(0, 0, 0, 0.1);
+    background: #6a1624; 
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25), inset 0 -3px 0 rgba(0, 0, 0, 0.1);
 }
 
 .btn:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+    transform: translateY(0);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15), inset 0 -1px 0 rgba(0, 0, 0, 0.2);
 }
 
 .btn.secondary {
-  background: var(--color-texto-secundario);
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+    background: var(--color-texto-secundario);
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.15), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
 }
 .btn.secondary:hover {
-  background: #47515b;
+    background: #47515b;
 }
 
 .btn.danger {
-  background: #c0392b;
+    background: #c0392b;
 }
 
 .btn-fav {
-  background: transparent;
-  color: var(--color-navidad-acento);
-  border: none;
-  cursor: pointer;
-  font-size: 1.5rem;
-  padding: 0.1rem 0.5rem;
-  transition: transform 0.2s;
+    background: transparent;
+    color: var(--color-navidad-acento);
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0.1rem 0.5rem;
+    transition: transform 0.2s;
 }
 
 .btn-fav:hover {
-  transform: scale(1.2);
-  text-shadow: 0 0 5px rgba(255, 200, 0, 0.5); 
+    transform: scale(1.2);
+    text-shadow: 0 0 5px rgba(255, 200, 0, 0.5); 
 }
 
 /* =========================================
-   3. LAYOUT Y PANELES
+    3. LAYOUT Y PANELES
 ========================================= */
 
 main {
-  padding: var(--espacio-m);
-  max-width: 1200px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+    padding: var(--espacio-m);
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }
 
 .panel {
-  background: var(--color-fondo-card);
-  border-radius: var(--radio-suave);
-  padding: 1.5rem;
-  box-shadow: var(--sombra-card);
+    background: var(--color-fondo-card);
+    border-radius: var(--radio-suave);
+    padding: 1.5rem;
+    box-shadow: var(--sombra-card);
 }
 
 .panel h2 {
@@ -186,87 +187,87 @@ main {
 }
 
 /* =========================================
-   4. BUSCADOR + FILTROS
+    4. BUSCADOR + FILTROS
 ========================================= */
 
 .top-panel {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--espacio-s);
-  margin-bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-s);
+    margin-bottom: 0;
 }
 
 .buscador {
-  flex: 1;
-  min-width: 250px;
-  padding: 0.6rem 1rem;
-  border-radius: var(--radio-suave);
-  border: 1px solid #ccc;
-  font-size: 1rem;
-  transition: all 0.2s;
+    flex: 1;
+    min-width: 250px;
+    padding: 0.6rem 1rem;
+    border-radius: var(--radio-suave);
+    border: 1px solid #ccc;
+    font-size: 1rem;
+    transition: all 0.2s;
 }
 
 .buscador:focus {
-  outline: 2px solid var(--color-navidad-acento);
-  outline-offset: 1px;
-  border-color: var(--color-navidad-acento);
-  box-shadow: 0 0 5px rgba(255, 200, 0, 0.5);
+    outline: 2px solid var(--color-navidad-acento);
+    outline-offset: 1px;
+    border-color: var(--color-navidad-acento);
+    box-shadow: 0 0 5px rgba(255, 200, 0, 0.5);
 }
 
 /* Filtros */
 .filtros {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin-bottom: var(--espacio-m);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-bottom: var(--espacio-m);
 }
 
 .filtros button {
-  border-radius: var(--radio-suave);
-  padding: 0.4rem 1rem;
-  font-size: 0.9rem;
-  background: #f0f3f5;
-  color: var(--color-texto-secundario);
-  font-weight: 500;
-  box-shadow: none;
+    border-radius: var(--radio-suave);
+    padding: 0.4rem 1rem;
+    font-size: 0.9rem;
+    background: #f0f3f5;
+    color: var(--color-texto-secundario);
+    font-weight: 500;
+    box-shadow: none;
 }
 
 .filtros button:hover {
-  background: #e0e4e7;
-  transform: translateY(-1px);
+    background: #e0e4e7;
+    transform: translateY(-1px);
 }
 
 .filtros button.active {
-  background: var(--color-navidad-acento);
-  color: var(--color-texto-principal);
-  transform: none;
-  font-weight: 600;
-  box-shadow: 0 0 10px rgba(255, 200, 0, 0.7); 
+    background: var(--color-navidad-acento);
+    color: var(--color-texto-principal);
+    transform: none;
+    font-weight: 600;
+    box-shadow: 0 0 10px rgba(255, 200, 0, 0.7); 
 }
 
 /* =========================================
-   5. GRID DE RECETAS (DINÁMICO)
+    5. GRID DE RECETAS (DINÁMICO)
 ========================================= */
 
 .grid-recetas {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: var(--espacio-m);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--espacio-m);
 }
 
 /* Tarjeta de receta */
 .receta-card {
-  background: var(--color-fondo-card);
-  border-radius: var(--radio-suave);
-  padding: 1.25rem;
-  box-shadow: var(--sombra-card);
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  border-left: 6px solid transparent;
-  transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-left-color 0.2s ease;
+    background: var(--color-fondo-card);
+    border-radius: var(--radio-suave);
+    padding: 1.25rem;
+    box-shadow: var(--sombra-card);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    border-left: 6px solid transparent;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), box-shadow 0.3s ease, border-left-color 0.2s ease;
 }
 
 .receta-card:hover {
@@ -274,21 +275,21 @@ main {
     box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15), 0 5px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* Colores por Tipo de Plato */
-.receta-card.cat-aperitivo { border-left-color: #ff7675; } 
-.receta-card.cat-primero { border-left-color: #00b894; }
-.receta-card.cat-segundo { border-left-color: var(--color-navidad-principal); }
-.receta-card.cat-postre { border-left-color: #a29bfe; }
+/* Colores por Tipo de Plato (Misma lógica que el modal, para consistencia) */
+.receta-card.cat-aperitivo { border-left-color: #8c1e30; } 
+.receta-card.cat-primero { border-left-color: #145A32; }
+.receta-card.cat-segundo { border-left-color: #B8860B; }
+.receta-card.cat-postre { border-left-color: #6c5ce7; }
 
 .receta-header h3 {
-  margin: 0;
-  font-size: 1.15rem;
-  font-weight: 600;
-  color: var(--color-texto-principal);
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--color-texto-principal);
 }
 
 /* =========================================
-   6. MODAL Y DETALLES DE RECETA (CRÍTICO)
+    6. MODAL Y DETALLES DE RECETA (CRÍTICO)
 ========================================= */
 
 .modal {
@@ -339,7 +340,12 @@ main {
     padding-bottom: 0.5rem;
     border-bottom: 1px solid #eee;
     margin-bottom: 1rem;
+    transition: border-bottom-color 0.3s ease; /* Transición para el borde dinámico */
 }
+.modal-header h2 {
+    transition: color 0.3s ease; /* Transición para el color dinámico */
+}
+
 
 /* Botón cerrar Superior (X) - Asegurar visibilidad */
 .cerrar {
@@ -382,9 +388,9 @@ main {
 
 /* 🌟 Clase añadida por JavaScript para el paso en lectura 🌟 */
 .lista-pasos li.paso-activo {
-    background-color: #fff9e6; /* Fondo amarillo muy claro */
+    background-color: #fff9e6; /* Fondo amarillo muy claro por defecto */
     font-weight: 700;
-    color: var(--color-navidad-principal);
+    color: var(--color-texto-principal);
     border-bottom-color: var(--color-navidad-acento);
     /* Sombra interna sutil para simular enfoque */
     box-shadow: inset 5px 0 0 var(--color-navidad-acento); 
@@ -426,20 +432,20 @@ main {
     content: "✓";
     position: absolute;
     left: 0;
-    color: #00b894;
+    color: #00b894; /* Color por defecto */
     font-weight: 700;
 }
 
 /* Sección de voz en el modal */
 .detalle-acciones {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 2rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid #ddd;
-  justify-content: flex-start;
-  align-items: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid #ddd;
+    justify-content: flex-start;
+    align-items: center;
 }
 
 .btn-voz {
@@ -448,52 +454,101 @@ main {
 }
 
 /* =========================================
-   7. ACCESIBILIDAD Y RESPONSIVE
+    NUEVO: COLORES DINÁMICOS PARA MODALES
+========================================= */
+
+/* --- APERITIVOS: ROJO BORGOÑA (FESTIVO) --- */
+.modal-aperitivo .modal-header h2 {
+    color: #8c1e30; 
+    border-bottom-color: #8c1e30;
+}
+.modal-aperitivo .lista-pasos li.paso-activo {
+    background-color: #fcebeb; 
+    box-shadow: inset 5px 0 0 #c0392b; 
+}
+.modal-aperitivo .lista-ingredientes li::before { color: #8c1e30; }
+
+/* --- PRIMEROS: VERDE BOSQUE (FRESCURA) --- */
+.modal-primero .modal-header h2 {
+    color: #145A32; 
+    border-bottom-color: #145A32;
+}
+.modal-primero .lista-pasos li.paso-activo {
+    background-color: #e6faf2; 
+    box-shadow: inset 5px 0 0 #00b894; 
+}
+.modal-primero .lista-ingredientes li::before { color: #145A32; }
+
+/* --- SEGUNDOS: ORO VIEJO / COBRE (LUJO) --- */
+.modal-segundo .modal-header h2 {
+    color: #B8860B; 
+    border-bottom-color: #B8860B;
+}
+.modal-segundo .lista-pasos li.paso-activo {
+    background-color: #fffde0; 
+    box-shadow: inset 5px 0 0 #ffc800; 
+}
+.modal-segundo .lista-ingredientes li::before { color: #B8860B; }
+
+/* --- POSTRES: LILA / PÚRPURA (DULZURA) --- */
+.modal-postre .modal-header h2 {
+    color: #6c5ce7; 
+    border-bottom-color: #6c5ce7;
+}
+.modal-postre .lista-pasos li.paso-activo {
+    background-color: #f5f4ff; 
+    box-shadow: inset 5px 0 0 #a29bfe; 
+}
+.modal-postre .lista-ingredientes li::before { color: #6c5ce7; }
+
+
+/* =========================================
+    7. ACCESIBILIDAD Y RESPONSIVE
 ========================================= */
 
 /* Alto contraste */
 body.alto-contraste {
-  background: #000;
-  color: #fff;
+    background: #000;
+    color: #fff;
 }
 
 body.alto-contraste .app-header {
-  background: #000;
-  background-image: none;
+    background: #000;
+    background-image: none;
 }
 
 body.alto-contraste .panel,
 body.alto-contraste .receta-card,
 body.alto-contraste .modal .dialogo,
 body.alto-contraste .lista-compra .controles button {
-  background: #000;
-  color: #fff;
-  box-shadow: none;
-  border: 1px solid #fff;
+    background: #000;
+    color: #fff;
+    box-shadow: none;
+    border: 1px solid #fff;
 }
 
 body.alto-contraste .buscador,
 body.alto-contraste .filtros button {
-  background: #000;
-  color: #fff;
-  border: 1px solid #fff;
+    background: #000;
+    color: #fff;
+    border: 1px solid #fff;
 }
 
 body.alto-contraste .filtros button.active {
-  background: #fff;
-  color: #000;
-  border: 1px solid #000;
+    background: #fff;
+    color: #000;
+    border: 1px solid #000;
 }
 
 body.alto-contraste .btn,
 body.alto-contraste .btn-voz {
-  background: #fff;
-  color: #000;
-  box-shadow: none;
+    background: #fff;
+    color: #000;
+    box-shadow: none;
 }
 
 body.alto-contraste .btn:hover {
-  background: #ccc;
+    background: #ccc;
 }
 body.alto-contraste .btn-fav {
     color: #fff;
@@ -502,29 +557,29 @@ body.alto-contraste .btn-fav {
 
 /* Texto grande */
 body.texto-grande {
-  font-size: 19px;
+    font-size: 19px;
 }
 
 body.texto-grande .receta-meta,
 body.texto-grande .voz-ayuda {
-  font-size: 1rem;
+    font-size: 1rem;
 }
 
 /* Responsive */
 @media (max-width: 768px) {
-  .modal .dialogo {
-    margin: 2vh var(--espacio-s);
-    max-height: 96vh;
-    padding: 1.5rem;
-  }
+    .modal .dialogo {
+        margin: 2vh var(--espacio-s);
+        max-height: 96vh;
+        padding: 1.5rem;
+    }
 }
 
 @media (max-width: 480px) {
-  main {
-    padding: var(--espacio-s);
-  }
-  
-  .grid-recetas {
-      grid-template-columns: 1fr;
-  }
+    main {
+        padding: var(--espacio-s);
+    }
+    
+    .grid-recetas {
+        grid-template-columns: 1fr;
+    }
 }
