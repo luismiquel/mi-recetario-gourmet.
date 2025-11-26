@@ -1,7 +1,7 @@
 /**
  * =============================================================
  * app.js: LÓGICA COMPLETA DEL RECETARIO GOURMET (VERSIÓN FINAL)
- * CORRECCIÓN FINAL ASR: Retraso de 2000ms en caso de error para romper el bucle.
+ * Incluye: Datos fusionados, Scroll fijo y Asistente de Voz estable (2000ms fix).
  * =============================================================
  */
 
@@ -1739,7 +1739,7 @@ const recetas = [
     categoria: 'postre',
     img: 'placeholder.jpg',
     descripcion: 'Galletas de mantequilla y especias, con formas y decoración festivas.',
-    ingredientes: 'Harina, mantequilla, azúcar, huevo, jengibre en polvo, canela, *glaseado* real.',
+    ingredientes: 'Harina, mantequilla, huevos, azúcar, huevo, jengibre en polvo, canela, *glaseado* real.',
     instrucciones: 'Prepara la masa, refrigera y corta con moldes. Hornea y decora con motivos festivos una vez frías.',
     tiempo: '45 min',
     dificultad: 'Media'
