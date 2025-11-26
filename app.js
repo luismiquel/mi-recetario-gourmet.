@@ -2688,7 +2688,7 @@ function escucharComando() {
         actualizarFeedbackVoz("inactivo");
 
         if (ev.error === "no-speech" || ev.error === "audio-capture") {
-            // 🚨 CORRECCIÓN FINAL ASR: Retrasar el reintento para romper el bucle InvalidStateError
+            // 🚨 CORRECCIÓN FINAL ASR: Retrasar el reintento a 2000ms para romper el bucle InvalidStateError
             setTimeout(escucharComando, 2000); // <-- 2000ms de retraso
         } else {
              leerTexto("Ha ocurrido un error grave en el micrófono. Por favor, revisa los permisos del navegador.");
