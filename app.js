@@ -1,7 +1,7 @@
 /**
  * =============================================================
  * app.js: LÓGICA COMPLETA DEL RECETARIO GOURMET (VERSIÓN FINAL)
- * CORRECCIÓN FINAL: ASR Estable (2000ms de retraso en caso de error).
+ * Incluye: Datos fusionados, Scroll fijo y Asistente de Voz estable (2000ms fix).
  * =============================================================
  */
 
@@ -720,7 +720,7 @@ const recetas = [
     img: 'placeholder.jpg',
     descripcion: 'Guiso marinero de alubias con el sabor de las almejas y un sofrito de marisco.',
     ingredientes: 'Alubias cocidas, almejas, vino blanco, ajo, cebolla, perejil, caldo de pescado.',
-    instrucciones: 'Sofríe el ajo y la cebolla. Añade las alubias y el caldo. Cocina las almejas aparte y añádelas al final.',
+    instrucciones: 'Sofríe el ajo, cebolla y el perejil. Añade las alubias y el caldo. Cocina las almejas aparte y añádelas al final.',
     tiempo: '40 min',
     dificultad: 'Media'
   },
@@ -2696,7 +2696,7 @@ function escucharComando() {
     };
 
     try {
-        // CORRECCIÓN FINAL: Retraso de 500ms para evitar InvalidStateError al inicio de la sesión
+        // CORRECCIÓN FINAL: Retraso de 500ms antes de iniciar para dar tiempo a la TTS.
         setTimeout(() => {
             if (reconocimiento) { 
                 reconocimiento.start();
