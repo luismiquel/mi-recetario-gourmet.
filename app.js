@@ -1,14 +1,16 @@
 /**
  * =============================================================
- * app.js: LÓGICA COMPLETA DEL RECETARIO GOURMET (VERSIÓN FINAL)
- * Incluye: 160 Recetas, Scroll fijo y Asistente de Voz (2000ms fix).
+ * app.js: VERSIÓN FINAL - CÓDIGO DEL USUARIO INTEGRADO Y CORREGIDO
+ * - Fusión de 160 Recetas.
+ * - Asistente de Voz del Usuario (Mejorado para estabilidad).
+ * - Fix de Scroll y Bucle ASR.
  * =============================================================
  */
 
 "use strict";
 
 // =============================================================
-// 1. DATA (160 RECETAS COMPLETAS)
+// 1. DATA (160 RECETAS NAVIDEÑAS COMPLETAS)
 // =============================================================
 
 const recetas = [
@@ -691,7 +693,7 @@ const recetas = [
     titulo: 'Crema queso azul',
     categoria: 'primero',
     img: 'placeholder.jpg',
-    descripcion: 'Intensa, con crujiente.',
+    descripcion: 'Intenso, con crujiente.',
     ingredientes: 'Queso azul, nata, caldo, cebolla, crujiente.',
     instrucciones: 'Sofríe cebolla. Añade caldo y queso. Tritura y añade nata.',
     tiempo: '30 min',
@@ -1781,7 +1783,7 @@ const recetas = [
   }
 ];
 
-// 🔁 ADAPTADOR DE DATOS
+// 🔁 ADAPTADOR: Transforma el formato de datos al esperado por la lógica
 function mapCategoria(cat) {
   switch (cat) {
     case "aperitivos": return "aperitivo";
@@ -1916,8 +1918,7 @@ function abrirModal(id) {
   
   const ings = r.ingredients.map(i => `<li>${i}</li>`).join("");
   const pasos = r.steps.map((p, i) => `<li data-paso="${i}">${p}</li>`).join("");
-  const esFav = favoritos.has(r.id);
-
+  
   modalContenido.innerHTML = `
     <article class="detalle-receta">
       <header class="modal-header"><h2>${r.title}</h2></header>
@@ -1942,7 +1943,7 @@ function cerrarModal() {
   document.body.classList.remove("modal-abierto");
 }
 
-// --- ASISTENTE DE VOZ (ESTABILIZADO - 2000ms FIX) ---
+// --- ASISTENTE DE VOZ (ESTABILIZADO - RECREACIÓN + RETRASO) ---
 
 function crearReconocimiento() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -2013,15 +2014,13 @@ function leerTexto(texto, callback) {
 function escucharComando() {
     if (!tieneSpeechRecognition || !recetaEnLectura) return;
 
-    // Si ya existe, lo reusamos, si no, creamos uno nuevo
-    if (!reconocimiento) {
-        reconocimiento = crearReconocimiento();
+    // 🛑 CORRECCIÓN CRÍTICA: Destruir instancia anterior para evitar InvalidStateError
+    if (reconocimiento) {
+        try { reconocimiento.abort(); } catch(e) {}
+        reconocimiento = null;
     }
-
-    // Limpiar eventos previos para evitar duplicados
-    reconocimiento.onresult = null;
-    reconocimiento.onerror = null;
-    reconocimiento.onend = null;
+    // Crear nueva instancia limpia
+    reconocimiento = crearReconocimiento();
 
     reconocimiento.onresult = (ev) => {
         const comando = ev.results[0][0].transcript.toLowerCase();
@@ -2034,23 +2033,24 @@ function escucharComando() {
         reconocimientoActivo = false;
         actualizarFeedbackVoz("inactivo");
         
-        // 🚨 CORRECCIÓN FINAL ASR: Retraso de 2000ms si hay error de 'no-speech'
+        // 🚨 CORRECCIÓN FINAL ASR: Retraso agresivo de 2000ms si hay error de 'no-speech'
         if (ev.error === 'no-speech' || ev.error === 'audio-capture') {
-             setTimeout(escucharComando, 2000);
+             setTimeout(escucharComando, 2000); // <-- 2000ms de retraso
         }
     };
 
     reconocimiento.onend = () => {
         reconocimientoActivo = false;
-        // Solo reiniciar si no hay error y seguimos en modo escucha
+        // Solo reiniciar si no hubo error explícito y seguimos en modo escucha
         if (feedbackVozEl && feedbackVozEl.textContent.includes("ESCUCHANDO")) {
-             actualizarFeedbackVoz("inactivo");
+             // Si llegamos aquí sin error, podemos reiniciar más rápido
+             setTimeout(escucharComando, 500); 
         }
     };
 
     try {
         emitirFeedbackAuditivo();
-        // Retraso inicial pequeño
+        // Retraso inicial pequeño para la primera escucha
         setTimeout(() => {
             if (reconocimiento) reconocimiento.start();
             reconocimientoActivo = true;
@@ -2062,6 +2062,9 @@ function escucharComando() {
 }
 
 function procesarComando(cmd) {
+    // Al recibir un comando válido, detenemos la escucha actual
+    reconocimientoActivo = false; 
+
     if (cmd.includes("siguiente")) {
         indicePaso++;
         leerPaso();
@@ -2109,6 +2112,7 @@ function detenerAsistenteVoz() {
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     if (reconocimiento) {
         try { reconocimiento.abort(); } catch(e){}
+        reconocimiento = null;
     }
     reconocimientoActivo = false;
     actualizarFeedbackVoz("inactivo");
@@ -2141,7 +2145,7 @@ document.addEventListener("DOMContentLoaded", () => {
     filtroBtns.forEach(btn => {
         btn.onclick = () => {
             filtroActual = btn.dataset.filtro;
-            document.querySelector(".filtros .active").classList.remove("active");
+            document.querySelector(".filtros .active")?.classList.remove("active");
             btn.classList.add("active");
             pintarRecetas();
         }
