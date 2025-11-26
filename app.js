@@ -1,7 +1,7 @@
 /**
  * =============================================================
  * app.js: LÓGICA COMPLETA DEL RECETARIO GOURMET (VERSIÓN FINAL)
- * Incluye: Datos fusionados, Scroll fijo y Asistente de Voz estable (2000ms fix).
+ * CORRECCIÓN FINAL ASR: Retraso de 2000ms en caso de error para romper el bucle.
  * =============================================================
  */
 
@@ -720,7 +720,7 @@ const recetas = [
     img: 'placeholder.jpg',
     descripcion: 'Guiso marinero de alubias con el sabor de las almejas y un sofrito de marisco.',
     ingredientes: 'Alubias cocidas, almejas, vino blanco, ajo, cebolla, perejil, caldo de pescado.',
-    instrucciones: 'Sofríe el ajo, cebolla y el perejil. Añade las alubias y el caldo. Cocina las almejas aparte y añádelas al final.',
+    instrucciones: 'Sofríe el ajo y la cebolla. Añade las alubias y el caldo. Cocina las almejas aparte y añádelas al final.',
     tiempo: '40 min',
     dificultad: 'Media'
   },
