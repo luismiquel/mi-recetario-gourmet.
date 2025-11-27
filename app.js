@@ -1,16 +1,16 @@
 /**
  * =============================================================
- * app.js: VERSIÓN MAESTRA FINAL (ANTI-ECO)
- * - Solución al "Auto-Escucha": Retraso de 1.5s tras hablar.
- * - Ignora errores de extensiones.
- * - Scroll fijo y Colores dinámicos.
+ * app.js: VERSIÓN MAESTRA FINAL (ESTRATEGIA MANUAL)
+ * - 160 Recetas incluidas.
+ * - Scroll fijo corregido.
+ * - Asistente de Voz: SE DETIENE SI HAY ERROR (Cero bucles).
  * =============================================================
  */
 
 "use strict";
 
 // =============================================================
-// 1. DATA (160 RECETAS NAVIDEÑAS COMPLETAS)
+// 1. DATOS (160 RECETAS)
 // =============================================================
 
 const recetas = [
@@ -141,8 +141,8 @@ const recetas = [
     titulo: 'Crujientes de morcilla con manzana',
     categoria: 'aperitivos',
     img: 'placeholder.jpg',
-    descripcion: 'Contraste de la morcilla especiada y la frescura de la manzana caramelizada en un envoltorio crujiente.',
-    ingredientes: 'Morcilla de Burgos, manzana, masa de pasta filo, mantequilla derretida.',
+    descripcion: 'Morcilla especiada y manzana caramelizada en un envoltorio crujiente.',
+    ingredientes: 'Morcilla de Burgos, manzana, pasta filo, mantequilla derretida.',
     instrucciones: 'Saltea la morcilla con la manzana picada. Rellena cuadrados de pasta filo con la mezcla. Hornea.',
     tiempo: '25 min',
     dificultad: 'Media'
@@ -253,7 +253,7 @@ const recetas = [
     img: 'placeholder.jpg',
     descripcion: 'Pulpo cocido, patata, pimentón y aceite en formato individual.',
     ingredientes: 'Pulpo cocido, patata cocida, aceite, pimentón, sal gorda.',
-    instrucciones: 'Corta pulpo y patata. Monta en pinchos, aliña con aceite, sal y pimentón.',
+    instrucciones: 'Corta el pulpo y la patata en rodajas. Monta en pinchos, aliña con aceite, sal y pimentón.',
     tiempo: '20 min',
     dificultad: 'Fácil'
   },
@@ -1783,7 +1783,12 @@ const recetas = [
   }
 ];
 
-// 🔁 ADAPTADOR DE DATOS
+// =============================================================
+// 2. LÓGICA DE LA APLICACIÓN
+// =============================================================
+let TODAS_LAS_RECETAS = [];
+
+// 🔁 ADAPTADOR
 function mapCategoria(cat) {
   switch (cat) {
     case "aperitivos": return "aperitivo";
@@ -1794,7 +1799,7 @@ function mapCategoria(cat) {
   }
 }
 
-const RECETAS = recetas.map((r) => {
+TODAS_LAS_RECETAS = recetas.map((r) => {
   const ingredientesArray = r.ingredientes ? r.ingredientes.split(",").map(t => t.trim()).filter(Boolean) : [];
   const pasosArray = r.instrucciones ? r.instrucciones.split(".").map(t => t.trim()).filter(Boolean) : [];
   return {
@@ -1810,11 +1815,6 @@ const RECETAS = recetas.map((r) => {
     steps: pasosArray,
   };
 });
-
-// =============================================================
-// 2. LÓGICA DE LA APLICACIÓN
-// =============================================================
-let TODAS_LAS_RECETAS = RECETAS;
 
 // Referencias DOM
 const listadoEl = document.getElementById("listado");
@@ -1851,13 +1851,6 @@ let modalFooter = null;
 // Soporte APIs
 const tieneSpeechRecognition = "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
 const tieneSpeechSynthesis = "speechSynthesis" in window;
-
-// Service Worker
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("/service-worker.js").catch(console.error);
-  });
-}
 
 // --- FUNCIONES PRINCIPALES ---
 
@@ -1914,10 +1907,9 @@ function abrirModal(id) {
   const r = TODAS_LAS_RECETAS.find(x => x.id === id);
   if (!r) return;
 
-  detenerAsistenteVoz(); // Resetea voz al abrir nueva receta
+  detenerAsistenteVoz();
   recetaEnLectura = r;
 
-  // Clase de color dinámica
   modalDialogo.className = `dialogo modal-${r.category}`;
   
   const ings = r.ingredients.map(i => `<li>${i}</li>`).join("");
@@ -1947,105 +1939,109 @@ function cerrarModal() {
   document.body.classList.remove("modal-abierto");
 }
 
-// --- ASISTENTE DE VOZ (VERSIÓN BLINDADA - RECREACIÓN + RETRASO LARGO) ---
+// =============================================================
+// ASISTENTE DE VOZ (LÓGICA ONEND PURA)
+// =============================================================
 
 function crearReconocimiento() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  const r = new SR();
-  r.lang = "es-ES";
-  r.continuous = false; 
-  r.interimResults = false;
-  return r;
+  const recog = new SR();
+  recog.lang = "es-ES";
+  recog.continuous = false; 
+  recog.interimResults = false;
+  return recog;
 }
 
 function actualizarFeedbackVoz(estado) {
   if (!modalFooter) return;
   if (!feedbackVozEl) {
     feedbackVozEl = document.createElement("div");
-    feedbackVozEl.style.cssText = "margin-top:10px;font-weight:bold;text-align:center;padding:5px;border-radius:5px;";
+    feedbackVozEl.id = "feedback-voz-estado";
+    feedbackVozEl.style.cssText = "margin-top:10px;font-weight:bold;padding:5px;border-radius:5px;text-align:center;";
     modalFooter.appendChild(feedbackVozEl);
   }
-  
-  if (estado === "escuchando") {
-    feedbackVozEl.textContent = "🎙️ ESCUCHANDO... Di: Siguiente, Repetir, Salir";
-    feedbackVozEl.style.background = "#ffc107";
-  } else if (estado === "hablando") {
-    feedbackVozEl.textContent = "🔊 LEYENDO...";
-    feedbackVozEl.style.background = "#17a2b8";
-    feedbackVozEl.style.color = "#fff";
-  } else if (estado === "pausado") {
-    feedbackVozEl.textContent = "⏸️ PAUSADO";
-    feedbackVozEl.style.background = "#dc3545";
-    feedbackVozEl.style.color = "#fff";
-  } else {
-    feedbackVozEl.textContent = "Asistente inactivo. Pulsa el botón para iniciar.";
-    feedbackVozEl.style.background = "transparent";
-    feedbackVozEl.style.color = "inherit";
+
+  switch (estado) {
+    case "escuchando":
+      feedbackVozEl.textContent = "🎙️ ESCUCHANDO... Di: Siguiente, Repetir, Salir";
+      feedbackVozEl.style.background = "#ffc107";
+      feedbackVozEl.style.color = "#333";
+      break;
+    case "hablando":
+      feedbackVozEl.textContent = "🔊 LEYENDO...";
+      feedbackVozEl.style.background = "#17a2b8";
+      feedbackVozEl.style.color = "#fff";
+      break;
+    case "pausado":
+      feedbackVozEl.textContent = "⏸️ PAUSADO";
+      feedbackVozEl.style.background = "#dc3545";
+      feedbackVozEl.style.color = "#fff";
+      break;
+    case "inactivo":
+    default:
+      feedbackVozEl.textContent = "Asistente inactivo. Pulsa el botón para iniciar.";
+      feedbackVozEl.style.background = "transparent";
+      feedbackVozEl.style.color = "#888";
+      break;
   }
 }
 
 function leerTexto(texto, callback) {
-    if (!tieneSpeechSynthesis) return;
+    if (!tieneSpeechSynthesis) {
+        if (callback) callback();
+        return;
+    }
     
-    // 1. DETENER RECONOCIMIENTO ANTES DE HABLAR PARA EVITAR "AUTO-ESCUCHA"
+    // Detener escucha antes de hablar
     if (reconocimiento) {
-        reconocimiento.onend = null; // Evitar que onend reinicie
-        try { reconocimiento.abort(); } catch(e) {}
-        reconocimiento = null; 
+        reconocimiento.onend = null; // Importante: desconectar onend
+        try { reconocimiento.abort(); } catch(e){}
+        reconocimiento = null;
     }
     reconocimientoActivo = false;
 
     window.speechSynthesis.cancel();
-
     const u = new SpeechSynthesisUtterance(texto);
     u.lang = "es-ES";
     u.rate = 0.9;
     
     u.onstart = () => actualizarFeedbackVoz("hablando");
+    u.onend = () => { if (callback) setTimeout(callback, 200); }; // Pequeño respiro post-habla
     
-    u.onend = () => {
-        // 2. RETRASO IMPORTANTE TRAS HABLAR (1.5 SEGUNDOS)
-        // Esto evita que el eco active el comando
-        if (callback) {
-            setTimeout(callback, 1500); 
-        }
-    };
-    
-    window.speechSynthesis.speak(u);
+    if (!enPausa) window.speechSynthesis.speak(u);
 }
 
 function escucharComando() {
     if (!tieneSpeechRecognition || !recetaEnLectura || enPausa) {
-        reconocimientoActivo = false;
         actualizarFeedbackVoz("inactivo");
         return;
     }
 
-    // 3. RECREACIÓN DE INSTANCIA PARA EVITAR INVALIDSTATEERROR
+    // Destruir instancia previa
     if (reconocimiento) {
-        reconocimiento.onend = null; 
-        try { reconocimiento.abort(); } catch(e) {}
+        reconocimiento.onend = null;
+        try { reconocimiento.abort(); } catch(e){}
         reconocimiento = null;
     }
-    reconocimiento = crearReconocimiento();
 
+    reconocimiento = crearReconocimiento();
+    
     reconocimiento.onresult = (ev) => {
+        // Éxito: procesamos y NO reiniciamos desde aquí
         const comando = ev.results[0][0].transcript.toLowerCase();
         console.log("Comando:", comando);
         procesarComando(comando);
     };
 
     reconocimiento.onerror = (ev) => {
-        console.warn("Error ASR:", ev.error);
-        reconocimientoActivo = false;
-        // Si error, NO reiniciar automáticamente para evitar bucle infinito
-        actualizarFeedbackVoz("inactivo");
+        // Error: NO reiniciamos desde aquí. Dejamos que onend maneje el flujo limpio o paramos.
+        console.warn("ASR Error:", ev.error);
     };
 
     reconocimiento.onend = () => {
-        // Solo reiniciar si seguimos queriendo escuchar y no hubo error
-        if (reconocimientoActivo && !enPausa) {
-             setTimeout(escucharComando, 500);
+        // ÚNICO PUNTO DE REINICIO: Solo si no hemos pausado/cerrado y no estamos procesando un comando
+        if (recetaEnLectura && !enPausa && reconocimientoActivo) {
+             setTimeout(escucharComando, 500); 
         } else {
              actualizarFeedbackVoz("inactivo");
         }
@@ -2056,15 +2052,14 @@ function escucharComando() {
         reconocimiento.start();
         actualizarFeedbackVoz("escuchando");
     } catch (e) {
-        console.error("No se pudo iniciar ASR:", e);
+        console.warn("Fallo start:", e);
         reconocimientoActivo = false;
         actualizarFeedbackVoz("inactivo");
     }
 }
 
 function procesarComando(cmd) {
-    // Desactivamos flag para que onend no reinicie
-    reconocimientoActivo = false; 
+    reconocimientoActivo = false; // Detener bucle automático al procesar
 
     if (cmd.includes("siguiente")) {
         indicePaso++;
@@ -2084,16 +2079,13 @@ function procesarComando(cmd) {
         enPausa = false;
         leerPaso();
     } else {
-        leerTexto("No entendí. Di siguiente, repetir o salir.", () => {
-            reconocimientoActivo = true; 
-            escucharComando();
-        });
+        leerTexto("No entendí. Repite.", () => escucharComando());
     }
 }
 
 function leerPaso() {
     if (indicePaso >= recetaEnLectura.steps.length) {
-        leerTexto("Fin de la receta. ¡Buen provecho!", null);
+        leerTexto("Fin de la receta.", () => detenerAsistenteVoz());
         return;
     }
     
@@ -2103,35 +2095,26 @@ function leerPaso() {
     });
 
     const texto = `Paso ${indicePaso + 1}. ${recetaEnLectura.steps[indicePaso]}`;
-    // Al terminar de leer, activamos la escucha
-    leerTexto(texto, () => {
-        reconocimientoActivo = true;
-        escucharComando();
-    });
+    leerTexto(texto, () => escucharComando());
 }
 
-function iniciarAsistenteVoz(receta) {
-    if (!receta) receta = recetaEnLectura;
-    if (!tieneSpeechSynthesis) { alert("No soportado"); return; }
-  
-    detenerAsistenteVoz(); 
-    recetaEnLectura = receta; 
+function iniciarAsistenteVoz() {
+    if (!recetaEnLectura) return;
+    
+    detenerAsistenteVoz();
+    recetaEnLectura = recetaEnLectura; // Reconfirmar
     indicePaso = 0;
     enPausa = false;
 
-    const intro = `Receta: ${receta.title}.`;
-    // Solo leemos el paso 1 directamente para ser breves
-    leerTexto(intro, () => {
-         if (!receta.steps.length) return;
-         leerPaso(); 
-    });
+    const intro = `Receta: ${recetaEnLectura.title}.`;
+    leerTexto(intro, () => leerPaso());
 }
 
 function detenerAsistenteVoz() {
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     reconocimientoActivo = false;
     if (reconocimiento) {
-        reconocimiento.onend = null; 
+        reconocimiento.onend = null;
         try { reconocimiento.abort(); } catch(e){}
         reconocimiento = null;
     }
@@ -2183,7 +2166,6 @@ document.addEventListener("DOMContentLoaded", () => {
     btnContraste.addEventListener("click", () => document.body.classList.toggle("alto-contraste"));
     btnTexto.addEventListener("click", () => document.body.classList.toggle("texto-grande"));
     
-    // Service Worker
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('/service-worker.js').catch(console.error);
     }
