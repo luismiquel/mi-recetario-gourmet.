@@ -1,7 +1,9 @@
 /**
  * =============================================================
- * app.js: LÓGICA COMPLETA DEL RECETARIO GOURMET (VERSIÓN FINAL)
- * Incluye: Datos fusionados, Scroll fijo y Asistente con Escucha Segura.
+ * app.js: VERSIÓN MAESTRA FINAL
+ * - Fusión de datos (160 recetas).
+ * - Asistente de Voz con estrategia de "Escucha Única" (Cero Bucles).
+ * - UX mejorada (Scroll fijo, colores dinámicos).
  * =============================================================
  */
 
@@ -1849,9 +1851,13 @@ let modalFooter = null;
 // Soporte APIs
 const tieneSpeechRecognition = "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
 const tieneSpeechSynthesis = "speechSynthesis" in window;
-const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-const audioContext = (tieneSpeechRecognition && AudioContextClass) ? new AudioContextClass() : null;
 
+// Service Worker
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/service-worker.js").catch(console.error);
+  });
+}
 
 // --- FUNCIONES PRINCIPALES ---
 
@@ -1941,7 +1947,7 @@ function cerrarModal() {
   document.body.classList.remove("modal-abierto");
 }
 
-// --- ASISTENTE DE VOZ (ESTABILIZADO - RECREACIÓN + LÓGICA ONEND) ---
+// --- ASISTENTE DE VOZ (VERSIÓN SEGURA) ---
 
 function crearReconocimiento() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -1950,19 +1956,6 @@ function crearReconocimiento() {
   r.continuous = false; 
   r.interimResults = false;
   return r;
-}
-
-function emitirFeedbackAuditivo() {
-  if (!audioContext) return;
-  if (audioContext.state === 'suspended') audioContext.resume();
-  const osc = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-  osc.connect(gain);
-  gain.connect(audioContext.destination);
-  osc.frequency.setValueAtTime(440, audioContext.currentTime);
-  gain.gain.setValueAtTime(0.1, audioContext.currentTime);
-  osc.start();
-  osc.stop(audioContext.currentTime + 0.2);
 }
 
 function actualizarFeedbackVoz(estado) {
@@ -1980,6 +1973,10 @@ function actualizarFeedbackVoz(estado) {
     feedbackVozEl.textContent = "🔊 LEYENDO...";
     feedbackVozEl.style.background = "#17a2b8";
     feedbackVozEl.style.color = "#fff";
+  } else if (estado === "pausado") {
+    feedbackVozEl.textContent = "⏸️ PAUSADO";
+    feedbackVozEl.style.background = "#dc3545";
+    feedbackVozEl.style.color = "#fff";
   } else {
     feedbackVozEl.textContent = "Asistente inactivo. Pulsa el botón para iniciar.";
     feedbackVozEl.style.background = "transparent";
@@ -1988,26 +1985,26 @@ function actualizarFeedbackVoz(estado) {
 }
 
 function leerTexto(texto, callback) {
-    if (!tieneSpeechSynthesis) return;
-    
-    // Parar micro SIEMPRE al hablar
-    if (reconocimiento) {
-        try { reconocimiento.abort(); } catch(e){}
-        // No nulleamos aquí para no perder referencia en onend
+    if (!tieneSpeechSynthesis) {
+       if (callback) callback();
+       return;
     }
-    reconocimientoActivo = false;
+    
+    window.speechSynthesis.cancel();
 
     const u = new SpeechSynthesisUtterance(texto);
     u.lang = "es-ES";
     u.rate = 0.9;
     
-    u.onstart = () => actualizarFeedbackVoz("hablando");
-    
     u.onend = () => {
         if (callback) callback();
     };
     
-    window.speechSynthesis.speak(u);
+    if (!enPausa) {
+        window.speechSynthesis.speak(u);
+    } else {
+        if (callback) setTimeout(callback, 100);
+    }
 }
 
 function escucharComando() {
@@ -2017,56 +2014,53 @@ function escucharComando() {
         return;
     }
 
-    // Limpieza agresiva antes de crear
-    if (reconocimiento) {
-        reconocimiento.onend = null; // Anular onend para evitar recursión
-        try { reconocimiento.abort(); } catch(e) {}
-        reconocimiento = null;
+    if (!reconocimiento) {
+        reconocimiento = crearReconocimiento();
     }
     
-    reconocimiento = crearReconocimiento();
+    if (reconocimientoActivo) return;
+
+    reconocimientoActivo = true;
+    actualizarFeedbackVoz("escuchando");
 
     reconocimiento.onresult = (ev) => {
+        reconocimientoActivo = false;
+        if (!ev.results || !ev.results[0]) {
+            actualizarFeedbackVoz("inactivo");
+            return;
+        }
         const comando = ev.results[0][0].transcript.toLowerCase();
         console.log("Comando:", comando);
         procesarComando(comando);
     };
 
-    reconocimiento.onerror = (ev) => {
-        console.warn("Error ASR:", ev.error);
-        // No hacemos NADA aquí para evitar el conflicto.
-        // Dejamos que onend maneje el reinicio si corresponde.
+    reconocimiento.onend = () => {
+        reconocimientoActivo = false;
+        actualizarFeedbackVoz("inactivo");
     };
 
-    reconocimiento.onend = () => {
-        // Solo reiniciamos si estábamos en modo activo y no pausado
-        if (reconocimientoActivo && !enPausa && recetaEnLectura) {
-             // Pequeño respiro
-             setTimeout(escucharComando, 300); 
-        } else {
-             actualizarFeedbackVoz("inactivo");
+    reconocimiento.onerror = (ev) => {
+        console.warn("Error ASR:", ev.error);
+        reconocimientoActivo = false;
+        
+        if (ev.error === "no-speech") {
+            leerTexto("No he oído nada. Pulsa el botón para intentarlo de nuevo.");
+        } else if (ev.error === "not-allowed" || ev.error === "audio-capture") {
+            leerTexto("Error de micrófono. Revisa los permisos.");
         }
+        actualizarFeedbackVoz("inactivo");
     };
 
     try {
-        // Espera mínima y arranque
-        setTimeout(() => {
-            emitirFeedbackAuditivo();
-            reconocimientoActivo = true;
-            reconocimiento.start();
-            actualizarFeedbackVoz("escuchando");
-        }, 100);
+        reconocimiento.start();
     } catch (e) {
-        console.error("Excepción start:", e);
+        console.warn("Error al iniciar ASR:", e);
         reconocimientoActivo = false;
         actualizarFeedbackVoz("inactivo");
     }
 }
 
 function procesarComando(cmd) {
-    // Al recibir comando, reconocimientoActivo se falsea para que onend no reinicie solo
-    reconocimientoActivo = false; 
-
     if (cmd.includes("siguiente")) {
         indicePaso++;
         leerPaso();
@@ -2077,22 +2071,24 @@ function procesarComando(cmd) {
         leerPaso();
     } else if (cmd.includes("salir") || cmd.includes("cerrar")) {
         cerrarModal();
+    } else if (cmd.includes("pausar")) {
+        enPausa = true;
+        actualizarFeedbackVoz("pausado");
+        leerTexto("Pausado. Di reanudar.");
+    } else if (cmd.includes("reanudar")) {
+        enPausa = false;
+        leerPaso();
     } else {
-        leerTexto("No entendí. Di siguiente, repetir o salir.", () => {
-            // Forzamos la reactivación manual tras hablar
-            reconocimientoActivo = true; 
-            escucharComando();
-        });
+        leerTexto("No entendí. Di siguiente, repetir o salir.", () => escucharComando());
     }
 }
 
 function leerPaso() {
     if (indicePaso >= recetaEnLectura.steps.length) {
-        leerTexto("Fin de la receta. ¡Buen provecho!", null);
+        leerTexto("Fin de la receta. ¡Buen provecho!", () => detenerAsistenteVoz());
         return;
     }
     
-    // Marcar paso visual
     document.querySelectorAll("#lista-pasos-lectura li").forEach((li, i) => {
         li.classList.toggle("paso-activo", i === indicePaso);
         if (i === indicePaso) li.scrollIntoView({behavior: "smooth", block: "center"});
@@ -2100,28 +2096,47 @@ function leerPaso() {
 
     const texto = `Paso ${indicePaso + 1}. ${recetaEnLectura.steps[indicePaso]}`;
     leerTexto(texto, () => {
-        reconocimientoActivo = true;
-        escucharComando();
+        if (tieneSpeechRecognition && !enPausa) {
+            escucharComando();
+        }
     });
 }
 
-function iniciarAsistenteVoz() {
-    if (!recetaEnLectura) return;
+function iniciarAsistenteVoz(receta) {
+    if (!receta) receta = recetaEnLectura;
+    
+    if (!tieneSpeechSynthesis) {
+        alert("Tu navegador no soporta síntesis de voz.");
+        return;
+    }
+  
+    detenerAsistenteVoz(); 
+    recetaEnLectura = receta; 
     indicePaso = 0;
-    const intro = `Receta: ${recetaEnLectura.title}. ${recetaEnLectura.ingredients.length} ingredientes. Paso 1.`;
-    leerTexto(intro + recetaEnLectura.steps[0], () => {
-        document.querySelector("#lista-pasos-lectura li").classList.add("paso-activo");
-        reconocimientoActivo = true;
-        escucharComando();
+    enPausa = false;
+
+    const intro = `Receta: ${receta.title}. Tiempo: ${receta.time}.`;
+    const textoIngredientes = "Ingredientes: " + (receta.ingredients.join(". ") || "Sin detalles");
+
+    leerTexto(intro, () => {
+        leerTexto(textoIngredientes, () => {
+             if (!receta.steps || !receta.steps.length) {
+                 leerTexto("Sin pasos detallados.");
+                 return;
+             }
+             leerPaso();
+        });
     });
 }
 
 function detenerAsistenteVoz() {
+    indicePaso = 0;
+    enPausa = false;
     if (window.speechSynthesis) window.speechSynthesis.cancel();
-    reconocimientoActivo = false; // Bandera clave
     if (reconocimiento) {
         try { reconocimiento.abort(); } catch(e){}
     }
+    reconocimientoActivo = false;
     actualizarFeedbackVoz("inactivo");
 }
 
@@ -2143,7 +2158,6 @@ window.borrarItem = (i) => {
     pintarListaCompra();
 }
 
-// Eventos Globales
 document.addEventListener("DOMContentLoaded", () => {
     pintarRecetas();
     pintarListaCompra();
@@ -2170,9 +2184,4 @@ document.addEventListener("DOMContentLoaded", () => {
 
     btnContraste.addEventListener("click", () => document.body.classList.toggle("alto-contraste"));
     btnTexto.addEventListener("click", () => document.body.classList.toggle("texto-grande"));
-    
-    // Service Worker
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/service-worker.js').catch(console.error);
-    }
 });
