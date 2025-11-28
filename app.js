@@ -1,15 +1,18 @@
 /**
  * =============================================================
- * app.js: VERSIÓN FINAL "SEMÁFORO ANTI-ECO"
- * Solución definitiva al bucle de auto-escucha e InvalidStateError.
+ * app.js: VERSIÓN FINAL DEFINITIVA (ANTI-ECO)
+ * - 160 Recetas.
+ * - Lógica estricta: Si habla, no escucha.
+ * - Cero bucles de error.
  * =============================================================
  */
 
 "use strict";
 
 // =============================================================
-// 1. DATOS (160 RECETAS NAVIDEÑAS COMPLETAS)
+// 1. DATOS (160 RECETAS)
 // =============================================================
+
 const recetas = [
   // --- APERITIVOS (1-40) ---
   {
@@ -138,8 +141,8 @@ const recetas = [
     titulo: 'Crujientes de morcilla con manzana',
     categoria: 'aperitivos',
     img: 'placeholder.jpg',
-    descripcion: 'Contraste de la morcilla especiada y la frescura de la manzana caramelizada en un envoltorio crujiente.',
-    ingredientes: 'Morcilla de Burgos, manzana, masa de pasta filo, mantequilla derretida.',
+    descripcion: 'Morcilla especiada y manzana caramelizada en un envoltorio crujiente.',
+    ingredientes: 'Morcilla de Burgos, manzana, pasta filo, mantequilla derretida.',
     instrucciones: 'Saltea la morcilla con la manzana picada. Rellena cuadrados de pasta filo con la mezcla. Hornea.',
     tiempo: '25 min',
     dificultad: 'Media'
@@ -182,7 +185,7 @@ const recetas = [
     titulo: 'Bocados de bacalao gratinado',
     categoria: 'aperitivos',
     img: 'placeholder.jpg',
-    descripcion: 'Pequeños trozos de bacalao cubiertos de una muselina de ajo y gratinados.',
+    descripcion: 'Pequeños trozos de bacalao con muselina de ajo gratinada.',
     ingredientes: 'Bacalao desalado, aceite, ajo, perejil.',
     instrucciones: 'Cocina el bacalao. Coloca en cazuelitas. Cubre con muselina de ajo y gratina.',
     tiempo: '30 min',
@@ -248,7 +251,7 @@ const recetas = [
     titulo: 'Pincho de pulpo a la gallega',
     categoria: 'aperitivos',
     img: 'placeholder.jpg',
-    descripcion: 'El sabor tradicional del pulpo cocido, patata, pimentón y aceite en formato individual.',
+    descripcion: 'Pulpo cocido, patata, pimentón y aceite en formato individual.',
     ingredientes: 'Pulpo cocido, patata cocida, aceite, pimentón, sal gorda.',
     instrucciones: 'Corta el pulpo y la patata en rodajas. Monta en pinchos, aliña con aceite, sal y pimentón.',
     tiempo: '20 min',
@@ -1844,11 +1847,7 @@ let reconocimiento = null;
 let reconocimientoActivo = false;
 let feedbackVozEl = null;
 let modalFooter = null;
-
-// SEMÁFORO DE VOZ: 
-// - true: el asistente está hablando (micrófono bloqueado)
-// - false: el asistente calló (micrófono disponible)
-let hablando = false;
+let hablando = false; // SEMÁFORO ANTI-ECO
 
 // Soporte APIs
 const tieneSpeechRecognition = "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
@@ -1921,7 +1920,6 @@ function abrirModal(id) {
   detenerAsistenteVoz();
   recetaEnLectura = r;
 
-  // Clase de color dinámica
   modalDialogo.className = `dialogo modal-${r.category}`;
   
   const ings = r.ingredients.map(i => `<li>${i}</li>`).join("");
@@ -1952,29 +1950,16 @@ function cerrarModal() {
 }
 
 // =============================================================
-// ASISTENTE DE VOZ (VERSIÓN SEMÁFORO ANTI-ECO)
+// ASISTENTE DE VOZ (SEMÁFORO ANTI-ECO)
 // =============================================================
 
 function crearReconocimiento() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recog = new SR();
   recog.lang = "es-ES";
-  recog.continuous = false;       
-  recog.interimResults = false;  
+  recog.continuous = false; 
+  recog.interimResults = false;
   return recog;
-}
-
-function emitirFeedbackAuditivo() {
-  if (!audioContext) return;
-  if (audioContext.state === 'suspended') audioContext.resume();
-  const osc = audioContext.createOscillator();
-  const gain = audioContext.createGain();
-  osc.connect(gain);
-  gain.connect(audioContext.destination);
-  osc.frequency.setValueAtTime(440, audioContext.currentTime);
-  gain.gain.setValueAtTime(0.1, audioContext.currentTime);
-  osc.start();
-  osc.stop(audioContext.currentTime + 0.2);
 }
 
 function actualizarFeedbackVoz(estado) {
@@ -1988,7 +1973,7 @@ function actualizarFeedbackVoz(estado) {
 
   switch (estado) {
     case "escuchando":
-      feedbackVozEl.textContent = "🎙️ ESCUCHANDO... Di un comando.";
+      feedbackVozEl.textContent = "🎙️ ESCUCHANDO... Di: Siguiente, Repetir, Salir";
       feedbackVozEl.style.backgroundColor = "#ffc107";
       feedbackVozEl.style.color = "#333";
       break;
@@ -2011,59 +1996,43 @@ function actualizarFeedbackVoz(estado) {
   }
 }
 
-/**
- * Función central de lectura. 
- * Bloquea el micrófono (hablando=true) ANTES de empezar a hablar.
- */
 function leerTexto(texto, callback) {
     if (!tieneSpeechSynthesis) {
         if (callback) callback();
         return;
     }
     
-    // 🛑 SEMÁFORO ROJO: ¡Bloqueamos el micro!
+    // BLOQUEO TOTAL DEL MICRO MIENTRAS HABLA
     hablando = true;
-    
-    // Si había un reconocimiento activo, lo matamos inmediatamente
-    if (reconocimientoActivo || reconocimiento) {
+    if (reconocimiento) {
         try { reconocimiento.abort(); } catch(e) {}
-        reconocimiento = null;
-        reconocimientoActivo = false;
+        reconocimiento = null; 
     }
+    reconocimientoActivo = false;
 
     window.speechSynthesis.cancel();
     const u = new SpeechSynthesisUtterance(texto);
     u.lang = "es-ES";
-    u.rate = 0.95;
+    u.rate = 0.9;
     
     u.onstart = () => actualizarFeedbackVoz("hablando");
     
     u.onend = () => {
-        // 🟢 SEMÁFORO VERDE CON RETRASO
-        // Esperamos 1.5 segundos para que el eco desaparezca antes de permitir escuchar
+        // RETRASO DE SEGURIDAD (1000ms) para evitar eco
         setTimeout(() => {
             hablando = false; 
             if (callback) callback();
-        }, 1500); 
+        }, 1000);
     };
     
-    // Manejo de errores de síntesis
-    u.onerror = () => {
-        hablando = false;
-    };
+    u.onerror = () => { hablando = false; };
 
-    if (!enPausa) {
-        window.speechSynthesis.speak(u);
-    } else {
-        setTimeout(() => {
-            hablando = false;
-            if (callback) callback();
-        }, 100);
-    }
+    if (!enPausa) window.speechSynthesis.speak(u);
+    else setTimeout(() => { hablando = false; if(callback) callback(); }, 100);
 }
 
 function escucharComando() {
-    // Si estamos hablando, ¡PROHIBIDO ESCUCHAR!
+    // Si el semáforo está rojo (hablando), NO INICIAMOS
     if (hablando) return;
 
     if (!tieneSpeechRecognition || !recetaEnLectura || enPausa) {
@@ -2072,47 +2041,32 @@ function escucharComando() {
         return;
     }
 
-    // Recrear instancia siempre para limpiar "basura"
     if (reconocimiento) {
         try { reconocimiento.abort(); } catch(e) {}
         reconocimiento = null;
     }
     reconocimiento = crearReconocimiento();
 
-    reconocimientoActivo = true;
-    actualizarFeedbackVoz("escuchando");
-    emitirFeedbackAuditivo();
-
     reconocimiento.onresult = (ev) => {
         reconocimientoActivo = false;
-        if (!ev.results || !ev.results[0] || !ev.results[0][0]) {
-            actualizarFeedbackVoz("inactivo");
-            return;
-        }
+        if (!ev.results || !ev.results[0]) return;
+        
         const comando = ev.results[0][0].transcript.toLowerCase();
         console.log("Comando:", comando);
         
-        // Filtro anti-eco: Si el comando es larguísimo, es probable que sea la receta
-        if (comando.length > 60) {
-            console.warn("Posible eco detectado. Ignorando.");
+        // Si el comando es muy largo, es eco. Lo ignoramos.
+        if (comando.length > 50) {
+            console.warn("Eco detectado. Ignorando.");
             actualizarFeedbackVoz("inactivo");
             return;
         }
-
         procesarComando(comando);
-    };
-
-    reconocimiento.onend = () => {
-        reconocimientoActivo = false;
-        actualizarFeedbackVoz("inactivo");
     };
 
     reconocimiento.onerror = (ev) => {
         console.warn("ASR Error:", ev.error);
         reconocimientoActivo = false;
-        
-        // En caso de error, PARAMOS y pedimos pulsación manual. 
-        // Cero riesgos de bucle.
+        // En caso de error, PARAMOS. El usuario debe reiniciar manualmente.
         if (ev.error === "no-speech") {
              leerTexto("No he oído nada. Pulsa el botón para intentarlo.");
         } else {
@@ -2120,8 +2074,18 @@ function escucharComando() {
         }
     };
 
+    reconocimiento.onend = () => {
+        reconocimientoActivo = false;
+        actualizarFeedbackVoz("inactivo");
+    };
+
     try {
-        reconocimiento.start();
+        // Doble check antes de iniciar
+        if (!hablando) {
+            reconocimientoActivo = true;
+            reconocimiento.start();
+            actualizarFeedbackVoz("escuchando");
+        }
     } catch (e) {
         console.error("Start error:", e);
         reconocimientoActivo = false;
@@ -2130,7 +2094,7 @@ function escucharComando() {
 }
 
 function procesarComando(cmd) {
-    if (hablando) return; 
+    if (hablando) return;
 
     if (cmd.includes("siguiente")) {
         indicePaso++;
@@ -2166,7 +2130,6 @@ function leerPaso() {
     });
 
     const texto = `Paso ${indicePaso + 1}. ${recetaEnLectura.steps[indicePaso]}`;
-    // Callback: Solo escuchar CUANDO termine de hablar y pase el tiempo de seguridad
     leerTexto(texto, () => {
         if (!enPausa) escucharComando();
     });
@@ -2174,11 +2137,7 @@ function leerPaso() {
 
 function iniciarAsistenteVoz(receta) {
     if (!receta) receta = recetaEnLectura;
-    
-    if (!tieneSpeechSynthesis) {
-        alert("Tu navegador no soporta síntesis de voz.");
-        return;
-    }
+    if (!tieneSpeechSynthesis) { alert("No soportado"); return; }
   
     detenerAsistenteVoz(); 
     recetaEnLectura = receta; 
