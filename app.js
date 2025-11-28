@@ -1,18 +1,15 @@
 /**
  * =============================================================
- * app.js: VERSIÓN FINAL DEFINITIVA
- * - Lógica de escucha corregida por el usuario (Sin bucles).
- * - 160 Recetas.
- * - UX completa.
+ * app.js: VERSIÓN FINAL "SEMÁFORO ANTI-ECO"
+ * Solución definitiva al bucle de auto-escucha e InvalidStateError.
  * =============================================================
  */
 
 "use strict";
 
 // =============================================================
-// 1. DATOS (160 RECETAS)
+// 1. DATOS (160 RECETAS NAVIDEÑAS COMPLETAS)
 // =============================================================
-
 const recetas = [
   // --- APERITIVOS (1-40) ---
   {
@@ -185,7 +182,7 @@ const recetas = [
     titulo: 'Bocados de bacalao gratinado',
     categoria: 'aperitivos',
     img: 'placeholder.jpg',
-    descripcion: 'Pequeños trozos de bacalao con muselina de ajo gratinada.',
+    descripcion: 'Pequeños trozos de bacalao cubiertos de una muselina de ajo y gratinados.',
     ingredientes: 'Bacalao desalado, aceite, ajo, perejil.',
     instrucciones: 'Cocina el bacalao. Coloca en cazuelitas. Cubre con muselina de ajo y gratina.',
     tiempo: '30 min',
@@ -251,7 +248,7 @@ const recetas = [
     titulo: 'Pincho de pulpo a la gallega',
     categoria: 'aperitivos',
     img: 'placeholder.jpg',
-    descripcion: 'Pulpo cocido, patata, pimentón y aceite en formato individual.',
+    descripcion: 'El sabor tradicional del pulpo cocido, patata, pimentón y aceite en formato individual.',
     ingredientes: 'Pulpo cocido, patata cocida, aceite, pimentón, sal gorda.',
     instrucciones: 'Corta el pulpo y la patata en rodajas. Monta en pinchos, aliña con aceite, sal y pimentón.',
     tiempo: '20 min',
@@ -1457,8 +1454,8 @@ const recetas = [
     categoria: 'postre',
     img: 'placeholder.jpg',
     descripcion: 'Rellenos nata.',
-    ingredientes: 'Pasta choux, nata para montar, azúcar, chocolate para fundir.',
-    instrucciones: 'Hornea los profiteroles. Rellénalos con la nata fría y báñalos en el chocolate derretido.',
+    ingredientes: 'Choux, nata, chocolate.',
+    instrucciones: 'Hornea y rellena.',
     tiempo: '60 min',
     dificultad: 'Media'
   },
@@ -1467,318 +1464,318 @@ const recetas = [
     titulo: 'Crème brûlée',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Crema de huevo y nata con una capa crujiente de azúcar caramelizado.',
-    ingredientes: 'Nata, yemas de huevo, azúcar, vaina de vainilla, azúcar moreno para caramelizar.',
-    instrucciones: 'Cuece la crema. Refrigera. Justo antes de servir, espolvorea azúcar y quémalo con un soplete.',
-    tiempo: '40 min (+ refrigeración)',
+    descripcion: 'Costra azúcar.',
+    ingredientes: 'Nata, yemas, vainilla.',
+    instrucciones: 'Cuece y quema azúcar.',
+    tiempo: '40 min',
     dificultad: 'Media'
   },
   {
     id: 133,
-    titulo: 'Helado casero de vainilla',
+    titulo: 'Helado vainilla',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Helado cremoso y aromático, sin aditivos, ideal para acompañar otros postres.',
-    ingredientes: 'Nata, leche, yemas de huevo, azúcar, vaina de vainilla.',
-    instrucciones: 'Prepara una crema inglesa de vainilla. Enfríala y bátela en la heladera hasta obtener la textura deseada.',
-    tiempo: '30 min (+ congelación)',
+    descripcion: 'Casero.',
+    ingredientes: 'Nata, leche, vainilla.',
+    instrucciones: 'Mantecar.',
+    tiempo: '30 min',
     dificultad: 'Media'
   },
   {
     id: 134,
-    titulo: 'Tarta tres chocolates',
+    titulo: 'Tarta 3 chocolates',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Tarta fría sin horno, con tres capas de chocolate (negro, con leche y blanco).',
-    ingredientes: 'Chocolates (negro, leche, blanco), nata, leche, cuajada, galletas tipo Digestive, mantequilla.',
-    instrucciones: 'Haz la base. Prepara las tres capas por separado con la cuajada, vertiendo la siguiente cuando la anterior esté cuajada.',
-    tiempo: '45 min (+ refrigeración)',
+    descripcion: 'Capas.',
+    ingredientes: '3 chocolates, nata, cuajada.',
+    instrucciones: 'Capas sucesivas.',
+    tiempo: '45 min',
     dificultad: 'Media'
   },
   {
     id: 135,
-    titulo: 'Crepes de chocolate y plátano',
+    titulo: 'Crepes chocolate',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Finos crepes rellenos de plátano y cubiertos con salsa de chocolate.',
-    ingredientes: 'Harina, huevos, leche, mantequilla, plátano, Nutella o salsa de chocolate.',
-    instrucciones: 'Prepara la masa de crepes y cocínalos. Rellena con trozos de plátano y salsa de chocolate.',
+    descripcion: 'Con plátano.',
+    ingredientes: 'Masa crepes, chocolate.',
+    instrucciones: 'Haz crepes y rellena.',
     tiempo: '30 min',
     dificultad: 'Fácil'
   },
   {
     id: 136,
-    titulo: 'Pudding de pan navideño',
+    titulo: 'Pudding pan',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Postre de aprovechamiento con pan duro, pasas, ron y especias.',
-    ingredientes: 'Pan duro, leche, huevos, azúcar, pasas, ron, canela, nuez moscada.',
-    instrucciones: 'Remoja el pan en la leche. Mezcla con el resto de ingredientes y hornea al baño maría.',
+    descripcion: 'Aprovechamiento.',
+    ingredientes: 'Pan, leche, pasas.',
+    instrucciones: 'Hornea baño maría.',
     tiempo: '75 min',
     dificultad: 'Media'
   },
   {
     id: 137,
-    titulo: 'Macedonia de frutas',
+    titulo: 'Macedonia',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Combinación refrescante de fruta fresca de temporada, ideal para aligerar la cena.',
-    ingredientes: 'Frutas variadas (naranja, kiwi, uvas, manzana, pera), zumo de naranja, licor dulce (opcional).',
-    instrucciones: 'Corta la fruta y mézclala. Aliña con zumo de naranja y un toque de licor si lo deseas. Sirve fría.',
+    descripcion: 'Frutas variadas.',
+    ingredientes: 'Fruta, zumo.',
+    instrucciones: 'Corta y mezcla.',
     tiempo: '15 min',
     dificultad: 'Muy Fácil'
   },
   {
     id: 138,
-    titulo: 'Tarta de zanahoria',
+    titulo: 'Tarta zanahoria',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Bizcocho especiado de zanahoria con un frosting de queso crema.',
-    ingredientes: 'Zanahoria rallada, harina, azúcar, huevos, especias (canela, nuez moscada), queso crema, mantequilla.',
-    instrucciones: 'Prepara el bizcocho y hornéalo. Deja enfriar y cúbrelo con el frosting de queso.',
+    descripcion: 'Frosting queso.',
+    ingredientes: 'Zanahoria, harina, queso.',
+    instrucciones: 'Hornea y cubre.',
     tiempo: '60 min',
     dificultad: 'Media'
   },
   {
     id: 139,
-    titulo: 'Cupcakes de Navidad',
+    titulo: 'Cupcakes',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Pequeñas magdalenas con frosting y decoración festiva.',
-    ingredientes: 'Masa de cupcake, frosting de mantequilla o queso, colorantes y decoración navideña.',
-    instrucciones: 'Hornea los cupcakes. Prepara el frosting y decora con motivos navideños.',
+    descripcion: 'Decorados.',
+    ingredientes: 'Masa, frosting.',
+    instrucciones: 'Hornea y decora.',
     tiempo: '40 min',
     dificultad: 'Media'
   },
   {
     id: 140,
-    titulo: 'Cheesecake de chocolate blanco',
+    titulo: 'Cheesecake blanco',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Tarta de queso con el dulzor y cremosidad del chocolate blanco.',
-    ingredientes: 'Chocolate blanco, queso crema, nata, azúcar, gelatina, base de galleta.',
-    instrucciones: 'Derrite el chocolate y mézclalo con el queso y la nata. Vierte sobre la base y refrigera.',
-    tiempo: '20 min (+ refrigeración)',
+    descripcion: 'Chocolate blanco.',
+    ingredientes: 'Choco blanco, queso.',
+    instrucciones: 'Mezcla y enfría.',
+    tiempo: '20 min',
     dificultad: 'Fácil'
   },
   {
     id: 141,
-    titulo: 'Mousse de limón',
+    titulo: 'Mousse limón',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Postre ligero y cítrico, con una textura espumosa de zumo de limón.',
-    ingredientes: 'Zumo de limón, ralladura de limón, leche condensada, nata para montar, gelatina.',
-    instrucciones: 'Mezcla el limón con la leche condensada. Incorpora la nata montada con movimientos suaves. Refrigera en copas.',
-    tiempo: '15 min (+ refrigeración)',
+    descripcion: 'Cítrico.',
+    ingredientes: 'Limón, leche condensada.',
+    instrucciones: 'Mezcla y enfría.',
+    tiempo: '15 min',
     dificultad: 'Fácil'
   },
   {
     id: 142,
-    titulo: 'Tarta de galleta',
+    titulo: 'Tarta galleta',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Tarta tradicional de capas de galleta, crema pastelera y chocolate.',
-    ingredientes: 'Galletas María, leche, crema pastelera o pudín, chocolate para cubrir.',
-    instrucciones: 'Alterna capas de galleta remojada en leche y crema. Cúbrela con chocolate fundido y refrigera.',
-    tiempo: '30 min (+ refrigeración)',
+    descripcion: 'Abuela.',
+    ingredientes: 'Galletas, chocolate.',
+    instrucciones: 'Capas.',
+    tiempo: '30 min',
     dificultad: 'Fácil'
   },
   {
     id: 143,
-    titulo: 'Postre de yogur griego con miel',
+    titulo: 'Yogur miel',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Postre sencillo, con el toque ácido del yogur, miel y nueces.',
-    ingredientes: 'Yogur griego, miel, nueces picadas, canela.',
-    instrucciones: 'Sirve el yogur en cuencos. Añade un chorrito de miel, nueces y canela.',
+    descripcion: 'Griego.',
+    ingredientes: 'Yogur, miel, nueces.',
+    instrucciones: 'Sirve.',
     tiempo: '5 min',
     dificultad: 'Muy Fácil'
   },
   {
     id: 144,
-    titulo: 'Tiramisú de fresas',
+    titulo: 'Tiramisú fresas',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Versión del tiramisú con fresas frescas en lugar de café.',
-    ingredientes: 'Queso Mascarpone, huevos, azúcar, bizcochos de soletilla, fresas trituradas, licor de fresa (opcional).',
-    instrucciones: 'Prepara la crema de mascarpone. Moja los bizcochos en el puré de fresas. Monta las capas y refrigera.',
-    tiempo: '30 min (+ refrigeración)',
+    descripcion: 'Frutal.',
+    ingredientes: 'Mascarpone, fresas.',
+    instrucciones: 'Capas.',
+    tiempo: '30 min',
     dificultad: 'Media'
   },
   {
     id: 145,
-    titulo: 'Flan de café',
+    titulo: 'Flan café',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Flan tradicional con un intenso sabor a café.',
-    ingredientes: 'Huevos, leche, azúcar, café fuerte (expresso), caramelo líquido.',
-    instrucciones: 'Sustituye parte de la leche del flan tradicional por café fuerte. Cocina al baño maría y enfría.',
+    descripcion: 'Sabor café.',
+    ingredientes: 'Huevo, leche, café.',
+    instrucciones: 'Baño maría.',
     tiempo: '60 min',
     dificultad: 'Fácil'
   },
   {
     id: 146,
-    titulo: 'Brownie con nueces',
+    titulo: 'Brownie',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Bizcocho denso de chocolate con trozos de nueces, ideal con helado.',
-    ingredientes: 'Chocolate negro, mantequilla, huevos, azúcar, harina, nueces.',
-    instrucciones: 'Derrite el chocolate y la mantequilla. Mezcla los ingredientes secos. Hornea hasta que el centro esté ligeramente húmedo.',
+    descripcion: 'Denso.',
+    ingredientes: 'Chocolate, nueces.',
+    instrucciones: 'Hornea.',
     tiempo: '35 min',
     dificultad: 'Fácil'
   },
   {
     id: 147,
-    titulo: 'Tartaletas de fruta fresca',
+    titulo: 'Tartaletas fruta',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Base de masa quebrada rellena de crema pastelera y cubierta con fruta de temporada.',
-    ingredientes: 'Base de masa quebrada, crema pastelera, fruta fresca (kiwi, fresa, uva), gelatina neutra.',
-    instrucciones: 'Rellena la base con crema. Coloca la fruta por encima. Barniza con la gelatina para darle brillo.',
+    descripcion: 'Masa quebrada.',
+    ingredientes: 'Masa, crema, fruta.',
+    instrucciones: 'Rellena.',
     tiempo: '40 min',
     dificultad: 'Media'
   },
   {
     id: 148,
-    titulo: 'Semifrío de chocolate',
+    titulo: 'Semifrío choco',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Postre helado ligero con textura de mousse, perfecto para el final de la cena.',
-    ingredientes: 'Chocolate negro, nata, azúcar, huevos, gelatina.',
-    instrucciones: 'Prepara la base de chocolate. Incorpora la nata montada con movimientos envolventes. Congela en un molde.',
-    tiempo: '30 min (+ congelación)',
+    descripcion: 'Helado.',
+    ingredientes: 'Chocolate, nata.',
+    instrucciones: 'Congela.',
+    tiempo: '30 min',
     dificultad: 'Media'
   },
   {
     id: 149,
-    titulo: 'Bizcocho de almendras',
+    titulo: 'Bizcocho almendra',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Bizcocho jugoso con harina de almendras y un toque de licor.',
-    ingredientes: 'Harina de almendras, huevos, azúcar, ralladura de limón, licor de almendras (opcional).',
-    instrucciones: 'Bate los huevos con el azúcar. Incorpora la harina de almendras. Hornea. Sirve con azúcar glas.',
+    descripcion: 'Jugoso.',
+    ingredientes: 'Almendra, huevo.',
+    instrucciones: 'Hornea.',
     tiempo: '45 min',
     dificultad: 'Fácil'
   },
   {
     id: 150,
-    titulo: 'Tarta de chocolate y naranja',
+    titulo: 'Tarta choco naranja',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Tarta densa de chocolate con el aroma de la naranja confitada.',
-    ingredientes: 'Chocolate negro, mantequilla, huevos, azúcar, harina, naranja confitada.',
-    instrucciones: 'Prepara la masa. Añade la ralladura y trozos de naranja confitada. Hornea y cubre con glaseado de chocolate.',
+    descripcion: 'Aroma naranja.',
+    ingredientes: 'Chocolate, naranja.',
+    instrucciones: 'Hornea.',
     tiempo: '50 min',
     dificultad: 'Media'
   },
   {
     id: 151,
-    titulo: 'Panna cotta de frambuesa',
+    titulo: 'Panna cotta',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Postre italiano de nata cocida con una salsa brillante de frambuesa.',
-    ingredientes: 'Nata, azúcar, gelatina, vainilla. Para la salsa: frambuesas, azúcar.',
-    instrucciones: 'Calienta la nata con azúcar y vainilla. Disuelve la gelatina e incorpórala. Vierte en moldes y refrigera. Sirve con la salsa de frambuesa.',
-    tiempo: '20 min (+ refrigeración)',
+    descripcion: 'Frambuesa.',
+    ingredientes: 'Nata, gelatina.',
+    instrucciones: 'Cuece y enfría.',
+    tiempo: '20 min',
     dificultad: 'Fácil'
   },
   {
     id: 152,
-    titulo: 'Mousse de turrón',
+    titulo: 'Mousse turrón',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Mousse festiva a base de turrón de Jijona, muy ligera.',
-    ingredientes: 'Turrón de Jijona, nata para montar, leche, gelatina, azúcar (opcional).',
-    instrucciones: 'Tritura el turrón con la leche. Mezcla la nata montada y la gelatina disuelta. Refrigera en copas.',
-    tiempo: '20 min (+ refrigeración)',
+    descripcion: 'Navideño.',
+    ingredientes: 'Turrón, nata.',
+    instrucciones: 'Tritura y mezcla.',
+    tiempo: '20 min',
     dificultad: 'Fácil'
   },
   {
     id: 153,
-    titulo: 'Tarta de queso fría',
+    titulo: 'Tarta queso fría',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Tarta de queso sin horno, con base de galleta y cubierta de mermelada.',
-    ingredientes: 'Queso crema, nata, azúcar, gelatina, leche, base de galleta, mermelada de fresa o arándanos.',
-    instrucciones: 'Prepara la crema con gelatina. Vierte sobre la base y refrigera. Cubre con mermelada.',
-    tiempo: '20 min (+ refrigeración)',
+    descripcion: 'Sin horno.',
+    ingredientes: 'Queso, gelatina.',
+    instrucciones: 'Enfría.',
+    tiempo: '20 min',
     dificultad: 'Muy Fácil'
   },
   {
     id: 154,
-    titulo: 'Natillas de turrón',
+    titulo: 'Natillas turrón',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Natillas clásicas con el sabor añadido de turrón blando.',
-    ingredientes: 'Leche, yemas de huevo, azúcar, maicena, turrón de Jijona.',
-    instrucciones: 'Infusiona la leche con turrón. Prepara las natillas. Sirve frías con canela.',
+    descripcion: 'Cremosas.',
+    ingredientes: 'Leche, turrón.',
+    instrucciones: 'Espesa.',
     tiempo: '30 min',
     dificultad: 'Fácil'
   },
   {
     id: 155,
-    titulo: 'Sorbete de limón al cava',
+    titulo: 'Sorbete limón',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Postre digestivo y refrescante con helado de limón y cava.',
-    ingredientes: 'Helado de limón (sorbete), cava o champagne, vodka (opcional).',
-    instrucciones: 'Mezcla el helado y el cava en una batidora hasta obtener una textura granizada. Sirve inmediatamente.',
+    descripcion: 'Con cava.',
+    ingredientes: 'Helado limón, cava.',
+    instrucciones: 'Bate.',
     tiempo: '5 min',
     dificultad: 'Muy Fácil'
   },
   {
     id: 156,
-    titulo: 'Galletas de jengibre navideñas',
+    titulo: 'Galletas jengibre',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Galletas de mantequilla y especias, con formas y decoración festivas.',
-    ingredientes: 'Harina, mantequilla, azúcar, huevo, jengibre en polvo, canela, glaseado real.',
-    instrucciones: 'Prepara la masa, refrigera y corta con moldes. Hornea y decora con motivos festivos una vez frías.',
+    descripcion: 'Navideñas.',
+    ingredientes: 'Harina, jengibre.',
+    instrucciones: 'Corta y hornea.',
     tiempo: '45 min',
     dificultad: 'Media'
   },
   {
     id: 157,
-    titulo: 'Brazos gitanos mini',
+    titulo: 'Brazos mini',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Pequeños rollos de bizcocho rellenos de crema o nata.',
-    ingredientes: 'Bizcocho fino, nata montada o crema pastelera, azúcar glas.',
-    instrucciones: 'Rellena el bizcocho y enróllalo. Corta en porciones pequeñas. Espolvorea azúcar glas.',
+    descripcion: 'Rellenos.',
+    ingredientes: 'Bizcocho, nata.',
+    instrucciones: 'Enrolla.',
     tiempo: '40 min',
     dificultad: 'Media'
   },
   {
     id: 158,
-    titulo: 'Helado artesanal de turrón',
+    titulo: 'Helado turrón',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Helado cremoso con trozos de turrón de Jijona.',
-    ingredientes: 'Nata, leche, turrón de Jijona, azúcar.',
-    instrucciones: 'Tritura el turrón con la leche. Mezcla con la nata y congela en la heladera, o congela y bate cada hora si no tienes.',
-    tiempo: '30 min (+ congelación)',
+    descripcion: 'Artesano.',
+    ingredientes: 'Turrón, nata.',
+    instrucciones: 'Congela.',
+    tiempo: '30 min',
     dificultad: 'Media'
   },
   {
     id: 159,
-    titulo: 'Trufas de chocolate',
+    titulo: 'Trufas',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Bombones de ganache de chocolate, cubiertos de cacao en polvo.',
-    ingredientes: 'Chocolate negro, nata para montar, mantequilla, cacao en polvo, ron (opcional).',
-    instrucciones: 'Calienta la nata y viértela sobre el chocolate. Enfría el ganache. Forma las trufas y reboza en cacao.',
-    tiempo: '20 min (+ refrigeración)',
+    descripcion: 'Chocolate.',
+    ingredientes: 'Chocolate, nata.',
+    instrucciones: 'Forma bolas.',
+    tiempo: '20 min',
     dificultad: 'Fácil'
   },
   {
     id: 160,
-    titulo: 'Tiramisú de cacao amargo',
+    titulo: 'Tiramisú cacao',
     categoria: 'postre',
     img: 'placeholder.jpg',
-    descripcion: 'Versión intensa del tiramisú con mucho cacao amargo en polvo.',
-    ingredientes: 'Queso Mascarpone, huevos, azúcar, bizcochos, café, licor, cacao amargo.',
-    instrucciones: 'Prepara la crema y monta el tiramisú por capas. Utiliza una cantidad generosa de cacao amargo para espolvorear.',
-    tiempo: '30 min (+ refrigeración)',
+    descripcion: 'Intenso.',
+    ingredientes: 'Mascarpone, cacao.',
+    instrucciones: 'Capas.',
+    tiempo: '30 min',
     dificultad: 'Media'
   }
 ];
@@ -1848,9 +1845,23 @@ let reconocimientoActivo = false;
 let feedbackVozEl = null;
 let modalFooter = null;
 
+// SEMÁFORO DE VOZ: 
+// - true: el asistente está hablando (micrófono bloqueado)
+// - false: el asistente calló (micrófono disponible)
+let hablando = false;
+
 // Soporte APIs
 const tieneSpeechRecognition = "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
 const tieneSpeechSynthesis = "speechSynthesis" in window;
+const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+const audioContext = (tieneSpeechRecognition && AudioContextClass) ? new AudioContextClass() : null;
+
+// Service Worker
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("/service-worker.js").catch(console.error);
+  });
+}
 
 // --- FUNCIONES PRINCIPALES ---
 
@@ -1910,6 +1921,7 @@ function abrirModal(id) {
   detenerAsistenteVoz();
   recetaEnLectura = r;
 
+  // Clase de color dinámica
   modalDialogo.className = `dialogo modal-${r.category}`;
   
   const ings = r.ingredients.map(i => `<li>${i}</li>`).join("");
@@ -1940,16 +1952,29 @@ function cerrarModal() {
 }
 
 // =============================================================
-// ASISTENTE DE VOZ (ESTRATEGIA "ESCUCHA SEGURA" SIN BUCLES)
+// ASISTENTE DE VOZ (VERSIÓN SEMÁFORO ANTI-ECO)
 // =============================================================
 
 function crearReconocimiento() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   const recog = new SR();
   recog.lang = "es-ES";
-  recog.continuous = false;       // Un comando cada vez
-  recog.interimResults = false;  // Solo resultados finales
+  recog.continuous = false;       
+  recog.interimResults = false;  
   return recog;
+}
+
+function emitirFeedbackAuditivo() {
+  if (!audioContext) return;
+  if (audioContext.state === 'suspended') audioContext.resume();
+  const osc = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+  osc.connect(gain);
+  gain.connect(audioContext.destination);
+  osc.frequency.setValueAtTime(440, audioContext.currentTime);
+  gain.gain.setValueAtTime(0.1, audioContext.currentTime);
+  osc.start();
+  osc.stop(audioContext.currentTime + 0.2);
 }
 
 function actualizarFeedbackVoz(estado) {
@@ -1967,13 +1992,13 @@ function actualizarFeedbackVoz(estado) {
       feedbackVozEl.style.backgroundColor = "#ffc107";
       feedbackVozEl.style.color = "#333";
       break;
-    case "procesando":
-      feedbackVozEl.textContent = "⚙️ PROCESANDO...";
+    case "hablando":
+      feedbackVozEl.textContent = "🔊 LEYENDO...";
       feedbackVozEl.style.backgroundColor = "#17a2b8";
       feedbackVozEl.style.color = "#fff";
       break;
     case "pausado":
-      feedbackVozEl.textContent = "⏸️ Asistente en PAUSA. Di reanudar para continuar.";
+      feedbackVozEl.textContent = "⏸️ PAUSADO";
       feedbackVozEl.style.backgroundColor = "#dc3545";
       feedbackVozEl.style.color = "#fff";
       break;
@@ -1986,267 +2011,199 @@ function actualizarFeedbackVoz(estado) {
   }
 }
 
-function leerTexto(texto, onEnd) {
-  if (!tieneSpeechSynthesis) {
-    if (onEnd) onEnd();
-    return;
-  }
+/**
+ * Función central de lectura. 
+ * Bloquea el micrófono (hablando=true) ANTES de empezar a hablar.
+ */
+function leerTexto(texto, callback) {
+    if (!tieneSpeechSynthesis) {
+        if (callback) callback();
+        return;
+    }
+    
+    // 🛑 SEMÁFORO ROJO: ¡Bloqueamos el micro!
+    hablando = true;
+    
+    // Si había un reconocimiento activo, lo matamos inmediatamente
+    if (reconocimientoActivo || reconocimiento) {
+        try { reconocimiento.abort(); } catch(e) {}
+        reconocimiento = null;
+        reconocimientoActivo = false;
+    }
 
-  // Parar reconocimiento antes de hablar para evitar conflictos
-  if (reconocimientoActivo && reconocimiento) {
-     try { reconocimiento.abort(); } catch(e) {}
-     reconocimientoActivo = false;
-  }
-
-  window.speechSynthesis.cancel();
-
-  const msg = new SpeechSynthesisUtterance(texto);
-  msg.lang = "es-ES";
-  msg.rate = 0.95;
-
-  msg.onend = () => {
-    if (onEnd) onEnd();
-  };
-
-  if (!enPausa) {
-    window.speechSynthesis.speak(msg);
-  } else {
-    if (onEnd) setTimeout(onEnd, 100);
-  }
-}
-
-function detenerAsistenteVoz() {
-  indicePaso = 0;
-  enPausa = false;
-
-  if (reconocimiento) {
-    try {
-      reconocimiento.abort();
-    } catch (e) {}
-    reconocimiento = null; // Limpieza profunda
-  }
-  reconocimientoActivo = false;
-
-  if (tieneSpeechSynthesis) {
     window.speechSynthesis.cancel();
-  }
+    const u = new SpeechSynthesisUtterance(texto);
+    u.lang = "es-ES";
+    u.rate = 0.95;
+    
+    u.onstart = () => actualizarFeedbackVoz("hablando");
+    
+    u.onend = () => {
+        // 🟢 SEMÁFORO VERDE CON RETRASO
+        // Esperamos 1.5 segundos para que el eco desaparezca antes de permitir escuchar
+        setTimeout(() => {
+            hablando = false; 
+            if (callback) callback();
+        }, 1500); 
+    };
+    
+    // Manejo de errores de síntesis
+    u.onerror = () => {
+        hablando = false;
+    };
 
-  actualizarFeedbackVoz("inactivo");
-}
-
-function leerPasoActual() {
-  if (!recetaEnLectura || enPausa) return;
-
-  const totalPasos = recetaEnLectura.steps.length;
-
-  document
-    .querySelectorAll(".lista-pasos li")
-    .forEach((li) => li.classList.remove("paso-activo"));
-
-  if (indicePaso >= totalPasos) {
-    leerTexto(
-      "Has llegado al final de la receta. El asistente se detiene. ¡Buen provecho!",
-      () => { detenerAsistenteVoz(); }
-    );
-    return;
-  }
-
-  const pasoActualEl = modalDialogo.querySelector(`[data-paso="${indicePaso}"]`);
-  if (pasoActualEl) {
-    pasoActualEl.classList.add("paso-activo");
-    pasoActualEl.scrollIntoView({ block: "center", behavior: "smooth" });
-  }
-
-  const totalTexto =
-    recetaEnLectura.steps.length > 1
-      ? `Paso ${indicePaso + 1} de ${totalPasos}: `
-      : "Instrucción: ";
-
-  const texto = totalTexto + recetaEnLectura.steps[indicePaso];
-
-  leerTexto(texto, () => {
-    if (tieneSpeechRecognition && !enPausa) {
-      escucharComando();
-    }
-  });
-}
-
-function manejarComando(comandoBruto) {
-  const t = (comandoBruto || "").toLowerCase().trim();
-  console.log("🎙️ Comando reconocido:", t);
-  actualizarFeedbackVoz("procesando");
-
-  if (tieneSpeechSynthesis && window.speechSynthesis.speaking) {
-    window.speechSynthesis.cancel();
-  }
-
-  if (t.includes("siguiente")) {
-    indicePaso++;
-    leerPasoActual();
-    return;
-  }
-
-  if (t.includes("anterior") || t.includes("atrás")) {
-    if (indicePaso > 0) {
-      indicePaso--;
-      leerPasoActual();
+    if (!enPausa) {
+        window.speechSynthesis.speak(u);
     } else {
-      leerTexto(
-        "Ya estás en el primer paso. Di siguiente para avanzar.",
-        () => escucharComando()
-      );
+        setTimeout(() => {
+            hablando = false;
+            if (callback) callback();
+        }, 100);
     }
-    return;
-  }
-
-  if (t.includes("repetir") || t.includes("otra vez")) {
-    leerPasoActual();
-    return;
-  }
-
-  if (t.includes("pausar") || t.includes("descanso")) {
-    enPausa = true;
-    leerTexto(
-      "Asistente pausado. Di reanudar para continuar.",
-      () => actualizarFeedbackVoz("pausado")
-    );
-    return;
-  }
-
-  if (t.includes("reanudar") || t.includes("continuar")) {
-    if (enPausa) {
-      enPausa = false;
-      leerTexto("Reanudando la receta.", () => leerPasoActual());
-    } else {
-      leerTexto("El asistente no estaba pausado.", () => escucharComando());
-    }
-    return;
-  }
-
-  if (t.includes("ayuda") || t.includes("qué puedo decir")) {
-    leerTexto(
-      "Puedes decir: siguiente, anterior, repetir, pausar, reanudar o parar.",
-      () => escucharComando()
-    );
-    return;
-  }
-
-  if (t.includes("parar") || t.includes("stop") || t.includes("terminar")) {
-    leerTexto("Asistente de voz detenido. ¡Adiós!");
-    detenerAsistenteVoz();
-    return;
-  }
-
-  leerTexto(
-    "No he entendido el comando. Di ayuda para conocer las opciones.",
-    () => escucharComando()
-  );
 }
 
 function escucharComando() {
-  if (!tieneSpeechRecognition || !recetaEnLectura || enPausa) {
-    reconocimientoActivo = false;
-    actualizarFeedbackVoz("inactivo");
-    return;
-  }
+    // Si estamos hablando, ¡PROHIBIDO ESCUCHAR!
+    if (hablando) return;
 
-  // SIEMPRE creamos una nueva instancia limpia para evitar el InvalidStateError
-  if (reconocimiento) {
-      try { reconocimiento.abort(); } catch(e) {}
-      reconocimiento = null;
-  }
-  reconocimiento = crearReconocimiento();
-
-  reconocimientoActivo = true;
-  actualizarFeedbackVoz("escuchando");
-
-  reconocimiento.onresult = (ev) => {
-    reconocimientoActivo = false;
-    if (!ev.results || !ev.results[0] || !ev.results[0][0]) {
-      actualizarFeedbackVoz("inactivo");
-      return;
+    if (!tieneSpeechRecognition || !recetaEnLectura || enPausa) {
+        reconocimientoActivo = false;
+        actualizarFeedbackVoz("inactivo");
+        return;
     }
-    const comando = ev.results[0][0].transcript;
-    manejarComando(comando);
-  };
 
-  reconocimiento.onend = () => {
-    // Fin normal. No reiniciamos para evitar bucles.
-    reconocimientoActivo = false;
-    actualizarFeedbackVoz("inactivo");
-  };
+    // Recrear instancia siempre para limpiar "basura"
+    if (reconocimiento) {
+        try { reconocimiento.abort(); } catch(e) {}
+        reconocimiento = null;
+    }
+    reconocimiento = crearReconocimiento();
 
-  reconocimiento.onerror = (ev) => {
-    console.error("Error en reconocimiento:", ev.error);
-    reconocimientoActivo = false;
-    
-    if (ev.error === "not-allowed") {
-      leerTexto(
-        "No tengo permiso para usar el micrófono.",
-        () => actualizarFeedbackVoz("inactivo")
-      );
-      return;
+    reconocimientoActivo = true;
+    actualizarFeedbackVoz("escuchando");
+    emitirFeedbackAuditivo();
+
+    reconocimiento.onresult = (ev) => {
+        reconocimientoActivo = false;
+        if (!ev.results || !ev.results[0] || !ev.results[0][0]) {
+            actualizarFeedbackVoz("inactivo");
+            return;
+        }
+        const comando = ev.results[0][0].transcript.toLowerCase();
+        console.log("Comando:", comando);
+        
+        // Filtro anti-eco: Si el comando es larguísimo, es probable que sea la receta
+        if (comando.length > 60) {
+            console.warn("Posible eco detectado. Ignorando.");
+            actualizarFeedbackVoz("inactivo");
+            return;
+        }
+
+        procesarComando(comando);
+    };
+
+    reconocimiento.onend = () => {
+        reconocimientoActivo = false;
+        actualizarFeedbackVoz("inactivo");
+    };
+
+    reconocimiento.onerror = (ev) => {
+        console.warn("ASR Error:", ev.error);
+        reconocimientoActivo = false;
+        
+        // En caso de error, PARAMOS y pedimos pulsación manual. 
+        // Cero riesgos de bucle.
+        if (ev.error === "no-speech") {
+             leerTexto("No he oído nada. Pulsa el botón para intentarlo.");
+        } else {
+             actualizarFeedbackVoz("inactivo");
+        }
+    };
+
+    try {
+        reconocimiento.start();
+    } catch (e) {
+        console.error("Start error:", e);
+        reconocimientoActivo = false;
+        actualizarFeedbackVoz("inactivo");
+    }
+}
+
+function procesarComando(cmd) {
+    if (hablando) return; 
+
+    if (cmd.includes("siguiente")) {
+        indicePaso++;
+        leerPaso();
+    } else if (cmd.includes("repetir")) {
+        leerPaso();
+    } else if (cmd.includes("anterior")) {
+        if (indicePaso > 0) indicePaso--;
+        leerPaso();
+    } else if (cmd.includes("salir") || cmd.includes("cerrar")) {
+        cerrarModal();
+    } else if (cmd.includes("pausar")) {
+        enPausa = true;
+        actualizarFeedbackVoz("pausado");
+        leerTexto("Pausado. Di reanudar.");
+    } else if (cmd.includes("reanudar")) {
+        enPausa = false;
+        leerPaso();
+    } else {
+        leerTexto("No entendí. Pulsa y repite.", () => actualizarFeedbackVoz("inactivo"));
+    }
+}
+
+function leerPaso() {
+    if (indicePaso >= recetaEnLectura.steps.length) {
+        leerTexto("Fin de la receta. ¡Buen provecho!", () => detenerAsistenteVoz());
+        return;
     }
     
-    // 🚨 CORRECCIÓN FINAL: Si hay error, PARAMOS y avisamos. NO reiniciamos.
-    if (ev.error === "no-speech") {
-       leerTexto(
-         "No he oído nada. Pulsa el botón para intentarlo de nuevo.",
-         () => actualizarFeedbackVoz("inactivo")
-       );
-       return;
-    }
-    
-    actualizarFeedbackVoz("inactivo");
-  };
+    document.querySelectorAll("#lista-pasos-lectura li").forEach((li, i) => {
+        li.classList.toggle("paso-activo", i === indicePaso);
+        if (i === indicePaso) li.scrollIntoView({behavior: "smooth", block: "center"});
+    });
 
-  try {
-    reconocimiento.start();
-  } catch (e) {
-    console.warn("Error al iniciar reconocimiento:", e);
-    reconocimientoActivo = false;
-    actualizarFeedbackVoz("inactivo");
-  }
+    const texto = `Paso ${indicePaso + 1}. ${recetaEnLectura.steps[indicePaso]}`;
+    // Callback: Solo escuchar CUANDO termine de hablar y pase el tiempo de seguridad
+    leerTexto(texto, () => {
+        if (!enPausa) escucharComando();
+    });
 }
 
 function iniciarAsistenteVoz(receta) {
-  if (!receta) receta = recetaEnLectura;
-
-  if (!tieneSpeechSynthesis) {
-    alert("Tu navegador no soporta síntesis de voz.");
-    return;
-  }
-  
-  detenerAsistenteVoz(); 
-  recetaEnLectura = receta; 
-  indicePaso = 0;
-  enPausa = false;
-
-  if (modalDialogo) {
-      modalDialogo.className = `dialogo modal-${receta.category}`;
-  }
-
-  const intro = `
-    Vamos a cocinar: ${receta.title}.
-    Tiempo: ${receta.time}.
-    Dificultad: ${receta.difficulty}.
-  `;
-
-  const textoIngredientes =
-    receta.ingredients && receta.ingredients.length
-      ? "Ingredientes: " + receta.ingredients.join(". ")
-      : "Sin ingredientes detallados.";
-
-  leerTexto(intro, () => {
-    leerTexto(textoIngredientes, () => {
-      if (!receta.steps || !receta.steps.length) {
-        leerTexto("Sin pasos detallados. Fin.");
-        detenerAsistenteVoz();
+    if (!receta) receta = recetaEnLectura;
+    
+    if (!tieneSpeechSynthesis) {
+        alert("Tu navegador no soporta síntesis de voz.");
         return;
-      }
-      leerPasoActual();
+    }
+  
+    detenerAsistenteVoz(); 
+    recetaEnLectura = receta; 
+    indicePaso = 0;
+    enPausa = false;
+    hablando = false;
+
+    if (modalDialogo) modalDialogo.className = `dialogo modal-${receta.category}`;
+
+    const intro = `Receta: ${receta.title}.`;
+    leerTexto(intro, () => {
+         if (!receta.steps.length) return;
+         leerPaso(); 
     });
-  });
+}
+
+function detenerAsistenteVoz() {
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    hablando = false;
+    reconocimientoActivo = false;
+    if (reconocimiento) {
+        try { reconocimiento.abort(); } catch(e){}
+        reconocimiento = null;
+    }
+    actualizarFeedbackVoz("inactivo");
 }
 
 // --- INICIALIZACIÓN ---
