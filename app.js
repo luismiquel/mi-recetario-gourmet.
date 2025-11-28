@@ -302,11 +302,11 @@ function leerTexto(texto, callback) {
     u.onerror = () => { hablando = false; };
 
     if (!enPausa) window.speechSynthesis.speak(u);
-    else setTimeout(() => { hablando = false; if (callback) callback(); }, 100);
+    else setTimeout(() => { hablando = false; if(callback) callback(); }, 100);
 }
 
 function escucharComando() {
-    // SI ESTAMOS HABLANDO, SALIR INMEDIATAMENTE
+    // Si el semáforo está rojo (hablando), NO INICIAMOS
     if (hablando) return;
 
     if (!tieneSpeechRecognition || !recetaEnLectura || enPausa) {
@@ -333,28 +333,33 @@ function escucharComando() {
             return;
         }
         const comando = ev.results[0][0].transcript.toLowerCase();
-        console.log("Comando detectado:", comando);
+        console.log("Comando:", comando);
         
-        // Filtro extra: si el comando es larguísimo, es eco. Ignorar.
+        // Filtro anti-eco: Si el comando es larguísimo, es probable que sea la receta
         if (comando.length > 60) {
-             console.warn("Eco detectado. Ignorando.");
-             actualizarFeedbackVoz("inactivo");
-             return;
+            console.warn("Posible eco detectado. Ignorando.");
+            actualizarFeedbackVoz("inactivo");
+            return;
         }
         
         procesarComando(comando);
     };
 
     reconocimiento.onend = () => {
-        reconocimientoActivo = false;
-        // NO reiniciamos automáticamente. Evita bucles.
-        if (!hablando) actualizarFeedbackVoz("inactivo");
+        // Si se apaga el micro y se supone que debíamos seguir escuchando (y no estamos hablando)
+        if (reconocimientoActivo && !hablando && !enPausa) {
+             setTimeout(escucharComando, 500);
+        } else {
+             if (!hablando) actualizarFeedbackVoz("inactivo");
+        }
     };
 
     reconocimiento.onerror = (ev) => {
         console.warn("ASR Error:", ev.error);
         reconocimientoActivo = false;
         
+        // En caso de error, PARAMOS y pedimos pulsación manual. 
+        // Cero riesgos de bucle.
         if (ev.error === 'no-speech') {
              leerTexto("No te he oído. Pulsa el botón para intentarlo.");
         } else {
@@ -368,7 +373,7 @@ function escucharComando() {
             if (!hablando && reconocimiento) reconocimiento.start();
         }, 200);
     } catch (e) {
-        console.error("Fallo start:", e);
+        console.error("Start error:", e);
         reconocimientoActivo = false;
         actualizarFeedbackVoz("inactivo");
     }
@@ -411,8 +416,7 @@ function leerPaso() {
     });
 
     const texto = `Paso ${indicePaso + 1}. ${recetaEnLectura.steps[indicePaso]}`;
-    
-    // Al terminar de leer, escuchamos UNA vez automáticamente
+    // Callback: Solo escuchar CUANDO termine de hablar y pase el tiempo de seguridad
     leerTexto(texto, () => {
         if (!enPausa) escucharComando();
     });
@@ -420,7 +424,7 @@ function leerPaso() {
 
 function iniciarAsistenteVoz(receta) {
     if (!receta) receta = recetaEnLectura;
-
+    
     if (!tieneSpeechSynthesis) {
         alert("Tu navegador no soporta síntesis de voz.");
         return;
@@ -444,7 +448,11 @@ function iniciarAsistenteVoz(receta) {
 function detenerAsistenteVoz() {
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     hablando = false;
-    detenerEscuchaFisica();
+    reconocimientoActivo = false;
+    if (reconocimiento) {
+        try { reconocimiento.abort(); } catch(e){}
+        reconocimiento = null;
+    }
     actualizarFeedbackVoz("inactivo");
 }
 
@@ -466,7 +474,6 @@ window.borrarItem = (i) => {
     pintarListaCompra();
 }
 
-// Eventos Globales
 document.addEventListener("DOMContentLoaded", () => {
     pintarRecetas();
     pintarListaCompra();
