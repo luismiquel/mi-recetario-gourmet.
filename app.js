@@ -1,14 +1,14 @@
 /**
  * =============================================================
- * app.js: VERSIÓN FINAL "WALKIE-TALKIE"
- * Solución: El micrófono se destruye al hablar y se recrea al callar.
+ * app.js: VERSIÓN FINAL "SEMÁFORO ANTI-ECO"
+ * Solución: Evita que el asistente se escuche a sí mismo y rompe bucles.
  * =============================================================
  */
 
 "use strict";
 
 // =============================================================
-// 1. DATOS (160 RECETAS)
+// 1. DATOS (TUS 160 RECETAS)
 // =============================================================
 
 const recetas = [
@@ -139,8 +139,8 @@ const recetas = [
     titulo: 'Crujientes de morcilla con manzana',
     categoria: 'aperitivos',
     img: 'placeholder.jpg',
-    descripcion: 'Morcilla especiada y manzana caramelizada en un envoltorio crujiente.',
-    ingredientes: 'Morcilla de Burgos, manzana, pasta filo, mantequilla derretida.',
+    descripcion: 'Contraste de la morcilla especiada y la frescura de la manzana caramelizada en un envoltorio crujiente.',
+    ingredientes: 'Morcilla de Burgos, manzana, masa de pasta filo, mantequilla derretida.',
     instrucciones: 'Saltea la morcilla con la manzana picada. Rellena cuadrados de pasta filo con la mezcla. Hornea.',
     tiempo: '25 min',
     dificultad: 'Media'
@@ -572,7 +572,7 @@ const recetas = [
     img: 'placeholder.jpg',
     descripcion: 'Pasta rellena con mantequilla y salvia.',
     ingredientes: 'Raviolis calabaza, mantequilla, salvia, nueces, parmesano.',
-    instrucciones: 'Cuece pasta. Derrite mantequilla con salvia. Mezcla.',
+    instrucciones: 'Cuece los *raviolis*. Derrite la mantequilla, fríe la salvia. Mezcla la pasta con la salsa y las nueces. Espolvorea *parmesano*.',
     tiempo: '20 min',
     dificultad: 'Muy Fácil'
   },
@@ -581,7 +581,7 @@ const recetas = [
     titulo: 'Sopa castellana con huevo',
     categoria: 'primero',
     img: 'placeholder.jpg',
-    descripcion: 'Sopa de ajo y pan.',
+    descripcion: 'Sopa tradicional de ajo, pan duro y jamón, un clásico para días fríos.',
     ingredientes: 'Pan duro, ajo, jamón, pimentón, caldo, huevo.',
     instrucciones: 'Sofríe ajo y jamón. Añade pan y pimentón. Vierte caldo. Cuaja huevo.',
     tiempo: '30 min',
@@ -592,9 +592,9 @@ const recetas = [
     titulo: 'Ensalada bacalao y naranja',
     categoria: 'primero',
     img: 'placeholder.jpg',
-    descripcion: 'Refrescante con bacalao desalado.',
-    ingredientes: 'Bacalao, naranja, aceitunas negras, cebolla.',
-    instrucciones: 'Mezcla ingredientes y aliña.',
+    descripcion: 'Plato refrescante con lomos de bacalao desalado, naranja y aceitunas negras.',
+    ingredientes: 'Bacalao desalado y desmigado, naranja en gajos, aceitunas negras, cebolla morada, aceite de oliva.',
+    instrucciones: 'Mezcla los ingredientes y aliña. Idealmente, deja macerar un poco antes de servir.',
     tiempo: '15 min',
     dificultad: 'Fácil'
   },
@@ -937,7 +937,7 @@ const recetas = [
     img: 'placeholder.jpg',
     descripcion: 'Salsa cremosa de cava.',
     ingredientes: 'Merluza, cava, nata, cebolla.',
-    instrucciones: 'Pocha cebolla. Añade harina y el cava. Incorpora la nata y el pescado. Cocina a fuego lento hasta que esté hecho.',
+    instrucciones: 'Pocha cebolla. Añade cava y nata. Cocina pescado.',
     tiempo: '30 min',
     dificultad: 'Media'
   },
@@ -1036,7 +1036,7 @@ const recetas = [
     img: 'placeholder.jpg',
     descripcion: 'Guisado en salsa verduras.',
     ingredientes: 'Redondo, verduras, vino, caldo.',
-    instrucciones: 'Sella carne. Guisa con verduras y vino.',
+    instrucciones: 'Sella carne. Sofríe las verduras. Guisa la carne con las verduras y el vino hasta que esté tierna. Lonchea y sirve con la salsa triturada.',
     tiempo: '120 min',
     dificultad: 'Media'
   },
@@ -1846,10 +1846,8 @@ let reconocimientoActivo = false;
 let feedbackVozEl = null;
 let modalFooter = null;
 
-// SEMÁFORO DE VOZ: 
-// - true: el asistente está hablando (micrófono bloqueado)
-// - false: el asistente calló (micrófono disponible)
-let hablando = false;
+// 🚨 SEMÁFORO DE VOZ (CRÍTICO PARA EVITAR ECO)
+let hablando = false; 
 
 // Soporte APIs
 const tieneSpeechRecognition = "SpeechRecognition" in window || "webkitSpeechRecognition" in window;
@@ -1864,7 +1862,7 @@ if ("serviceWorker" in navigator) {
   });
 }
 
-// --- FUNCIONES PRINCIPALES ---
+// --- FUNCIONES PRINCIPALES UI ---
 
 function pintarRecetas() {
   const filtradas = TODAS_LAS_RECETAS.filter(r => {
@@ -1954,7 +1952,7 @@ function cerrarModal() {
 }
 
 // =============================================================
-// ASISTENTE DE VOZ (ESTABILIZADO CON SEMÁFORO)
+// ASISTENTE DE VOZ (SEMÁFORO ANTI-ECO)
 // =============================================================
 
 function crearReconocimiento() {
@@ -1984,26 +1982,32 @@ function actualizarFeedbackVoz(estado) {
   if (!feedbackVozEl) {
     feedbackVozEl = document.createElement("div");
     feedbackVozEl.id = "feedback-voz-estado";
-    feedbackVozEl.style.cssText = "margin-top:10px;font-weight:bold;text-align:center;padding:5px;border-radius:5px;";
+    feedbackVozEl.style.cssText = "margin-top:10px;font-weight:bold;padding:5px;border-radius:5px;text-align:center;";
     modalFooter.appendChild(feedbackVozEl);
   }
-  
-  if (estado === "escuchando") {
-    feedbackVozEl.textContent = "🎙️ ESCUCHANDO... Di: Siguiente, Repetir, Salir";
-    feedbackVozEl.style.background = "#ffc107";
-    feedbackVozEl.style.color = "#333";
-  } else if (estado === "hablando") {
-    feedbackVozEl.textContent = "🔊 LEYENDO (Micro apagado)...";
-    feedbackVozEl.style.background = "#17a2b8";
-    feedbackVozEl.style.color = "#fff";
-  } else if (estado === "pausado") {
-    feedbackVozEl.textContent = "⏸️ PAUSADO";
-    feedbackVozEl.style.background = "#dc3545";
-    feedbackVozEl.style.color = "#fff";
-  } else {
-    feedbackVozEl.textContent = "Asistente inactivo. Pulsa el botón para iniciar.";
-    feedbackVozEl.style.background = "transparent";
-    feedbackVozEl.style.color = "inherit";
+
+  switch (estado) {
+    case "escuchando":
+      feedbackVozEl.textContent = "🎙️ ESCUCHANDO... Di un comando.";
+      feedbackVozEl.style.backgroundColor = "#ffc107";
+      feedbackVozEl.style.color = "#333";
+      break;
+    case "hablando":
+      feedbackVozEl.textContent = "🔊 LEYENDO...";
+      feedbackVozEl.style.backgroundColor = "#17a2b8";
+      feedbackVozEl.style.color = "#fff";
+      break;
+    case "pausado":
+      feedbackVozEl.textContent = "⏸️ PAUSADO";
+      feedbackVozEl.style.backgroundColor = "#dc3545";
+      feedbackVozEl.style.color = "#fff";
+      break;
+    case "inactivo":
+    default:
+      feedbackVozEl.textContent = "Asistente inactivo. Pulsa 🎙️ para empezar.";
+      feedbackVozEl.style.backgroundColor = "transparent";
+      feedbackVozEl.style.color = "#888";
+      break;
   }
 }
 
@@ -2016,10 +2020,7 @@ function detenerEscuchaFisica() {
 }
 
 function leerTexto(texto, callback) {
-    if (!tieneSpeechSynthesis) {
-        if (callback) callback();
-        return;
-    }
+    if (!tieneSpeechSynthesis) return;
     
     // 🔴 SEMÁFORO ROJO: Empieza a hablar, prohibido escuchar
     hablando = true;
@@ -2043,11 +2044,11 @@ function leerTexto(texto, callback) {
     u.onerror = () => { hablando = false; };
 
     if (!enPausa) window.speechSynthesis.speak(u);
-    else setTimeout(() => { hablando = false; if (callback) callback(); }, 100);
+    else setTimeout(() => { hablando = false; if(callback) callback(); }, 100);
 }
 
 function escucharComando() {
-    // Si el semáforo está rojo (hablando), NO INICIAMOS
+    // SI ESTAMOS HABLANDO, SALIR INMEDIATAMENTE
     if (hablando) return;
 
     if (!tieneSpeechRecognition || !recetaEnLectura || enPausa) {
@@ -2069,20 +2070,17 @@ function escucharComando() {
 
     reconocimiento.onresult = (ev) => {
         reconocimientoActivo = false;
-        if (!ev.results || !ev.results[0] || !ev.results[0][0]) {
+        if (!ev.results || !ev.results[0]) return;
+        
+        const comando = ev.results[0][0].transcript.toLowerCase();
+        console.log("Comando:", comando);
+        
+        // Si el comando es muy largo, es eco. Lo ignoramos.
+        if (comando.length > 50) {
+            console.warn("Eco detectado. Ignorando.");
             actualizarFeedbackVoz("inactivo");
             return;
         }
-        const comando = ev.results[0][0].transcript.toLowerCase();
-        console.log("Comando detectado:", comando);
-        
-        // Filtro extra: si el comando es larguísimo, es eco. Ignorar.
-        if (comando.length > 60) {
-             console.warn("Eco detectado. Ignorando.");
-             actualizarFeedbackVoz("inactivo");
-             return;
-        }
-        
         procesarComando(comando);
     };
 
@@ -2098,8 +2096,8 @@ function escucharComando() {
         
         // En caso de error, PARAMOS y pedimos pulsación manual. 
         // Cero riesgos de bucle.
-        if (ev.error === 'no-speech') {
-             leerTexto("No te he oído. Pulsa el botón para intentarlo.");
+        if (ev.error === "no-speech") {
+             leerTexto("No he oído nada. Pulsa el botón para intentarlo.");
         } else {
              actualizarFeedbackVoz("inactivo");
         }
