@@ -42,6 +42,13 @@
       <div class="panel-accesibilidad__header">
         <h2 id="titulo-accesibilidad">Accesibilidad total y comandos de voz</h2>
         <p class="panel-accesibilidad__intro">Navega con teclado o lector de pantalla, activa contraste y texto grande, y usa la lectura en voz alta para seguir cada receta.</p>
+        <div class="voz-control" aria-live="polite">
+          <div>
+            <p class="meta">Activa el asistente de voz para controlar la lectura sin tocar la pantalla.</p>
+            <button id="btn-voz-escuchar" class="btn" aria-pressed="false">Activar asistente</button>
+          </div>
+          <p id="voz-estado" class="voz-estado" role="status">Asistente en reposo</p>
+        </div>
       </div>
       <div class="panel-accesibilidad__grid">
         <div>

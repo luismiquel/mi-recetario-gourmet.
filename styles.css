@@ -198,6 +198,25 @@ main {
     margin-bottom: 0.75rem;
 }
 
+.voz-control {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-s);
+    background: #fff8e1;
+    border: 1px solid #f1c40f;
+    border-radius: var(--radio-suave);
+    padding: 0.75rem var(--espacio-m);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+.voz-estado {
+    margin: 0;
+    font-weight: 700;
+    color: #8c1e30;
+}
+
 .panel-accesibilidad__intro {
     margin: 0;
     color: var(--color-texto-secundario);

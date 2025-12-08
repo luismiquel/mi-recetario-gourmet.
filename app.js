@@ -260,7 +260,8 @@ const estado = {
   listaCompra: JSON.parse(localStorage.getItem("lista-compra") || "[]"),
   recetaActual: null,
   pasoActual: 0,
-  ultimoEnfoque: null
+  ultimoEnfoque: null,
+  escuchando: false
 };
 
 const elementos = {
@@ -277,8 +278,13 @@ const elementos = {
   contenidoModal: document.getElementById("contenido-modal"),
   live: document.getElementById("aria-live"),
   contraste: document.getElementById("btn-contraste"),
-  texto: document.getElementById("btn-texto")
+  texto: document.getElementById("btn-texto"),
+  btnVoz: document.getElementById("btn-voz-escuchar"),
+  estadoVoz: document.getElementById("voz-estado")
 };
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let reconocimiento = null;
 
 // =============================
 // Renderizado de recetas
@@ -555,6 +561,99 @@ function reanudarVoz() {
   }
 }
 
+function actualizarIndicadorVoz(mensaje) {
+  if (elementos.estadoVoz) {
+    elementos.estadoVoz.textContent = mensaje;
+  }
+  if (elementos.btnVoz) {
+    elementos.btnVoz.setAttribute("aria-pressed", estado.escuchando ? "true" : "false");
+    elementos.btnVoz.textContent = estado.escuchando ? "Detener asistente" : "Activar asistente";
+  }
+}
+
+function procesarComandoVoz(texto) {
+  const comando = normalizarTexto(texto);
+
+  if (comando.includes("cerrar")) {
+    cerrarModal();
+    anunciar("Receta cerrada");
+    return;
+  }
+
+  if (!estado.recetaActual) {
+    anunciar("Abre una receta para usar los comandos de lectura");
+    return;
+  }
+
+  if (comando.includes("siguiente")) {
+    siguientePaso();
+    anunciar("Paso siguiente");
+  } else if (comando.includes("anterior")) {
+    pasoAnterior();
+    anunciar("Paso anterior");
+  } else if (comando.includes("pausa")) {
+    pausarVoz();
+    anunciar("Lectura en pausa");
+  } else if (comando.includes("reanuda") || comando.includes("continuar")) {
+    reanudarVoz();
+    anunciar("Lectura reanudada");
+  } else if (comando.includes("leer")) {
+    leerPaso();
+  } else {
+    anunciar("No reconocí el comando. Usa leer, siguiente, anterior, pausar, reanudar o cerrar.");
+  }
+}
+
+function inicializarReconocimientoVoz() {
+  if (!SpeechRecognition || !elementos.btnVoz) {
+    actualizarIndicadorVoz("El navegador no permite reconocimiento de voz.");
+    if (elementos.btnVoz) elementos.btnVoz.disabled = true;
+    return;
+  }
+
+  reconocimiento = new SpeechRecognition();
+  reconocimiento.lang = "es-ES";
+  reconocimiento.continuous = false;
+  reconocimiento.interimResults = false;
+
+  reconocimiento.onstart = () => {
+    estado.escuchando = true;
+    actualizarIndicadorVoz("Escuchando... di Leer, Siguiente, Anterior, Pausar, Reanudar o Cerrar.");
+    anunciar("Asistente de voz activo");
+  };
+
+  reconocimiento.onend = () => {
+    estado.escuchando = false;
+    actualizarIndicadorVoz("Asistente en reposo");
+  };
+
+  reconocimiento.onerror = () => {
+    estado.escuchando = false;
+    actualizarIndicadorVoz("No se pudo captar la orden. Inténtalo de nuevo.");
+  };
+
+  reconocimiento.onresult = (evento) => {
+    const texto = evento.results[0][0].transcript;
+    procesarComandoVoz(texto);
+  };
+}
+
+function alternarAsistenteVoz() {
+  if (!reconocimiento) {
+    anunciar("El asistente de voz no está disponible en este navegador.");
+    actualizarIndicadorVoz("Asistente no disponible en este navegador.");
+    return;
+  }
+
+  if (estado.escuchando) {
+    reconocimiento.stop();
+    estado.escuchando = false;
+    actualizarIndicadorVoz("Asistente en reposo");
+  } else {
+    reconocimiento.start();
+  }
+}
+
 function gestionarVoz(evento) {
   const accion = evento.target.dataset.voz;
   switch (accion) {
@@ -661,12 +760,18 @@ function inicializarEventos() {
   elementos.cerrarModalBtn.addEventListener("click", cerrarModal);
   elementos.contraste.addEventListener("click", alternarContraste);
   elementos.texto.addEventListener("click", alternarTamanoTexto);
+
+  if (elementos.btnVoz) {
+    elementos.btnVoz.addEventListener("click", alternarAsistenteVoz);
+  }
 }
 
 function init() {
   inicializarEventos();
+  inicializarReconocimientoVoz();
   renderizarRecetas();
   renderizarListaCompra();
+  actualizarIndicadorVoz("Asistente en reposo");
 }
 
 init();
