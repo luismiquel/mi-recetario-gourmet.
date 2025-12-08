@@ -22,6 +22,18 @@
     --espacio-s: 0.75rem;
 }
 
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
 *,
 *::before,
 *::after {
@@ -119,9 +131,14 @@ body.modal-abierto {
 }
 
 .btn:hover {
-    background: #6a1624; 
+    background: #6a1624;
     transform: translateY(-2px);
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25), inset 0 -3px 0 rgba(0, 0, 0, 0.1);
+}
+
+.btn:focus-visible {
+    outline: 3px solid var(--color-navidad-acento);
+    outline-offset: 3px;
 }
 
 .btn:active {
@@ -167,6 +184,53 @@ main {
     display: flex;
     flex-direction: column;
     gap: 2rem;
+}
+
+.panel-accesibilidad {
+    border: 2px dashed #d9b700;
+    background: linear-gradient(135deg, rgba(255, 200, 0, 0.08), rgba(140, 30, 48, 0.05));
+}
+
+.panel-accesibilidad__header {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+}
+
+.voz-control {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--espacio-s);
+    background: #fff8e1;
+    border: 1px solid #f1c40f;
+    border-radius: var(--radio-suave);
+    padding: 0.75rem var(--espacio-m);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+.voz-estado {
+    margin: 0;
+    font-weight: 700;
+    color: #8c1e30;
+}
+
+.panel-accesibilidad__intro {
+    margin: 0;
+    color: var(--color-texto-secundario);
+}
+
+.panel-accesibilidad__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--espacio-m);
+}
+
+.panel-accesibilidad ul {
+    padding-left: 1.1rem;
+    margin: 0.25rem 0 0;
 }
 
 .panel {
